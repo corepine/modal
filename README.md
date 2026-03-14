@@ -242,6 +242,36 @@ Example:
 ],
 ```
 
+How this works:
+- left side (`default`, `sheet`, `dialog`, `editor`) is the size name/token
+- right side is the Tailwind width classes applied to the modal component
+
+So:
+- `size="dialog"` applies `max-w-2xl`
+- `size="editor"` applies `max-w-5xl`
+- if no size is provided, `default` is used
+
+Use token from Blade:
+
+```blade
+<x-corepine-open-modal size="editor" ... />
+```
+
+Use token from modal class:
+
+```php
+public static function modalSize(): string
+{
+    return 'editor';
+}
+```
+
+You can also bypass the token map and pass raw classes directly:
+
+```blade
+<x-corepine-open-modal size="max-w-[900px] sm:max-w-full" ... />
+```
+
 ## Config Service
 
 Use `Corepine\Modal\Support\ModalConfig` if you need consistent package values in your own classes:
