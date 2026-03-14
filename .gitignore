@@ -1,0 +1,7 @@
+/vendor
+/node_modules
+/.phpunit.cache
+/workbench/database/database.sqlite
+/.idea
+/.vscode
+/dist

@@ -1,0 +1,14 @@
+{
+  "name": "corepine-modal-assets",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tailwindcss -i ./resources/css/app.css -o ./dist/corepine-modal.css --watch",
+    "build": "tailwindcss -i ./resources/css/app.css -o ./dist/corepine-modal.css --minify"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
+}

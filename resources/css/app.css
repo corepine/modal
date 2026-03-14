@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .cp-modal-open {
+        overflow: hidden;
+    }
+
+    .cp-modal-panel {
+        @apply rounded-2xl border border-zinc-200 bg-white shadow-2xl;
+    }
+
+    .dark .cp-modal-panel {
+        @apply border-zinc-700 bg-zinc-900 text-zinc-100;
+    }
+}
