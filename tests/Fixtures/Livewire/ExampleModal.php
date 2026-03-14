@@ -21,7 +21,7 @@ class ExampleModal extends Modal
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
-            'modalClass' => 'p-4',
+            'class' => 'p-4',
         ];
     }
 

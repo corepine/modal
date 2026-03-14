@@ -165,12 +165,23 @@ class ModalConfig
      */
     public function modalClass(array $attributes): string
     {
-        $modalClass = $attributes['modalClass'] ?? null;
+        $class = $attributes['class'] ?? null;
 
-        if (is_string($modalClass) && $modalClass !== '') {
-            return $modalClass;
+        if (is_string($class) && $class !== '') {
+            return $class;
         }
 
         return '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function mergedModalClasses(array $attributes): string
+    {
+        $sizeClasses = $this->modalSizeClasses($attributes);
+        $class = $this->modalClass($attributes);
+
+        return trim(implode(' ', array_filter([$sizeClasses, $class])));
     }
 }

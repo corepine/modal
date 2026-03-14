@@ -72,7 +72,7 @@ it('uses modalSize from component class', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('md');
 });
 
-it('allows runtime size classes override', function (): void {
+it('allows runtime size override with raw classes', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
             'size' => 'max-w-[900px] sm:max-w-full',
@@ -82,6 +82,20 @@ it('allows runtime size classes override', function (): void {
     $modals = $test->get('modals');
 
     expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('max-w-[900px] sm:max-w-full');
+});
+
+it('stores runtime class and blur attributes', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'class' => 'p-8 border border-zinc-200',
+            'blur' => true,
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['class'])->toBe('p-8 border border-zinc-200');
+    expect($modals[$stack[0]]['modalAttributes']['blur'])->toBeTrue();
 });
 
 it('keeps modalAttributes size when defined explicitly', function (): void {

@@ -58,6 +58,12 @@
                     return this.activeModal()?.modalAttributes ?? {};
                 },
 
+                blurEnabled() {
+                    const attrs = this.activeAttributes();
+
+                    return attrs.blur === true;
+                },
+
                 canClose(eventName) {
                     const modal = this.activeModal();
 
@@ -152,6 +158,7 @@
     >
         <div
             class="cp-modal-backdrop absolute inset-0 bg-zinc-950/50"
+            x-bind:class="{ 'backdrop-blur-sm': blurEnabled() }"
             x-show="show"
             x-transition.opacity.duration.200ms
             x-on:click="closeOnClickAway()"
@@ -161,8 +168,7 @@
             @foreach ($stack as $id)
                 @php($modal = $modals[$id] ?? null)
                 @continue(! $modal)
-                @php($sizeClasses = $modalConfig->modalSizeClasses($modal['modalAttributes']))
-                @php($modalClass = $modalConfig->modalClass($modal['modalAttributes']))
+                @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
 
                 <div
                     x-show="activeModalId === @js($id)"
@@ -176,7 +182,7 @@
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
                 >
-                    <div class="cp-modal-panel mx-auto w-full {{ $sizeClasses }} {{ $modalClass }}">
+                    <div @class(['cp-modal-component', 'mx-auto', 'w-full', $modalClasses])>
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>
                 </div>

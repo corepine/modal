@@ -28,8 +28,9 @@ return [
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
+            'blur' => false,
             'size' => 'default',
-            'modalClass' => '',
+            'class' => '',
         ],
     ],
 
@@ -38,8 +39,8 @@ return [
     | Modal Sizes
     |--------------------------------------------------------------------------
     |
-    | Fully custom size tokens. Values are raw CSS max-width values.
-    | Example: 'sheet' => '90vw', 'dialog' => '42rem'
+    | Fully custom size tokens. Values are utility class strings.
+    | Example: 'sheet' => 'max-w-[92vw]', 'dialog' => 'max-w-2xl'
     |
     */
     'sizes' => [

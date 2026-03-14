@@ -70,10 +70,11 @@ class EditUser extends Modal
         return [
             'closeOnEscape' => true,
             'closeOnClickAway' => true,
+            'blur' => true,
             'closeOnEscapeIsForceful' => false,
             'destroyOnClose' => true,
             'dispatchCloseEvent' => true,
-            'modalClass' => 'p-6',
+            'class' => 'p-6',
         ];
     }
 
@@ -99,7 +100,8 @@ public static function modalAttributes(): array
         'size' => '3xl',
         // or raw classes:
         // 'size' => 'max-w-[960px] sm:max-w-full',
-        'modalClass' => 'p-6',
+        'blur' => true,
+        'class' => 'p-6',
     ];
 }
 ```
@@ -136,8 +138,9 @@ public static function modalAttributes(): array
 <x-corepine-open-modal
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
+    class="p-8 bg-white border border-zinc-200 rounded-3xl"
     size="2xl"
-    modal-class="p-8 bg-white border border-zinc-200 rounded-3xl"
+    blur="true"
 >
     <button type="button">Edit</button>
 </x-corepine-open-modal>
@@ -153,7 +156,8 @@ You can also pass raw classes instead of a size token:
 />
 ```
 
-`modal-class` is the single styling hook for modal surface styling (background, border, rounded, padding, etc.).
+`class` is the styling hook for modal surface styling (background, border, rounded, padding, etc.).
+When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
 
 ## Closing Modals
 
@@ -225,6 +229,7 @@ You can customize:
 - incoming/outgoing event names
 - modal defaults
 - size tokens
+- default blur
 
 Example:
 
