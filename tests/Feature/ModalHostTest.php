@@ -1,11 +1,13 @@
 <?php
 
 use Corepine\Modal\Livewire\ModalHost;
+use Corepine\Modal\Tests\Fixtures\Livewire\AttributeSizedModal;
 use Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
     Livewire::component('test.example-modal', ExampleModal::class);
+    Livewire::component('test.attribute-sized-modal', AttributeSizedModal::class);
 });
 
 it('opens and stacks modals', function (): void {
@@ -58,4 +60,36 @@ it('opens modal by class path', function (): void {
 
     expect($stack)->toHaveCount(1);
     expect($modals[$stack[0]]['class'])->toBe(ExampleModal::class);
+});
+
+it('uses modalSize from component class', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal');
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('md');
+});
+
+it('allows runtime size classes override', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'size' => 'max-w-[900px] sm:max-w-full',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('max-w-[900px] sm:max-w-full');
+});
+
+it('keeps modalAttributes size when defined explicitly', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.attribute-sized-modal');
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('4xl');
 });

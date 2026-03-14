@@ -8,6 +8,11 @@ class ExampleModal extends Modal
 {
     public string $title = 'Example modal';
 
+    public static function modalSize(): string
+    {
+        return 'md';
+    }
+
     public static function modalAttributes(): array
     {
         return [
@@ -16,7 +21,6 @@ class ExampleModal extends Modal
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
-            'width' => 'md',
             'panelClass' => 'p-4',
         ];
     }

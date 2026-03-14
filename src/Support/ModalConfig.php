@@ -27,21 +27,7 @@ class ModalConfig
         'component_closed' => 'modalComponentClosed',
     ];
 
-    /**
-     * @var array<string, string>
-     */
-    private const DEFAULT_WIDTH_CLASSES = [
-        'sm' => 'max-w-sm',
-        'md' => 'max-w-md',
-        'lg' => 'max-w-lg',
-        'xl' => 'max-w-xl',
-        '2xl' => 'max-w-2xl',
-        '3xl' => 'max-w-3xl',
-        '4xl' => 'max-w-4xl',
-        '5xl' => 'max-w-5xl',
-        '6xl' => 'max-w-6xl',
-        '7xl' => 'max-w-7xl',
-    ];
+    private const DEFAULT_SIZE_CLASSES = 'max-w-lg sm:max-w-full';
 
     public function hostComponent(): string
     {
@@ -125,29 +111,60 @@ class ModalConfig
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function sizes(): array
+    {
+        $configured = config('corepine-modal.sizes', []);
+
+        if (! is_array($configured)) {
+            return ['default' => self::DEFAULT_SIZE_CLASSES];
+        }
+
+        $normalized = [];
+
+        foreach ($configured as $key => $value) {
+            if (! is_string($key) || ! is_string($value) || $value === '') {
+                continue;
+            }
+
+            $normalized[$key] = $value;
+        }
+
+        if ($normalized === []) {
+            return ['default' => self::DEFAULT_SIZE_CLASSES];
+        }
+
+        return $normalized;
+    }
+
+    /**
      * @param  array<string, mixed>  $attributes
      */
-    public function widthClass(array $attributes): string
+    public function modalSizeClasses(array $attributes): string
     {
-        $rawWidth = $attributes['width'] ?? $attributes['maxWidth'] ?? '2xl';
+        $customClasses = $attributes['sizeClasses'] ?? $attributes['sizeClass'] ?? null;
 
-        if (is_string($rawWidth) && str_starts_with($rawWidth, 'max-w-')) {
-            return $rawWidth;
+        if (is_string($customClasses) && $customClasses !== '') {
+            return $customClasses;
         }
 
-        $widthKey = is_string($rawWidth) ? $rawWidth : '2xl';
-        $widthClasses = config('corepine-modal.width_classes', self::DEFAULT_WIDTH_CLASSES);
+        $sizeToken = $attributes['size']
+            ?? $attributes['width']
+            ?? $attributes['maxWidth']
+            ?? $this->defaultModalAttributes()['size']
+            ?? 'default';
 
-        if (! is_array($widthClasses)) {
-            $widthClasses = self::DEFAULT_WIDTH_CLASSES;
+        $sizes = $this->sizes();
+
+        if (is_string($sizeToken) && isset($sizes[$sizeToken])) {
+            return $sizes[$sizeToken];
         }
 
-        $resolved = $widthClasses[$widthKey] ?? null;
-
-        if (is_string($resolved) && $resolved !== '') {
-            return $resolved;
+        if (is_string($sizeToken) && $sizeToken !== '') {
+            return $sizeToken;
         }
 
-        return self::DEFAULT_WIDTH_CLASSES['2xl'];
+        return $sizes['default'] ?? reset($sizes) ?: self::DEFAULT_SIZE_CLASSES;
     }
 }

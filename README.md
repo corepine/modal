@@ -34,7 +34,7 @@ or:
 @corepineModal
 ```
 
-## Tailwind v3 Setup
+## Tailwind v4 Setup
 
 Import package CSS in your app `app.css`:
 
@@ -42,23 +42,7 @@ Import package CSS in your app `app.css`:
 @import "../../vendor/corepine/modal/resources/css/app.css";
 ```
 
-Make sure Tailwind scans package views (or published views):
-
-```js
-export default {
-  content: [
-    './resources/views/**/*.blade.php',
-    './vendor/corepine/modal/resources/views/**/*.blade.php',
-    './storage/framework/views/*.php',
-  ],
-  safelist: [
-    {
-      pattern: /max-w-(sm|md|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl)/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl']
-    }
-  ]
-}
-```
+No `tailwind.config.js` is required for this package setup.
 
 ## Create A Modal
 
@@ -76,10 +60,14 @@ class EditUser extends Modal
 {
     public User $user;
 
+    public static function modalSize(): string
+    {
+        return 'xl'; // token from config('corepine-modal.sizes')
+    }
+
     public static function modalAttributes(): array
     {
         return [
-            'width' => 'xl',
             'closeOnEscape' => true,
             'closeOnClickAway' => true,
             'closeOnEscapeIsForceful' => false,
@@ -99,6 +87,20 @@ class EditUser extends Modal
     {
         return view('livewire.modals.edit-user');
     }
+}
+```
+
+If you prefer, you can set size directly in `modalAttributes()`:
+
+```php
+public static function modalAttributes(): array
+{
+    return [
+        'size' => '3xl',
+        // or raw classes:
+        // 'size' => 'max-w-[960px] sm:max-w-full',
+        'panelClass' => 'p-6',
+    ];
 }
 ```
 
@@ -134,9 +136,22 @@ class EditUser extends Modal
 <x-corepine-open-modal
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
+    size="2xl"
+    size-classes="sm:max-w-full"
+    panel-class="p-8"
 >
     <button type="button">Edit</button>
 </x-corepine-open-modal>
+```
+
+You can also pass raw classes instead of a size token:
+
+```blade
+<x-corepine-open-modal
+    component="modals.edit-user"
+    :arguments="['user' => $user->id]"
+    size="max-w-[900px] sm:max-w-full"
+/>
 ```
 
 ## Closing Modals
@@ -208,7 +223,18 @@ You can customize:
 - host component name
 - incoming/outgoing event names
 - modal defaults
-- width class mapping
+- size tokens
+
+Example:
+
+```php
+'sizes' => [
+    'default' => 'max-w-lg sm:max-w-full',
+    'sheet' => 'max-w-[92vw]',
+    'dialog' => 'max-w-2xl',
+    'editor' => 'max-w-5xl',
+],
+```
 
 ## Config Service
 

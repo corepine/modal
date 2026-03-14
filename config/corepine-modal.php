@@ -28,12 +28,22 @@ return [
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
-            'width' => '2xl',
+            'size' => 'default',
             'panelClass' => '',
         ],
     ],
 
-    'width_classes' => [
+    /*
+    |--------------------------------------------------------------------------
+    | Modal Sizes
+    |--------------------------------------------------------------------------
+    |
+    | Fully custom size tokens. Values are raw CSS max-width values.
+    | Example: 'sheet' => '90vw', 'dialog' => '42rem'
+    |
+    */
+    'sizes' => [
+        'default' => 'max-w-lg sm:max-w-full',
         'sm' => 'max-w-sm',
         'md' => 'max-w-md',
         'lg' => 'max-w-lg',

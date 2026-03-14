@@ -91,9 +91,20 @@ abstract class Modal extends Component
         $this->closeModal();
     }
 
+    public static function modalSize(): string
+    {
+        $defaults = app(ModalConfig::class)->defaultModalAttributes();
+        $size = $defaults['size'] ?? 'default';
+
+        return is_string($size) && $size !== '' ? $size : 'default';
+    }
+
     public static function modalAttributes(): array
     {
-        return app(ModalConfig::class)->defaultModalAttributes();
+        $attributes = app(ModalConfig::class)->defaultModalAttributes();
+        $attributes['size'] = static::modalSize();
+
+        return $attributes;
     }
 
     protected function resetCloseState(): void

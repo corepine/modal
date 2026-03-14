@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "../views/**/*.blade.php";
+@source "../../src/**/*.php";
 
 @layer components {
     .cp-modal-open {
@@ -8,10 +9,15 @@
     }
 
     .cp-modal-panel {
-        @apply rounded-2xl border border-zinc-200 bg-white shadow-2xl;
+        border-radius: 1rem;
+        border: 1px solid rgb(228 228 231);
+        background: rgb(255 255 255);
+        box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.35);
     }
 
     .dark .cp-modal-panel {
-        @apply border-zinc-700 bg-zinc-900 text-zinc-100;
+        border-color: rgb(63 63 70);
+        background: rgb(24 24 27);
+        color: rgb(244 244 245);
     }
 }

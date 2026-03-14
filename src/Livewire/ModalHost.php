@@ -46,6 +46,21 @@ class ModalHost extends Component
             ? (array) $componentClass::modalAttributes()
             : [];
 
+        if (
+            method_exists($componentClass, 'modalSize')
+            && ! array_key_exists('size', $componentOverrides)
+            && ! array_key_exists('width', $componentOverrides)
+            && ! array_key_exists('maxWidth', $componentOverrides)
+            && ! array_key_exists('sizeClass', $componentOverrides)
+            && ! array_key_exists('sizeClasses', $componentOverrides)
+        ) {
+            $size = $componentClass::modalSize();
+
+            if (is_string($size) && $size !== '') {
+                $componentOverrides['size'] = $size;
+            }
+        }
+
         $this->modals[$id] = [
             'id' => $id,
             'name' => $componentName,
