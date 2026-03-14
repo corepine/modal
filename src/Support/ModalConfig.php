@@ -143,15 +143,7 @@ class ModalConfig
      */
     public function modalSizeClasses(array $attributes): string
     {
-        $customClasses = $attributes['sizeClasses'] ?? $attributes['sizeClass'] ?? null;
-
-        if (is_string($customClasses) && $customClasses !== '') {
-            return $customClasses;
-        }
-
         $sizeToken = $attributes['size']
-            ?? $attributes['width']
-            ?? $attributes['maxWidth']
             ?? $this->defaultModalAttributes()['size']
             ?? 'default';
 
@@ -166,5 +158,19 @@ class ModalConfig
         }
 
         return $sizes['default'] ?? reset($sizes) ?: self::DEFAULT_SIZE_CLASSES;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function modalClass(array $attributes): string
+    {
+        $modalClass = $attributes['modalClass'] ?? null;
+
+        if (is_string($modalClass) && $modalClass !== '') {
+            return $modalClass;
+        }
+
+        return '';
     }
 }

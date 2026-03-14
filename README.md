@@ -73,7 +73,7 @@ class EditUser extends Modal
             'closeOnEscapeIsForceful' => false,
             'destroyOnClose' => true,
             'dispatchCloseEvent' => true,
-            'panelClass' => 'p-6',
+            'modalClass' => 'p-6',
         ];
     }
 
@@ -99,7 +99,7 @@ public static function modalAttributes(): array
         'size' => '3xl',
         // or raw classes:
         // 'size' => 'max-w-[960px] sm:max-w-full',
-        'panelClass' => 'p-6',
+        'modalClass' => 'p-6',
     ];
 }
 ```
@@ -137,8 +137,7 @@ public static function modalAttributes(): array
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
     size="2xl"
-    size-classes="sm:max-w-full"
-    panel-class="p-8"
+    modal-class="p-8 bg-white border border-zinc-200 rounded-3xl"
 >
     <button type="button">Edit</button>
 </x-corepine-open-modal>
@@ -153,6 +152,8 @@ You can also pass raw classes instead of a size token:
     size="max-w-[900px] sm:max-w-full"
 />
 ```
+
+`modal-class` is the single styling hook for modal surface styling (background, border, rounded, padding, etc.).
 
 ## Closing Modals
 

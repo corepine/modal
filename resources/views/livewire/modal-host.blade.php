@@ -162,6 +162,7 @@
                 @php($modal = $modals[$id] ?? null)
                 @continue(! $modal)
                 @php($sizeClasses = $modalConfig->modalSizeClasses($modal['modalAttributes']))
+                @php($modalClass = $modalConfig->modalClass($modal['modalAttributes']))
 
                 <div
                     x-show="activeModalId === @js($id)"
@@ -175,7 +176,7 @@
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
                 >
-                    <div class="cp-modal-panel mx-auto w-full {{ $sizeClasses }} {{ $modal['modalAttributes']['panelClass'] ?? '' }}">
+                    <div class="cp-modal-panel mx-auto w-full {{ $sizeClasses }} {{ $modalClass }}">
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>
                 </div>

@@ -4,8 +4,7 @@
     'arguments' => [],
     'modalAttributes' => [],
     'size' => null,
-    'sizeClasses' => null,
-    'panelClass' => null,
+    'modalClass' => null,
 ])
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
@@ -14,12 +13,11 @@
 @if (is_string($size) && $size !== '')
     @php($payloadModalAttributes['size'] = $size)
 @endif
-@if (is_string($sizeClasses) && $sizeClasses !== '')
-    @php($payloadModalAttributes['sizeClasses'] = $sizeClasses)
-@endif
-@if (is_string($panelClass) && $panelClass !== '')
-    @php($existingPanelClass = isset($payloadModalAttributes['panelClass']) && is_string($payloadModalAttributes['panelClass']) ? $payloadModalAttributes['panelClass'] : '')
-    @php($payloadModalAttributes['panelClass'] = trim($existingPanelClass.' '.$panelClass))
+@php($existingModalClass = isset($payloadModalAttributes['modalClass']) && is_string($payloadModalAttributes['modalClass']) ? $payloadModalAttributes['modalClass'] : '')
+@php($incomingModalClass = is_string($modalClass) ? $modalClass : '')
+@php($mergedModalClass = trim(implode(' ', array_filter([$existingModalClass, $incomingModalClass]))))
+@if ($mergedModalClass !== '')
+    @php($payloadModalAttributes['modalClass'] = $mergedModalClass)
 @endif
 
 <div

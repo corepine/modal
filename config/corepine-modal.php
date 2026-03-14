@@ -29,7 +29,7 @@ return [
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
             'size' => 'default',
-            'panelClass' => '',
+            'modalClass' => '',
         ],
     ],
 
