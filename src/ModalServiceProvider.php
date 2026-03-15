@@ -28,6 +28,8 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.modal', 'corepine-modal');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-layout');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-template');
+        Blade::component('corepine-modal::components.open-modal', 'corepine-modal-open');
+        Blade::component('corepine-modal::components.close-modal', 'corepine-modal-close');
         Blade::component('corepine-modal::components.open-modal', 'corepine-open-modal');
         Blade::component('corepine-modal::components.close-modal', 'corepine-close-modal');
 

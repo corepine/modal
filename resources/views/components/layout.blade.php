@@ -5,7 +5,7 @@
 
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
 @php($hasFooter = isset($footer) && trim((string) $footer) !== '')
-@php($layoutClasses = 'cp-modal-layout grid min-h-0 overflow-hidden bg-inherit '.($hasFooter ? 'grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90vh]' : 'grid-rows-[auto_minmax(0,1fr)] max-h-[96vh]'))
+@php($layoutClasses = 'cp-modal-layout grid min-h-0 overflow-hidden bg-inherit '.($hasFooter ? 'grid-rows-[auto_minmax(0,1fr)_auto] max-h-[93vh]' : 'grid-rows-[auto_minmax(0,1fr)] max-h-[96vh]'))
 
 <section {{ $attributes->merge(['class' => $layoutClasses]) }}>
     @if ($resolvedTitle !== null || $showClose)
@@ -19,14 +19,14 @@
             @endif
 
             @if ($showClose)
-                <x-corepine-close-modal
+                <x-corepine-modal-close
                     class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
                     <span class="sr-only">Close</span>
                     <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
                         <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
                     </svg>
-                </x-corepine-close-modal>
+                </x-corepine-modal-close>
             @endif
         </header>
     @endif
@@ -39,9 +39,9 @@
         <footer {{ $footer->attributes->class([
             'cp-modal-footer',
             'flex',
-            'h-16',
+            //'h-10',
             'shrink-0',
-            'items-center',
+            'items-center ',
             'border-t',
             'border-zinc-200/70',
             'px-5',

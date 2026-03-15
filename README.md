@@ -59,7 +59,7 @@ Example:
 
     <x-slot:footer>
         <div class="flex justify-end gap-2">
-            <x-corepine-close-modal class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-close-modal>
+            <x-corepine-modal-close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-modal-close>
             <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
         </div>
     </x-slot:footer>
@@ -176,7 +176,7 @@ public static function modalAttributes(): array
 ### Blade Helper Component
 
 ```blade
-<x-corepine-open-modal
+<x-corepine-modal-open
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
     class="p-8 bg-white border border-zinc-200 rounded-3xl"
@@ -186,13 +186,13 @@ public static function modalAttributes(): array
     drawer="true"
 >
     <button type="button">Edit</button>
-</x-corepine-open-modal>
+</x-corepine-modal-open>
 ```
 
 You can also pass raw classes instead of a size token:
 
 ```blade
-<x-corepine-open-modal
+<x-corepine-modal-open
     component="modals.edit-user"
     :arguments="['user' => $user->id]"
     size="max-w-[900px] sm:max-w-full"
@@ -200,7 +200,7 @@ You can also pass raw classes instead of a size token:
 ```
 
 `class` is the styling hook for modal surface styling (background, border, rounded, padding, etc.).
-When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
+When used on `<x-corepine-modal-open ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
 
 ## Drawer And Position
 
@@ -216,7 +216,7 @@ When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal co
 Examples:
 
 ```blade
-<x-corepine-open-modal
+<x-corepine-modal-open
     component="modals.filters"
     drawer="true"
     position="left"
@@ -226,7 +226,7 @@ Examples:
 ```
 
 ```blade
-<x-corepine-open-modal
+<x-corepine-modal-open
     component="modals.profile"
     drawer="true"
     position="right"
@@ -346,7 +346,7 @@ For drawers:
 Use token from Blade:
 
 ```blade
-<x-corepine-open-modal size="editor" ... />
+<x-corepine-modal-open size="editor" ... />
 ```
 
 Use token from modal class:
@@ -361,7 +361,7 @@ public static function modalSize(): string
 You can also bypass the token map and pass raw classes directly:
 
 ```blade
-<x-corepine-open-modal size="max-w-[900px] sm:max-w-full" ... />
+<x-corepine-modal-open size="max-w-[900px] sm:max-w-full" ... />
 ```
 
 ## Config Service
