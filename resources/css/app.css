@@ -9,13 +9,10 @@
     }
 
     .cp-modal-component {
-        border-radius: 0.75rem;
-        background: rgb(255 255 255);
-        color: rgb(24 24 27);
+
     }
 
     .dark .cp-modal-component {
-        background: rgb(24 24 27);
-        color: rgb(228 228 231);
+       
     }
 }

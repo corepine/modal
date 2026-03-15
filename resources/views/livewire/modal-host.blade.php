@@ -170,6 +170,7 @@
                 @continue(! $modal)
                 @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
                 @php($isDrawer = $modalConfig->isDrawer($modal['modalAttributes']))
+                @php($position = $modalConfig->modalPosition($modal['modalAttributes']))
                 @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
                 @php($transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']))
 
@@ -189,6 +190,9 @@
                         'cp-modal-component',
                         'w-full',
                         'mx-auto' => ! $isDrawer,
+                        'rounded-xl' => ! $isDrawer,
+                        'rounded-r-xl rounded-l-none' => $isDrawer && $position === 'left',
+                        'rounded-l-xl rounded-r-none' => $isDrawer && $position === 'right',
                         'h-full' => $isDrawer,
                         'overflow-y-auto' => $isDrawer,
                         $modalClasses,
