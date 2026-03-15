@@ -167,9 +167,14 @@ When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal co
 
 ## Drawer And Position
 
-- `position` works for standard modals (`center`, `top`, `bottom`, `left`, `right`).
-- `drawer=true` enables drawer mode with slide transitions.
-- drawer mode only accepts `left` or `right`; invalid values fallback to `right`.
+- `position` works for standard modals: `center`, `top`, `bottom`, `left`, `right`.
+- `drawer=true` enables drawer mode with horizontal slide transitions.
+- Drawer mode only accepts `left` or `right`; invalid values fallback to `right`.
+- Drawer panels are `h-full` by default.
+- Drawer width is controlled by `size` (token or raw classes), same as regular modals.
+- Drawer edge behavior is enforced by default:
+  - `position="left"` => left edge is not rounded
+  - `position="right"` => right edge is not rounded
 
 Examples:
 
@@ -183,12 +188,22 @@ Examples:
 />
 ```
 
+```blade
+<x-corepine-open-modal
+    component="modals.profile"
+    drawer="true"
+    position="right"
+    size="sheet"
+/>
+```
+
 ```php
 public static function modalAttributes(): array
 {
     return [
         'drawer' => true,
         'position' => 'right',
+        'size' => 'sheet',
     ];
 }
 ```
@@ -285,6 +300,11 @@ So:
 - `size="dialog"` applies `max-w-2xl`
 - `size="editor"` applies `max-w-5xl`
 - if no size is provided, `default` is used
+
+For drawers:
+- `size` still controls width
+- height is full by default (`h-full`)
+- position controls side (`left` or `right`)
 
 Use token from Blade:
 

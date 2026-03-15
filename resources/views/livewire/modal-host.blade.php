@@ -190,12 +190,14 @@
                         'cp-modal-component',
                         'w-full',
                         'mx-auto' => ! $isDrawer,
-                        'cp-modal-radius-default' => ! $isDrawer,
-                        'cp-modal-radius-drawer-left' => $isDrawer && $position === 'left',
-                        'cp-modal-radius-drawer-right' => $isDrawer && $position === 'right',
+                        'cp-modal-shape-default' => ! $isDrawer,
+                        'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
+                        'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                         'h-full' => $isDrawer,
                         'overflow-y-auto' => $isDrawer,
                         $modalClasses,
+                        'rounded-l-none' => $isDrawer && $position === 'left',
+                        'rounded-r-none' => $isDrawer && $position === 'right',
                     ])>
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>

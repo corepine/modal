@@ -8,18 +8,18 @@
         overflow: hidden;
     }
 
-    .cp-modal-radius-default {
+    .cp-modal-shape-default {
         border-radius: 0.5rem;
     }
 
-    .cp-modal-radius-drawer-left {
+    .cp-modal-shape-drawer-left {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
         border-top-right-radius: 0.5rem;
         border-bottom-right-radius: 0.5rem;
     }
 
-    .cp-modal-radius-drawer-right {
+    .cp-modal-shape-drawer-right {
         border-top-left-radius: 0.5rem;
         border-bottom-left-radius: 0.5rem;
         border-top-right-radius: 0;

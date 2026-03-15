@@ -138,6 +138,17 @@ it('stores non-drawer position for centered modal layout overrides', function ()
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('top');
 });
 
+it('forces drawer edge side to remain square in rendered classes', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'drawer' => true,
+            'position' => 'right',
+            'class' => 'rounded-3xl',
+        ])
+        ->assertSee('rounded-3xl')
+        ->assertSee('rounded-r-none');
+});
+
 it('keeps modalAttributes size when defined explicitly', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.attribute-sized-modal');
