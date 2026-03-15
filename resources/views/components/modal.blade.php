@@ -18,9 +18,9 @@
 @else
     @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
 
-    <section {{ $attributes->merge(['class'=>'cp-modal-layout flex min-h-full overflow-y-auto h-full bg-inherit flex-col']) }}>
+    <section {{ $attributes->merge(['class'=>'cp-modal-layout relative flex min-h-full h-full bg-inherit flex-col']) }}>
         @if ($resolvedTitle !== null || $showClose)
-            <header class="cp-modal-header flex items-center justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
+            <header class="cp-modal-header flex items-center sticky justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
                 @if ($resolvedTitle !== null)
                     <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
                         {{ $resolvedTitle }}
@@ -42,12 +42,17 @@
             </header>
         @endif
 
-        <main class="cp-modal-body flex-1 max-h-[90%] overflow-hidden overflow-y-auto my-auto px-5 py-4">
+        <main
+        @class([
+            'cp-modal-body overflow-y-auto px-5 py-4',
+            'h-full'=>$footer->isEmpty(),
+            'h-[85%]'=>!$footer->isEmpty(),
+        ])>
             {{ $slot }}
         </main>
 
         @isset($footer)
-            <footer  {{ $footer->attributes->class(['cp-modal-footer mt-auto border border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70']) }} >
+            <footer  {{ $footer->attributes->class(['cp-modal-footer mt-auto  border border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70']) }} >
                 {{ $footer }}
             </footer>
         @endisset
