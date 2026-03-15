@@ -38,7 +38,9 @@ or:
 
 ## Modal Shell Component
 
-You can also use `<x-corepine-modal>` as a reusable shell inside your modal views so you do not repeat header, close button, and footer layout.
+Use `<x-corepine-modal-layout>` as the reusable shell inside your modal views so you do not repeat header, close button, and footer layout.
+
+Alias: `<x-corepine-modal-template>`.
 
 Props:
 - `title` (nullable)
@@ -50,7 +52,7 @@ Named slot:
 Example:
 
 ```blade
-<x-corepine-modal title="Manage Users">
+<x-corepine-modal-layout title="Manage Users">
     <div class="space-y-3">
         <!-- main content -->
     </div>
@@ -61,12 +63,12 @@ Example:
             <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
         </div>
     </x-slot:footer>
-</x-corepine-modal>
+</x-corepine-modal-layout>
 ```
 
 Notes:
 - Header and footer are separated from body.
-- Body uses `flex-1` and footer uses `mt-auto`, so footer stays pushed to the bottom even when content is short.
+- Body is the dedicated scroll area (`minmax(0,1fr)`), so footer stays visible and does not get overlapped by long content.
 - Title can be `null`; close button still appears by default.
 
 ## Tailwind v4 Setup

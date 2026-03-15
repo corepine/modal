@@ -2,14 +2,20 @@
 
 use Illuminate\Support\Facades\Blade;
 
+it('renders modal host using corepine-modal component', function (): void {
+    $html = Blade::render('<x-corepine-modal />');
+
+    expect($html)->toContain('cp-modal fixed inset-0');
+});
+
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal title="Edit User">
+<x-corepine-modal-layout title="Edit User">
     <div>Modal body content</div>
     <x-slot:footer>
         <button type="button">Save</button>
     </x-slot:footer>
-</x-corepine-modal>
+</x-corepine-modal-layout>
 BLADE);
 
     expect($html)->toContain('cp-modal-layout');
@@ -18,7 +24,6 @@ BLADE);
     expect($html)->toContain('cp-modal-footer');
     expect($html)->toContain('max-h-[90vh]');
     expect($html)->toContain('h-16');
-    expect($html)->not->toContain('mt-auto');
     expect($html)->toContain('Edit User');
     expect($html)->toContain('Modal body content');
     expect($html)->toContain('Save');
@@ -26,9 +31,9 @@ BLADE);
 
 it('supports null title while keeping close action by default', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal :title="null">
+<x-corepine-modal-layout :title="null">
     <div>Body only</div>
-</x-corepine-modal>
+</x-corepine-modal-layout>
 BLADE);
 
     expect($html)->toContain('Body only');
@@ -40,9 +45,9 @@ BLADE);
 
 it('merges custom wrapper attributes on modal shell', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal title="Custom" id="users-modal" class="ring-1 ring-zinc-300">
+<x-corepine-modal-layout title="Custom" id="users-modal" class="ring-1 ring-zinc-300">
     <div>Body</div>
-</x-corepine-modal>
+</x-corepine-modal-layout>
 BLADE);
 
     expect($html)->toContain('id="users-modal"');
