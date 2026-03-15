@@ -35,7 +35,7 @@ class ModalHost extends Component
     public function openModal(string $component, array $arguments = [], array $modalAttributes = []): void
     {
         $componentClass = $this->resolveComponentClass($component);
-        $componentName = $this->getComponentName($componentClass);
+        $componentName = $this->resolveOpenedComponentName($component, $componentClass);
         $id = (string) Str::ulid();
 
         $arguments = collect($arguments)
@@ -210,6 +210,14 @@ class ModalHost extends Component
             return $component;
         }
 
+        if (app()->bound('livewire.factory')) {
+            try {
+                return app('livewire.factory')->resolveComponentClass($component);
+            } catch (Throwable) {
+                // Try additional fallbacks.
+            }
+        }
+
         if (class_exists(\Livewire\Mechanisms\ComponentRegistry::class)
             && app()->bound(\Livewire\Mechanisms\ComponentRegistry::class)) {
             try {
@@ -232,6 +240,14 @@ class ModalHost extends Component
 
     protected function getComponentName(string $class): string
     {
+        if (app()->bound('livewire.factory')) {
+            try {
+                return app('livewire.factory')->resolveComponentName($class);
+            } catch (Throwable) {
+                // Fall through.
+            }
+        }
+
         if (class_exists(\Livewire\Mechanisms\ComponentRegistry::class)
             && app()->bound(\Livewire\Mechanisms\ComponentRegistry::class)) {
             try {
@@ -250,6 +266,15 @@ class ModalHost extends Component
         }
 
         return $class;
+    }
+
+    protected function resolveOpenedComponentName(string $requestedComponent, string $resolvedClass): string
+    {
+        if (! (class_exists($requestedComponent) && is_subclass_of($requestedComponent, Component::class))) {
+            return $requestedComponent;
+        }
+
+        return $this->getComponentName($resolvedClass);
     }
 
     protected function resolveParameter(array $attributes, string $parameterName, string $parameterClassName): mixed
