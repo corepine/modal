@@ -34,6 +34,41 @@ or:
 @corepineModal
 ```
 
+`<x-corepine-modal />` (without slot content) renders the global modal host.
+
+## Modal Shell Component
+
+You can also use `<x-corepine-modal>` as a reusable shell inside your modal views so you do not repeat header, close button, and footer layout.
+
+Props:
+- `title` (nullable)
+- `showClose` (default: `true`)
+
+Named slot:
+- `footer`
+
+Example:
+
+```blade
+<x-corepine-modal title="Manage Users">
+    <div class="space-y-3">
+        <!-- main content -->
+    </div>
+
+    <x-slot:footer>
+        <div class="flex justify-end gap-2">
+            <x-corepine-close-modal class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-close-modal>
+            <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
+        </div>
+    </x-slot:footer>
+</x-corepine-modal>
+```
+
+Notes:
+- Header and footer are separated from body.
+- Body uses `flex-1` and footer uses `mt-auto`, so footer stays pushed to the bottom even when content is short.
+- Title can be `null`; close button still appears by default.
+
 ## Tailwind v4 Setup
 
 Import package CSS in your app `app.css`:
