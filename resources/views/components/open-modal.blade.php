@@ -5,6 +5,8 @@
     'modalAttributes' => [],
     'size' => null,
     'blur' => null,
+    'drawer' => null,
+    'position' => null,
 ])
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
@@ -26,6 +28,22 @@
 @endif
 @if (! is_null($normalizedBlur))
     @php($payloadModalAttributes['blur'] = $normalizedBlur)
+@endif
+@php($normalizedDrawer = null)
+@if (is_bool($drawer))
+    @php($normalizedDrawer = $drawer)
+@elseif (is_string($drawer))
+    @php($normalizedDrawer = match (strtolower(trim($drawer))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedDrawer))
+    @php($payloadModalAttributes['drawer'] = $normalizedDrawer)
+@endif
+@if (is_string($position) && trim($position) !== '')
+    @php($payloadModalAttributes['position'] = strtolower(trim($position)))
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')

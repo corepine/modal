@@ -29,6 +29,8 @@ return [
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
             'blur' => false,
+            'drawer' => false,
+            'position' => 'center',
             'size' => 'default',
             'class' => '',
         ],

@@ -71,6 +71,8 @@ class EditUser extends Modal
             'closeOnEscape' => true,
             'closeOnClickAway' => true,
             'blur' => true,
+            'drawer' => false,
+            'position' => 'center',
             'closeOnEscapeIsForceful' => false,
             'destroyOnClose' => true,
             'dispatchCloseEvent' => true,
@@ -101,6 +103,8 @@ public static function modalAttributes(): array
         // or raw classes:
         // 'size' => 'max-w-[960px] sm:max-w-full',
         'blur' => true,
+        'drawer' => true,
+        'position' => 'right',
         'class' => 'p-6',
     ];
 }
@@ -141,6 +145,8 @@ public static function modalAttributes(): array
     class="p-8 bg-white border border-zinc-200 rounded-3xl"
     size="2xl"
     blur="true"
+    position="right"
+    drawer="true"
 >
     <button type="button">Edit</button>
 </x-corepine-open-modal>
@@ -158,6 +164,34 @@ You can also pass raw classes instead of a size token:
 
 `class` is the styling hook for modal surface styling (background, border, rounded, padding, etc.).
 When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
+
+## Drawer And Position
+
+- `position` works for standard modals (`center`, `top`, `bottom`, `left`, `right`).
+- `drawer=true` enables drawer mode with slide transitions.
+- drawer mode only accepts `left` or `right`; invalid values fallback to `right`.
+
+Examples:
+
+```blade
+<x-corepine-open-modal
+    component="modals.filters"
+    drawer="true"
+    position="left"
+    size="max-w-[420px]"
+    class="h-full rounded-none border-r border-zinc-200"
+/>
+```
+
+```php
+public static function modalAttributes(): array
+{
+    return [
+        'drawer' => true,
+        'position' => 'right',
+    ];
+}
+```
 
 ## Closing Modals
 
@@ -230,6 +264,7 @@ You can customize:
 - modal defaults
 - size tokens
 - default blur
+- default drawer + position behavior
 
 Example:
 

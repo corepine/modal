@@ -164,25 +164,35 @@
             x-on:click="closeOnClickAway()"
         ></div>
 
-        <div class="cp-modal-viewport relative flex min-h-full items-center justify-center p-4 sm:p-8">
+        <div class="cp-modal-viewport relative min-h-full">
             @foreach ($stack as $id)
                 @php($modal = $modals[$id] ?? null)
                 @continue(! $modal)
                 @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
+                @php($isDrawer = $modalConfig->isDrawer($modal['modalAttributes']))
+                @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
+                @php($transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']))
 
                 <div
                     x-show="activeModalId === @js($id)"
-                    x-transition:enter="duration-200 ease-out"
-                    x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="duration-150 ease-in"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95"
-                    class="cp-modal-panel-wrap relative w-full"
+                    x-transition:enter="{{ $transitionClasses['enter'] }}"
+                    x-transition:enter-start="{{ $transitionClasses['enterStart'] }}"
+                    x-transition:enter-end="{{ $transitionClasses['enterEnd'] }}"
+                    x-transition:leave="{{ $transitionClasses['leave'] }}"
+                    x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
+                    x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
+                    class="{{ $panelWrapClasses }}"
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
                 >
-                    <div @class(['cp-modal-component', 'mx-auto', 'w-full', $modalClasses])>
+                    <div @class([
+                        'cp-modal-component',
+                        'w-full',
+                        'mx-auto' => ! $isDrawer,
+                        'h-full' => $isDrawer,
+                        'overflow-y-auto' => $isDrawer,
+                        $modalClasses,
+                    ])>
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>
                 </div>

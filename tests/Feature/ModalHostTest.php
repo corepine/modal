@@ -98,6 +98,46 @@ it('stores runtime class and blur attributes', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['blur'])->toBeTrue();
 });
 
+it('stores drawer and position attributes', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'drawer' => true,
+            'position' => 'left',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeTrue();
+    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('left');
+});
+
+it('normalizes invalid drawer position to right', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'drawer' => true,
+            'position' => 'top',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('right');
+});
+
+it('stores non-drawer position for centered modal layout overrides', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'position' => 'top',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
+    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('top');
+});
+
 it('keeps modalAttributes size when defined explicitly', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.attribute-sized-modal');
