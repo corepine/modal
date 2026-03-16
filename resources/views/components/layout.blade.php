@@ -4,7 +4,7 @@
 ])
 
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
-@php($hasFooter = $footer->isNotEmpty())
+@php($hasFooter = isset($footer) && $footer->isNotEmpty())
 
 <section {{ $attributes->merge(['class' => 'cp-modal-layout flex flex-col overflow-hidden bg-inherit']) }}>
     @if ($resolvedTitle !== null || $showClose)
