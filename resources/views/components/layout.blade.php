@@ -1,5 +1,6 @@
 @props([
     'title' => null,
+    'description' => null,
     'showClose' => true,
 ])
 
@@ -9,6 +10,9 @@
 <section {{ $attributes->merge(['class' => 'cp-modal-layout dark:bg-zinc-800 dark:text-white max-h-full flex flex-col overflow-hidden bg-inherit']) }}>
     @if ($resolvedTitle !== null || $showClose)
         <header class="cp-modal-header flex items-center sticky top-0 justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
+            
+            <div class="flex flex-col gap-2 ">
+
             @if ($resolvedTitle !== null)
                 <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
                     {{ $resolvedTitle }}
@@ -16,6 +20,12 @@
             @else
                 <div></div>
             @endif
+
+            @if($description)
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $description }}</p>
+             @endif
+            </div>
+
 
             @if ($showClose)
                 <x-corepine-modal-close

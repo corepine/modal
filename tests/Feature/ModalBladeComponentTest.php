@@ -22,10 +22,22 @@ BLADE);
     expect($html)->toContain('cp-modal-header');
     expect($html)->toContain('cp-modal-body');
     expect($html)->toContain('cp-modal-footer');
-    expect($html)->toContain('h-[calc(100vh-7.6rem)]');
+    expect($html)->toContain('h-[calc(100vh_-_7.5rem)]');
     expect($html)->toContain('Edit User');
     expect($html)->toContain('Modal body content');
     expect($html)->toContain('Save');
+});
+
+it('renders modal description when provided', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout title="Edit User" description="Review account details before saving.">
+    <div>Modal body content</div>
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('Edit User');
+    expect($html)->toContain('Review account details before saving.');
+    expect($html)->toContain('text-zinc-500');
 });
 
 it('supports null title while keeping close action by default', function (): void {
@@ -38,7 +50,7 @@ BLADE);
     expect($html)->toContain('Body only');
     expect($html)->toContain('sr-only');
     expect($html)->not->toContain('cp-modal-title');
-    expect($html)->toContain('h-[100%]');
+    expect($html)->toContain('h-full');
     expect($html)->not->toContain('cp-modal-footer');
 });
 
