@@ -4,12 +4,11 @@
 ])
 
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
-@php($hasFooter = isset($footer) && trim((string) $footer) !== '')
-@php($layoutClasses = 'cp-modal-layout grid min-h-0 overflow-hidden bg-inherit '.($hasFooter ? 'grid-rows-[auto_minmax(0,1fr)_auto] max-h-[93vh]' : 'grid-rows-[auto_minmax(0,1fr)] max-h-[96vh]'))
+@php($hasFooter = $footer->isNotEmpty())
 
-<section {{ $attributes->merge(['class' => $layoutClasses]) }}>
+<section {{ $attributes->merge(['class' => 'cp-modal-layout flex flex-col overflow-hidden bg-inherit']) }}>
     @if ($resolvedTitle !== null || $showClose)
-        <header class="cp-modal-header flex items-center justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
+        <header class="cp-modal-header flex items-center sticky top-0 justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
             @if ($resolvedTitle !== null)
                 <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
                     {{ $resolvedTitle }}
@@ -31,23 +30,17 @@
         </header>
     @endif
 
-    <main class="cp-modal-body min-h-0 overflow-y-auto px-5 py-4">
+    <main 
+         @class([
+            'cp-modal-body  grow  overscroll-contain overflow-y-auto px-5 py-4',
+            'h-[100%]'=> !$hasFooter,
+            'h-[calc(100vh-7.6rem)]'=> $hasFooter,
+            ])>
         {{ $slot }}
     </main>
 
     @if ($hasFooter)
-        <footer {{ $footer->attributes->class([
-            'cp-modal-footer',
-            'flex',
-            //'h-10',
-            'shrink-0',
-            'items-center ',
-            'border-t',
-            'border-zinc-200/70',
-            'px-5',
-            'py-2',
-            'dark:border-zinc-700/70',
-        ]) }}>
+        <footer {{ $footer->attributes->class('cp-modal-footer sticky bottom-0 flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70') }}>
             {{ $footer }}
         </footer>
     @endif
