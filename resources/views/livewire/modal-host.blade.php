@@ -182,6 +182,7 @@
                     x-transition:leave="{{ $transitionClasses['leave'] }}"
                     x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                     x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
+                    x-on:click="closeOnClickAway()"
                     class="{{ $panelWrapClasses }}"
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
@@ -197,7 +198,9 @@
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
-                    ])>
+                    ])
+                        x-on:click.stop
+                    >
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>
                 </div>

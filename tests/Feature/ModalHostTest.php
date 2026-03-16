@@ -158,3 +158,10 @@ it('keeps modalAttributes size when defined explicitly', function (): void {
 
     expect($modals[$stack[0]]['modalAttributes']['size'])->toBe('4xl');
 });
+
+it('handles click-away from overlay layer while preventing panel clicks from bubbling', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal')
+        ->assertSee('x-on:click="closeOnClickAway()"', false)
+        ->assertSee('x-on:click.stop', false);
+});
