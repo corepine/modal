@@ -27,6 +27,26 @@ class ModalConfig
         'component_closed' => 'modalComponentClosed',
     ];
 
+    /**
+     * Built-in size presets. Keeping them in src ensures Tailwind source
+     * scanning can discover these utility classes out of the box.
+     *
+     * @var array<string, string>
+     */
+    private const DEFAULT_SIZES = [
+        'default' => 'max-w-lg sm:max-w-full',
+        'sm' => 'max-w-sm',
+        'md' => 'max-w-md',
+        'lg' => 'max-w-lg',
+        'xl' => 'max-w-xl',
+        '2xl' => 'max-w-2xl',
+        '3xl' => 'max-w-3xl',
+        '4xl' => 'max-w-4xl',
+        '5xl' => 'max-w-5xl',
+        '6xl' => 'max-w-6xl',
+        '7xl' => 'max-w-7xl',
+    ];
+
     private const DEFAULT_SIZE_CLASSES = 'max-w-lg sm:max-w-full';
 
     private const DEFAULT_MODAL_POSITION = 'center';
@@ -134,10 +154,10 @@ class ModalConfig
         $configured = config('corepine-modal.sizes', []);
 
         if (! is_array($configured)) {
-            return ['default' => self::DEFAULT_SIZE_CLASSES];
+            return self::DEFAULT_SIZES;
         }
 
-        $normalized = [];
+        $normalized = self::DEFAULT_SIZES;
 
         foreach ($configured as $key => $value) {
             if (! is_string($key) || ! is_string($value) || $value === '') {
@@ -148,7 +168,7 @@ class ModalConfig
         }
 
         if ($normalized === []) {
-            return ['default' => self::DEFAULT_SIZE_CLASSES];
+            return self::DEFAULT_SIZES;
         }
 
         return $normalized;
