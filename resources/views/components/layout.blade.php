@@ -33,14 +33,14 @@
     <main 
          @class([
             'cp-modal-body  grow  overscroll-contain overflow-y-auto px-5 py-4',
-            'h-[100%]'=> !$hasFooter,
-            'h-[calc(100vh-7.6rem)]'=> $hasFooter,
+            'h-full'=> !$hasFooter,
+            'h-[calc(100vh_-_7.5rem)]'=> $hasFooter,
             ])>
         {{ $slot }}
     </main>
 
     @if ($hasFooter)
-        <footer {{ $footer->attributes->class('cp-modal-footer sticky bottom-0 flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70') }}>
+        <footer {{ $footer->attributes->class('cp-modal-footer sticky bottom-0 flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
             {{ $footer }}
         </footer>
     @endif
