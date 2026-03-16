@@ -162,6 +162,25 @@ it('keeps modalAttributes size when defined explicitly', function (): void {
 it('handles click-away from overlay layer while preventing panel clicks from bubbling', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.example-modal')
+        ->assertSee('cp-modal-layer-backdrop', false)
         ->assertSee('x-on:click="closeOnClickAway()"', false)
         ->assertSee('x-on:click.stop', false);
+});
+
+it('stores isolate modal attribute and renders isolate visibility hooks', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Base'])
+        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Overlay'], modalAttributes: [
+            'isolate' => true,
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['isolate'])->toBeFalse();
+    expect($modals[$stack[1]]['modalAttributes']['isolate'])->toBeTrue();
+
+    $test->assertSee('x-show="shouldShowModal(', false)
+        ->assertSee('cp-modal-layer-backdrop', false)
+        ->assertSee('pointer-events-none', false);
 });

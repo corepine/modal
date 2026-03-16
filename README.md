@@ -184,6 +184,7 @@ public static function modalAttributes(): array
     blur="true"
     position="right"
     drawer="true"
+    isolate="true"
 >
     <button type="button">Edit</button>
 </x-corepine-modal-open>
@@ -241,6 +242,29 @@ public static function modalAttributes(): array
         'drawer' => true,
         'position' => 'right',
         'size' => 'sheet',
+    ];
+}
+```
+
+## Isolate Stacking
+
+- `isolate=true` on the active modal keeps previous stacked modal layers visible.
+- Non-active layers remain non-interactive while isolated modal is on top.
+- `isolate=false` (default) keeps classic behavior where only the active modal layer is shown.
+
+From Blade helper:
+
+```blade
+<x-corepine-modal-open component="modals.edit-user" isolate="true" />
+```
+
+From modal class:
+
+```php
+public static function modalAttributes(): array
+{
+    return [
+        'isolate' => true,
     ];
 }
 ```

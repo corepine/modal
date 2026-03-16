@@ -6,6 +6,8 @@
     'size' => null,
     'blur' => null,
     'drawer' => null,
+    'isolate' => null,
+    'isolated' => null,
     'position' => null,
 ])
 
@@ -41,6 +43,20 @@
 @endif
 @if (! is_null($normalizedDrawer))
     @php($payloadModalAttributes['drawer'] = $normalizedDrawer)
+@endif
+@php($rawIsolate = ! is_null($isolate) ? $isolate : $isolated)
+@php($normalizedIsolate = null)
+@if (is_bool($rawIsolate))
+    @php($normalizedIsolate = $rawIsolate)
+@elseif (is_string($rawIsolate))
+    @php($normalizedIsolate = match (strtolower(trim($rawIsolate))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedIsolate))
+    @php($payloadModalAttributes['isolate'] = $normalizedIsolate)
 @endif
 @if (is_string($position) && trim($position) !== '')
     @php($payloadModalAttributes['position'] = strtolower(trim($position)))

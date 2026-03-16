@@ -137,8 +137,12 @@ class ModalConfig
      */
     public function mergedModalAttributes(array $componentAttributes = [], array $runtimeAttributes = []): array
     {
+        $defaults = $this->normalizeLegacyModalAttributeKeys($this->defaultModalAttributes());
+        $componentAttributes = $this->normalizeLegacyModalAttributeKeys($componentAttributes);
+        $runtimeAttributes = $this->normalizeLegacyModalAttributeKeys($runtimeAttributes);
+
         $merged = array_replace(
-            $this->defaultModalAttributes(),
+            $defaults,
             $componentAttributes,
             $runtimeAttributes
         );
@@ -216,6 +220,14 @@ class ModalConfig
     public function isDrawer(array $attributes): bool
     {
         return $this->normalizeBoolean($attributes['drawer'] ?? false);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function isIsolated(array $attributes): bool
+    {
+        return $this->normalizeBoolean($attributes['isolate'] ?? ($attributes['isolated'] ?? false));
     }
 
     /**
@@ -313,7 +325,22 @@ class ModalConfig
     private function normalizeModalAttributes(array $attributes): array
     {
         $attributes['drawer'] = $this->normalizeBoolean($attributes['drawer'] ?? false);
+        $attributes['isolate'] = $this->isIsolated($attributes);
+        unset($attributes['isolated']);
         $attributes['position'] = $this->modalPosition($attributes);
+
+        return $attributes;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function normalizeLegacyModalAttributeKeys(array $attributes): array
+    {
+        if (! array_key_exists('isolate', $attributes) && array_key_exists('isolated', $attributes)) {
+            $attributes['isolate'] = $attributes['isolated'];
+        }
 
         return $attributes;
     }

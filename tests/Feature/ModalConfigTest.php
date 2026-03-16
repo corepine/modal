@@ -36,3 +36,13 @@ it('keeps built-in size tokens while allowing config overrides', function (): vo
     expect($sizes['7xl'])->toBe('max-w-7xl');
     expect($config->modalSizeClasses(['size' => '3xl']))->toBe('max-w-3xl');
 });
+
+it('normalizes isolate attribute to boolean and supports legacy isolated alias', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->mergedModalAttributes([], ['isolate' => 'true'])['isolate'])->toBeTrue();
+    expect($config->mergedModalAttributes([], ['isolate' => '1'])['isolate'])->toBeTrue();
+    expect($config->mergedModalAttributes([], ['isolate' => false])['isolate'])->toBeFalse();
+
+    expect($config->mergedModalAttributes([], ['isolated' => true])['isolate'])->toBeTrue();
+});

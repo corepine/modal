@@ -30,6 +30,7 @@ return [
             'closeOnClickAway' => true,
             'blur' => false,
             'drawer' => false,
+            'isolate' => false,
             'position' => 'center',
             'size' => 'default',
             'class' => '',

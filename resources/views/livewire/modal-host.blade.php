@@ -58,10 +58,34 @@
                     return this.activeModal()?.modalAttributes ?? {};
                 },
 
-                blurEnabled() {
+                activeIsolate() {
                     const attrs = this.activeAttributes();
 
-                    return attrs.blur === true;
+                    return attrs.isolate === true || attrs.isolated === true;
+                },
+
+                shouldShowModal(id) {
+                    if (!this.show) {
+                        return false;
+                    }
+
+                    if (this.activeModalId === id) {
+                        return true;
+                    }
+
+                    if (!this.activeIsolate()) {
+                        return false;
+                    }
+
+                    const stack = this.$wire.get('stack') ?? [];
+                    const activeIndex = stack.indexOf(this.activeModalId);
+                    const idIndex = stack.indexOf(id);
+
+                    return activeIndex !== -1 && idIndex !== -1 && idIndex < activeIndex;
+                },
+
+                isTopModal(id) {
+                    return this.activeModalId === id;
                 },
 
                 canClose(eventName) {
@@ -156,14 +180,6 @@
         role="dialog"
         aria-modal="true"
     >
-        <div
-            class="cp-modal-backdrop absolute inset-0 bg-zinc-950/50"
-            x-bind:class="{ 'backdrop-blur-sm': blurEnabled() }"
-            x-show="show"
-            x-transition.opacity.duration.200ms
-            x-on:click="closeOnClickAway()"
-        ></div>
-
         <div class="cp-modal-viewport relative min-h-full">
             @foreach ($stack as $id)
                 @php($modal = $modals[$id] ?? null)
@@ -171,11 +187,25 @@
                 @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
                 @php($isDrawer = $modalConfig->isDrawer($modal['modalAttributes']))
                 @php($position = $modalConfig->modalPosition($modal['modalAttributes']))
+                @php($hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false))
                 @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
                 @php($transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']))
 
                 <div
-                    x-show="activeModalId === @js($id)"
+                    x-show="shouldShowModal(@js($id))"
+                    x-transition.opacity.duration.200ms
+                    x-on:click="if (isTopModal(@js($id))) closeOnClickAway()"
+                    x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
+                    @class([
+                        'cp-modal-layer-backdrop absolute inset-0 bg-zinc-950/50',
+                        'backdrop-blur-sm' => $hasBlur,
+                    ])
+                    style="z-index: {{ 20 + ($loop->index * 2) }};"
+                    wire:key="corepine-modal-backdrop-{{ $id }}"
+                ></div>
+
+                <div
+                    x-show="shouldShowModal(@js($id))"
                     x-transition:enter="{{ $transitionClasses['enter'] }}"
                     x-transition:enter-start="{{ $transitionClasses['enterStart'] }}"
                     x-transition:enter-end="{{ $transitionClasses['enterEnd'] }}"
@@ -183,6 +213,8 @@
                     x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                     x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
                     x-on:click="closeOnClickAway()"
+                    x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
+                    style="z-index: {{ 21 + ($loop->index * 2) }};"
                     class="{{ $panelWrapClasses }}"
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
