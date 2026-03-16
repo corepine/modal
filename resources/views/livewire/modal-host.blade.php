@@ -7,22 +7,27 @@
                 show: false,
                 activeModalId: null,
                 listeners: [],
+                localClosingIds: [],
+                closeTimeout: null,
+                requestCloseHandler: null,
 
                 init() {
                     this.syncFromServer();
+                    this.requestCloseHandler = (payload = {}) => this.requestClose(payload);
+                    window.corepineModalRequestClose = this.requestCloseHandler;
 
                     this.listeners.push(
                         Livewire.on(events.changed, ({ id }) => {
                             this.activeModalId = id ?? null;
-                            this.setShow(Boolean(this.activeModalId));
-                            this.focusActiveModal();
+                            this.syncFromServer();
                         })
                     );
 
                     this.listeners.push(
                         Livewire.on(events.allClosed, () => {
+                            this.resetLocalClosing();
                             this.activeModalId = null;
-                            this.setShow(false);
+                            this.syncFromServer();
                         })
                     );
                 },
@@ -30,18 +35,38 @@
                 destroy() {
                     this.listeners.forEach((listener) => listener());
                     this.listeners = [];
+                    this.resetLocalClosing();
+
+                    if (window.corepineModalRequestClose === this.requestCloseHandler) {
+                        delete window.corepineModalRequestClose;
+                    }
+
                     this.setShow(false);
                 },
 
                 syncFromServer() {
+                    const stack = this.stack();
                     this.activeModalId = this.$wire.get('activeModalId');
-                    this.setShow(Boolean(this.activeModalId));
+
+                    if (this.localClosingIds.length > 0) {
+                        const stillPresent = this.localClosingIds.some((id) => stack.includes(id));
+
+                        if (!stillPresent) {
+                            this.resetLocalClosing();
+                        }
+                    }
+
+                    this.setShow(Boolean(this.activeModalId) || this.localClosingIds.length > 0);
                     this.focusActiveModal();
                 },
 
                 setShow(value) {
                     this.show = value;
                     document.body.classList.toggle('cp-modal-open', value);
+                },
+
+                stack() {
+                    return this.$wire.get('stack') ?? [];
                 },
 
                 activeModal() {
@@ -52,6 +77,10 @@
                     }
 
                     return this.$wire.get('modals')[activeId] ?? null;
+                },
+
+                isLocallyClosing(id) {
+                    return this.localClosingIds.includes(id);
                 },
 
                 activeAttributes() {
@@ -65,6 +94,10 @@
                 },
 
                 shouldShowModal(id) {
+                    if (this.isLocallyClosing(id)) {
+                        return false;
+                    }
+
                     if (!this.show) {
                         return false;
                     }
@@ -88,7 +121,106 @@
                     return this.activeModalId === id;
                 },
 
+                normalizedBoolean(value, fallback = false) {
+                    if (typeof value === 'boolean') {
+                        return value;
+                    }
+
+                    if (typeof value === 'string') {
+                        const normalized = value.trim().toLowerCase();
+
+                        if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+                        if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+                    }
+
+                    return fallback;
+                },
+
+                planClosingIds(payload = {}) {
+                    const stack = this.stack();
+
+                    if (stack.length === 0) {
+                        return [];
+                    }
+
+                    if (payload.force === true) {
+                        return [...stack];
+                    }
+
+                    if (typeof payload.id === 'string' && payload.id !== '') {
+                        const position = stack.indexOf(payload.id);
+
+                        if (position !== -1) {
+                            return stack.slice(position);
+                        }
+                    }
+
+                    const parsedCount = Number.parseInt(payload.count ?? 1, 10);
+                    const layers = Number.isNaN(parsedCount) ? 1 : Math.max(1, parsedCount);
+
+                    return stack.slice(-layers);
+                },
+
+                resetLocalClosing() {
+                    if (this.closeTimeout) {
+                        clearTimeout(this.closeTimeout);
+                        this.closeTimeout = null;
+                    }
+
+                    this.localClosingIds = [];
+                },
+
+                requestClose(payload = {}) {
+                    if (this.localClosingIds.length > 0) {
+                        return;
+                    }
+
+                    const force = this.normalizedBoolean(payload.force ?? false, false);
+                    const destroy = this.normalizedBoolean(payload.destroy ?? true, true);
+                    const id = typeof payload.id === 'string' && payload.id !== '' ? payload.id : null;
+                    const closingIds = this.planClosingIds({
+                        id,
+                        count: payload.count ?? 1,
+                        force,
+                    });
+
+                    if (closingIds.length === 0) {
+                        if (force) {
+                            Livewire.dispatch(events.closeAll, { destroy });
+                        } else {
+                            Livewire.dispatch(events.close, {
+                                id,
+                                count: Math.max(1, Number.parseInt(payload.count ?? 1, 10) || 1),
+                                destroy,
+                            });
+                        }
+
+                        return;
+                    }
+
+                    this.localClosingIds = closingIds;
+                    this.setShow(true);
+
+                    this.closeTimeout = setTimeout(() => {
+                        this.closeTimeout = null;
+
+                        if (force) {
+                            Livewire.dispatch(events.closeAll, { destroy });
+                        } else {
+                            Livewire.dispatch(events.close, {
+                                id,
+                                count: Math.max(1, closingIds.length),
+                                destroy,
+                            });
+                        }
+                    }, 260);
+                },
+
                 canClose(eventName) {
+                    if (this.localClosingIds.length > 0) {
+                        return false;
+                    }
+
                     const modal = this.activeModal();
 
                     if (!modal) {
@@ -117,14 +249,16 @@
                     }
 
                     if (attrs.closeOnEscapeIsForceful === true) {
-                        Livewire.dispatch(events.closeAll, {
+                        this.requestClose({
+                            force: true,
                             destroy: attrs.destroyOnClose ?? true,
                         });
 
                         return;
                     }
 
-                    Livewire.dispatch(events.close, {
+                    this.requestClose({
+                        id: this.activeModalId,
                         count: 1,
                         destroy: attrs.destroyOnClose ?? true,
                     });
@@ -141,7 +275,8 @@
                         return;
                     }
 
-                    Livewire.dispatch(events.close, {
+                    this.requestClose({
+                        id: this.activeModalId,
                         count: 1,
                         destroy: attrs.destroyOnClose ?? true,
                     });
