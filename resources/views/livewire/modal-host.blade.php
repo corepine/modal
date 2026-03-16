@@ -221,7 +221,7 @@
                 >
                     <div @class([
                         'cp-modal-component',
-                        'w-full overflow-hidden',
+                        'w-full overflow-hidden bg-white dark:bg-zinc-800',
                         'mx-auto' => ! $isDrawer,
                         'cp-modal-shape-default' => ! $isDrawer,
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
