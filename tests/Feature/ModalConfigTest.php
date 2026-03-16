@@ -1,5 +1,6 @@
 <?php
 
+use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Support\ModalConfig;
 
 it('normalizes drawer positions to left or right', function (): void {
@@ -45,4 +46,27 @@ it('normalizes isolate attribute to boolean and supports legacy isolated alias',
     expect($config->mergedModalAttributes([], ['isolate' => false])['isolate'])->toBeFalse();
 
     expect($config->mergedModalAttributes([], ['isolated' => true])['isolate'])->toBeTrue();
+});
+
+it('normalizes modal type using enum, explicit type, and legacy flags', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->modalType(['type' => ModalType::Drawer]))->toBe('drawer');
+    expect($config->modalType(['type' => 'sheet']))->toBe('sheet');
+    expect($config->modalType(['type' => 'modal']))->toBe('modal');
+    expect($config->modalType(['drawer' => true]))->toBe('drawer');
+    expect($config->modalType(['sheet' => true]))->toBe('sheet');
+
+    $normalizedSheet = $config->mergedModalAttributes([], ['type' => 'sheet']);
+    $normalizedDrawer = $config->mergedModalAttributes([], ['drawer' => true]);
+
+    expect($normalizedSheet['type'])->toBe('sheet');
+    expect($normalizedSheet['sheet'])->toBeTrue();
+    expect($normalizedSheet['drawer'])->toBeFalse();
+    expect($normalizedSheet['position'])->toBe('bottom');
+
+    expect($normalizedDrawer['type'])->toBe('drawer');
+    expect($normalizedDrawer['drawer'])->toBeTrue();
+    expect($normalizedDrawer['sheet'])->toBeFalse();
+    expect($normalizedDrawer['position'])->toBe('right');
 });

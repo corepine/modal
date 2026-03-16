@@ -1,4 +1,4 @@
-/* @import "tailwindcss"; */
+@import "tailwindcss";
 
 @source "../views/**/*.blade.php";
 @source "../../src/**/*.php";
@@ -23,6 +23,13 @@
         border-top-left-radius: 0.5rem;
         border-bottom-left-radius: 0.5rem;
         border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .cp-modal-shape-sheet {
+        border-top-left-radius: 0.875rem;
+        border-top-right-radius: 0.875rem;
+        border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
 }

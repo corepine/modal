@@ -5,7 +5,9 @@
     'modalAttributes' => [],
     'size' => null,
     'blur' => null,
+    'type' => null,
     'drawer' => null,
+    'sheet' => null,
     'isolate' => null,
     'isolated' => null,
     'position' => null,
@@ -31,6 +33,15 @@
 @if (! is_null($normalizedBlur))
     @php($payloadModalAttributes['blur'] = $normalizedBlur)
 @endif
+@php($normalizedType = null)
+@if ($type instanceof \Corepine\Modal\Enums\ModalType)
+    @php($normalizedType = $type->value)
+@elseif (is_string($type))
+    @php($normalizedType = match (strtolower(trim($type))) {
+        'modal', 'drawer', 'sheet' => strtolower(trim($type)),
+        default => null,
+    })
+@endif
 @php($normalizedDrawer = null)
 @if (is_bool($drawer))
     @php($normalizedDrawer = $drawer)
@@ -43,6 +54,25 @@
 @endif
 @if (! is_null($normalizedDrawer))
     @php($payloadModalAttributes['drawer'] = $normalizedDrawer)
+    @if (is_null($normalizedType) && $normalizedDrawer === true)
+        @php($normalizedType = 'drawer')
+    @endif
+@endif
+@php($normalizedSheet = null)
+@if (is_bool($sheet))
+    @php($normalizedSheet = $sheet)
+@elseif (is_string($sheet))
+    @php($normalizedSheet = match (strtolower(trim($sheet))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedSheet))
+    @php($payloadModalAttributes['sheet'] = $normalizedSheet)
+    @if (is_null($normalizedType) && $normalizedSheet === true)
+        @php($normalizedType = 'sheet')
+    @endif
 @endif
 @php($rawIsolate = ! is_null($isolate) ? $isolate : $isolated)
 @php($normalizedIsolate = null)
@@ -57,6 +87,9 @@
 @endif
 @if (! is_null($normalizedIsolate))
     @php($payloadModalAttributes['isolate'] = $normalizedIsolate)
+@endif
+@if (! is_null($normalizedType))
+    @php($payloadModalAttributes['type'] = $normalizedType)
 @endif
 @if (is_string($position) && trim($position) !== '')
     @php($payloadModalAttributes['position'] = strtolower(trim($position)))

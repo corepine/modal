@@ -51,6 +51,16 @@ abstract class Modal extends Component
         );
     }
 
+    public function openBottomSheet(string $component, array $arguments = [], array $modalAttributes = []): void
+    {
+        $this->dispatch(
+            $this->modalConfig()->listenEvent('open_sheet'),
+            component: $component,
+            arguments: $arguments,
+            modalAttributes: array_replace(['type' => 'sheet'], $modalAttributes)
+        );
+    }
+
     public function closeTopModal(int $count = 1, bool $destroy = true): void
     {
         $this->dispatch(

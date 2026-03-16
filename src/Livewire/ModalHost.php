@@ -24,12 +24,22 @@ class ModalHost extends Component
     {
         return $this->modalConfig()->listenersMap([
             'open' => 'openModal',
+            'open_sheet' => 'openBottomSheet',
             'close' => 'closeModal',
             'close_top' => 'closeTopModal',
             'close_all' => 'closeAllModals',
             'destroy' => 'destroyModal',
             'reset' => 'resetState',
         ]);
+    }
+
+    public function openBottomSheet(string $component, array $arguments = [], array $modalAttributes = []): void
+    {
+        $this->openModal(
+            $component,
+            $arguments,
+            array_replace(['type' => 'sheet'], $modalAttributes)
+        );
     }
 
     public function openModal(string $component, array $arguments = [], array $modalAttributes = []): void

@@ -186,6 +186,7 @@
                 @continue(! $modal)
                 @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
                 @php($isDrawer = $modalConfig->isDrawer($modal['modalAttributes']))
+                @php($isSheet = $modalConfig->isSheet($modal['modalAttributes']))
                 @php($position = $modalConfig->modalPosition($modal['modalAttributes']))
                 @php($hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false))
                 @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
@@ -223,16 +224,23 @@
                         'cp-modal-component',
                         'w-full overflow-hidden bg-white dark:bg-zinc-800',
                         'mx-auto' => ! $isDrawer,
-                        'cp-modal-shape-default' => ! $isDrawer,
+                        'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                         'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
+                        'cp-modal-shape-sheet' => $isSheet,
                         'max-h-screen  overflow-y-auto' => $isDrawer,
+                        'max-h-[88dvh] overflow-y-auto' => $isSheet,
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
                     ])
                         x-on:click.stop
                     >
+                        @if ($isSheet)
+                            <div class="cp-modal-sheet-handle px-4 pt-3 sm:pt-4">
+                                <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
+                            </div>
+                        @endif
                         @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                     </div>
                 </div>

@@ -2,6 +2,8 @@
 
 namespace Corepine\Modal\Support;
 
+use Corepine\Modal\Enums\ModalType;
+
 class ModalConfig
 {
     /**
@@ -9,6 +11,7 @@ class ModalConfig
      */
     private const DEFAULT_LISTEN_EVENTS = [
         'open' => ['openModal', 'corepine-modal.open'],
+        'open_sheet' => ['openBottomSheet', 'corepine-modal.open-sheet'],
         'close' => ['closeModal', 'corepine-modal.close'],
         'close_top' => ['closeTopModal', 'corepine-modal.close-top'],
         'close_all' => ['closeAllModals', 'corepine-modal.close-all'],
@@ -53,6 +56,10 @@ class ModalConfig
 
     private const DEFAULT_DRAWER_POSITION = 'right';
 
+    private const DEFAULT_SHEET_POSITION = 'bottom';
+
+    private const DEFAULT_MODAL_TYPE = ModalType::Modal->value;
+
     /**
      * @var array<int, string>
      */
@@ -62,6 +69,11 @@ class ModalConfig
      * @var array<int, string>
      */
     private const DRAWER_POSITIONS = ['left', 'right'];
+
+    /**
+     * @var array<int, string>
+     */
+    private const SHEET_POSITIONS = ['bottom'];
 
     public function hostComponent(): string
     {
@@ -219,7 +231,46 @@ class ModalConfig
      */
     public function isDrawer(array $attributes): bool
     {
-        return $this->normalizeBoolean($attributes['drawer'] ?? false);
+        return $this->modalType($attributes) === ModalType::Drawer->value;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function isSheet(array $attributes): bool
+    {
+        return $this->modalType($attributes) === ModalType::Sheet->value;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function modalType(array $attributes): string
+    {
+        $type = $attributes['type'] ?? null;
+
+        if ($type instanceof ModalType) {
+            return $type->value;
+        }
+
+        if (is_string($type)) {
+            $normalized = strtolower(trim($type));
+            $resolved = ModalType::tryFrom($normalized);
+
+            if ($resolved !== null) {
+                return $resolved->value;
+            }
+        }
+
+        if ($this->normalizeBoolean($attributes['drawer'] ?? false)) {
+            return ModalType::Drawer->value;
+        }
+
+        if ($this->normalizeBoolean($attributes['sheet'] ?? false)) {
+            return ModalType::Sheet->value;
+        }
+
+        return self::DEFAULT_MODAL_TYPE;
     }
 
     /**
@@ -235,19 +286,29 @@ class ModalConfig
      */
     public function modalPosition(array $attributes): string
     {
-        $isDrawer = $this->isDrawer($attributes);
+        $type = $this->modalType($attributes);
         $position = $attributes['position'] ?? null;
 
         if (! is_string($position) || $position === '') {
-            return $isDrawer ? self::DEFAULT_DRAWER_POSITION : self::DEFAULT_MODAL_POSITION;
+            return match ($type) {
+                ModalType::Drawer->value => self::DEFAULT_DRAWER_POSITION,
+                ModalType::Sheet->value => self::DEFAULT_SHEET_POSITION,
+                default => self::DEFAULT_MODAL_POSITION,
+            };
         }
 
         $normalized = strtolower(trim($position));
 
-        if ($isDrawer) {
+        if ($type === ModalType::Drawer->value) {
             return in_array($normalized, self::DRAWER_POSITIONS, true)
                 ? $normalized
                 : self::DEFAULT_DRAWER_POSITION;
+        }
+
+        if ($type === ModalType::Sheet->value) {
+            return in_array($normalized, self::SHEET_POSITIONS, true)
+                ? $normalized
+                : self::DEFAULT_SHEET_POSITION;
         }
 
         return in_array($normalized, self::MODAL_POSITIONS, true)
@@ -266,6 +327,10 @@ class ModalConfig
             return $position === 'left'
                 ? 'cp-modal-panel-wrap absolute inset-0 flex w-full items-stretch justify-start p-0'
                 : 'cp-modal-panel-wrap absolute inset-0 flex w-full items-stretch justify-end p-0';
+        }
+
+        if ($this->isSheet($attributes)) {
+            return 'cp-modal-panel-wrap absolute inset-x-0 bottom-0 flex w-full items-end justify-center p-0';
         }
 
         return match ($position) {
@@ -297,6 +362,17 @@ class ModalConfig
             ];
         }
 
+        if ($this->isSheet($attributes)) {
+            return [
+                'enter' => 'duration-250 ease-out',
+                'enterStart' => 'opacity-0 translate-y-full',
+                'enterEnd' => 'opacity-100 translate-y-0',
+                'leave' => 'duration-200 ease-in',
+                'leaveStart' => 'opacity-100 translate-y-0',
+                'leaveEnd' => 'opacity-0 translate-y-full',
+            ];
+        }
+
         return [
             'enter' => 'duration-200 ease-out',
             'enterStart' => 'opacity-0 translate-y-6 sm:scale-95',
@@ -324,7 +400,9 @@ class ModalConfig
      */
     private function normalizeModalAttributes(array $attributes): array
     {
-        $attributes['drawer'] = $this->normalizeBoolean($attributes['drawer'] ?? false);
+        $attributes['type'] = $this->modalType($attributes);
+        $attributes['drawer'] = $attributes['type'] === ModalType::Drawer->value;
+        $attributes['sheet'] = $attributes['type'] === ModalType::Sheet->value;
         $attributes['isolate'] = $this->isIsolated($attributes);
         unset($attributes['isolated']);
         $attributes['position'] = $this->modalPosition($attributes);
@@ -340,6 +418,14 @@ class ModalConfig
     {
         if (! array_key_exists('isolate', $attributes) && array_key_exists('isolated', $attributes)) {
             $attributes['isolate'] = $attributes['isolated'];
+        }
+
+        if (! array_key_exists('type', $attributes)) {
+            if ($this->normalizeBoolean($attributes['drawer'] ?? false)) {
+                $attributes['type'] = ModalType::Drawer->value;
+            } elseif ($this->normalizeBoolean($attributes['sheet'] ?? false)) {
+                $attributes['type'] = ModalType::Sheet->value;
+            }
         }
 
         return $attributes;

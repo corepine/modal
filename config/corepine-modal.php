@@ -6,6 +6,7 @@ return [
     'events' => [
         'listen' => [
             'open' => ['openModal', 'corepine-modal.open'],
+            'open_sheet' => ['openBottomSheet', 'corepine-modal.open-sheet'],
             'close' => ['closeModal', 'corepine-modal.close'],
             'close_top' => ['closeTopModal', 'corepine-modal.close-top'],
             'close_all' => ['closeAllModals', 'corepine-modal.close-all'],
@@ -29,7 +30,9 @@ return [
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
             'blur' => false,
+            'type' => 'modal',
             'drawer' => false,
+            'sheet' => false,
             'isolate' => false,
             'position' => 'center',
             'size' => 'default',

@@ -11,6 +11,11 @@ class ControlModal extends Modal
         $this->openModal('test.example-modal', ['title' => 'Child']);
     }
 
+    public function openSheetChild(): void
+    {
+        $this->openBottomSheet('test.example-modal', ['title' => 'Sheet Child']);
+    }
+
     public function closeCurrentAndPrevious(): void
     {
         $this->skipPreviousModal(1)->closeModal();

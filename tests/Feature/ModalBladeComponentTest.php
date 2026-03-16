@@ -108,9 +108,25 @@ BLADE);
     expect($flat)->toContain('\u0022size\u0022:\u00222xl\u0022');
     expect($flat)->toContain('\u0022blur\u0022:true');
     expect($flat)->toContain('\u0022drawer\u0022:true');
+    expect($flat)->toContain('\u0022type\u0022:\u0022drawer\u0022');
     expect($flat)->toContain('\u0022isolate\u0022:true');
     expect($flat)->toContain('\u0022position\u0022:\u0022left\u0022');
     expect($flat)->not->toContain('class="p-8 rounded-2xl"');
+});
+
+it('supports explicit type prop on open helper', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-open
+    component="modals.edit-user"
+    type="sheet"
+>
+    <button type="button">Edit</button>
+</x-corepine-modal-open>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('\u0022type\u0022:\u0022sheet\u0022');
 });
 
 it('supports legacy isolated prop but emits isolate attribute', function (): void {

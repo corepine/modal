@@ -112,6 +112,35 @@ it('stores drawer and position attributes', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('left');
 });
 
+it('stores explicit sheet type and renders sheet classes', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'type' => 'sheet',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
+    expect($modals[$stack[0]]['modalAttributes']['sheet'])->toBeTrue();
+    expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
+    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('bottom');
+
+    $test->assertSee('cp-modal-shape-sheet')
+        ->assertSee('cp-modal-sheet-handle');
+});
+
+it('opens a bottom sheet through the openBottomSheet event alias', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openBottomSheet', component: 'test.example-modal');
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($stack)->toHaveCount(1);
+    expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
+});
+
 it('normalizes invalid drawer position to right', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
