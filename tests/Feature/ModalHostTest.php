@@ -3,11 +3,13 @@
 use Corepine\Modal\Livewire\ModalHost;
 use Corepine\Modal\Tests\Fixtures\Livewire\AttributeSizedModal;
 use Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal;
+use Corepine\Modal\Tests\Fixtures\Livewire\ManualLayoutModal;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
     Livewire::component('test.example-modal', ExampleModal::class);
     Livewire::component('test.attribute-sized-modal', AttributeSizedModal::class);
+    Livewire::component('test.manual-layout-modal', ManualLayoutModal::class);
 });
 
 it('opens and stacks modals', function (): void {
@@ -279,4 +281,16 @@ it('supports disabling automatic layout with plain attribute', function (): void
             'title' => 'Should not render chrome',
         ])
         ->assertDontSee('cp-modal-layout');
+});
+
+it('can keep manual layout footer visible while stacking when plain mode is enabled', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.manual-layout-modal', modalAttributes: [
+            'plain' => true,
+        ])
+        ->assertSee('Manual Footer')
+        ->dispatch('openModal', component: 'test.manual-layout-modal', modalAttributes: [
+            'plain' => true,
+        ])
+        ->assertSee('Manual Footer');
 });
