@@ -252,3 +252,31 @@ it('stores isolate modal attribute and renders isolate visibility hooks', functi
         ->assertSee('cp-modal-layer-backdrop', false)
         ->assertSee('pointer-events-none', false);
 });
+
+it('renders automatic layout chrome and declarative footer actions', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'title' => 'Manage Users',
+            'description' => 'Search and view users in your system.',
+            'footerActions' => [
+                ['type' => 'close', 'label' => 'Cancel'],
+                ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
+            ],
+        ])
+        ->assertSee('cp-modal-layout')
+        ->assertSee('Manage Users')
+        ->assertSee('Search and view users in your system.')
+        ->assertSee('Cancel')
+        ->assertSee('Save')
+        ->assertSee('callModalMethod(', false)
+        ->assertSee('saveUsers', false);
+});
+
+it('supports disabling automatic layout with plain attribute', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'plain' => true,
+            'title' => 'Should not render chrome',
+        ])
+        ->assertDontSee('cp-modal-layout');
+});

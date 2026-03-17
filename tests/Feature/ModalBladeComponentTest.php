@@ -203,6 +203,35 @@ BLADE);
     expect($flat)->toContain('\u0022type\u0022:\u0022sheet\u0022');
 });
 
+it('supports layout chrome props on open helper', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-open
+    component="modals.edit-user"
+    layout="true"
+    plain="false"
+    title="Manage Users"
+    description="Search and view users in your system."
+    show-close="true"
+    :footer-actions="[
+        ['type' => 'close', 'label' => 'Cancel'],
+        ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
+    ]"
+>
+    <button type="button">Edit</button>
+</x-corepine-modal-open>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('\u0022layout\u0022:true');
+    expect($flat)->toContain('\u0022plain\u0022:false');
+    expect($flat)->toContain('\u0022title\u0022:\u0022Manage Users\u0022');
+    expect($flat)->toContain('\u0022description\u0022:\u0022Search and view users in your system.\u0022');
+    expect($flat)->toContain('\u0022showClose\u0022:true');
+    expect($flat)->toContain('\u0022footerActions\u0022');
+    expect($flat)->toContain('saveUsers');
+});
+
 it('supports legacy isolated prop but emits isolate attribute', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open

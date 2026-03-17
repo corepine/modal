@@ -174,7 +174,11 @@ class EditUser extends Modal
     public static function modalAttributes(): array
     {
         return [
+            'layout' => true,
             'type' => ModalType::Modal,
+            'title' => 'Edit User',
+            'description' => 'Update user details.',
+            'showClose' => true,
             'position' => 'center',
             'closeOnEscape' => true,
             'closeOnClickAway' => true,
@@ -187,6 +191,38 @@ class EditUser extends Modal
     }
 }
 ```
+
+## Automatic Layout (Native Shell)
+
+Livewire modals now support built-in shell rendering from `modalAttributes`:
+- `layout` (`true` by default): use built-in shell.
+- `plain` (`false` by default): force raw modal view rendering (no shell).
+- `title`, `description`, `showClose`: header chrome options.
+- `footerActions`: declarative footer actions.
+
+If you need fully custom slot/footer markup, set `plain => true` and render `<x-corepine.modal.layout>` manually inside your component view.
+
+Example:
+
+```php
+public static function modalAttributes(): array
+{
+    return [
+        'layout' => true,
+        'title' => 'Manage Users',
+        'description' => 'Search and view users in your system.',
+        'showClose' => true,
+        'footerActions' => [
+            ['type' => 'close', 'label' => 'Cancel', 'class' => 'rounded-md border px-3 py-2 text-sm'],
+            ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
+        ],
+    ];
+}
+```
+
+`footerActions` supports:
+- `type=close`: uses modal close behavior (`count`, `destroy`, `force` are optional).
+- `type=method`: calls the active modal Livewire method (`method`, optional `params`).
 
 ## Layout Shell (`x-corepine.modal.layout`)
 
@@ -304,6 +340,12 @@ When your content includes a list/table that should scroll inside the modal body
 | `position` | `string \| null` | `null` | Position normalized by type rules. |
 | `isolate` | `bool \| string \| null` | `null` | Keep previous modal layers visible. |
 | `isolated` | `bool \| string \| null` | `null` | Legacy alias for `isolate`. |
+| `layout` | `bool \| string \| null` | `null` | Enable built-in shell rendering. |
+| `plain` | `bool \| string \| null` | `null` | Disable built-in shell rendering. |
+| `title` | `string \| null` | `null` | Shell header title when layout is enabled. |
+| `description` | `string \| null` | `null` | Shell header description when layout is enabled. |
+| `showClose` | `bool \| string \| null` | `null` | Toggle shell close button. |
+| `footerActions` | `array` | `[]` | Declarative shell footer actions. |
 | `class` | `string` | `''` | Forwarded into modal panel classes, not wrapper class. |
 
 Wrapper behavior:
@@ -494,6 +536,12 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `sheet` | bool | `false` | all | Legacy alias for `type=sheet`. |
 | `isolate` | bool | `false` | all | Keeps previous layers visible behind active modal. |
 | `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
+| `layout` | bool | `true` | Livewire host | Enables built-in shell (`x-corepine.modal.layout`) wrapping. |
+| `plain` | bool | `false` | Livewire host | Disables built-in shell and renders raw modal view. |
+| `title` | string/null | `null` | layout | Shell header title. |
+| `description` | string/null | `null` | layout | Shell header description. |
+| `showClose` | bool | `true` | layout | Shell close button visibility. |
+| `footerActions` | array | `[]` | layout | Declarative footer actions (`close` / `method`). |
 | `position` | string | type-based | all | Normalized per type rules. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
 | `height` | string/number | `null` | sheet-focused | Sheet height value (`vh`, `dvh`, `%`, `px`, numeric ratios). |

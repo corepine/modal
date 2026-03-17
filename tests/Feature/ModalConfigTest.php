@@ -70,3 +70,39 @@ it('normalizes modal type using enum, explicit type, and legacy flags', function
     expect($normalizedDrawer['sheet'])->toBeFalse();
     expect($normalizedDrawer['position'])->toBe('right');
 });
+
+it('supports auto layout attributes and plain override', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->usesLayout(['layout' => true]))->toBeTrue();
+    expect($config->usesLayout(['layout' => false]))->toBeFalse();
+    expect($config->usesLayout(['plain' => true]))->toBeFalse();
+    expect($config->layoutTitle(['title' => 'Users']))->toBe('Users');
+    expect($config->layoutDescription(['description' => 'Search and view users']))->toBe('Search and view users');
+    expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();
+});
+
+it('normalizes declarative footer actions for auto layout', function (): void {
+    $config = app(ModalConfig::class);
+
+    $actions = $config->layoutFooterActions([
+        'footerActions' => [
+            ['type' => 'close', 'label' => 'Cancel', 'count' => 2, 'destroy' => false],
+            ['type' => 'method', 'method' => 'saveUsers', 'params' => [5], 'label' => 'Save'],
+            'refreshList',
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(3);
+    expect($actions[0]['type'])->toBe('close');
+    expect($actions[0]['label'])->toBe('Cancel');
+    expect($actions[0]['count'])->toBe(2);
+    expect($actions[0]['destroy'])->toBeFalse();
+
+    expect($actions[1]['type'])->toBe('method');
+    expect($actions[1]['method'])->toBe('saveUsers');
+    expect($actions[1]['params'])->toBe([5]);
+
+    expect($actions[2]['type'])->toBe('method');
+    expect($actions[2]['method'])->toBe('refreshList');
+});

@@ -386,6 +386,149 @@ class ModalConfig
     /**
      * @param  array<string, mixed>  $attributes
      */
+    public function usesLayout(array $attributes): bool
+    {
+        if ($this->normalizeBoolean($attributes['plain'] ?? false, false)) {
+            return false;
+        }
+
+        $defaults = $this->defaultModalAttributes();
+        $layout = $attributes['layout'] ?? ($defaults['layout'] ?? true);
+
+        return $this->normalizeBoolean($layout, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function layoutTitle(array $attributes): ?string
+    {
+        $title = $attributes['title'] ?? null;
+
+        if (! is_string($title) || trim($title) === '') {
+            return null;
+        }
+
+        return $title;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function layoutDescription(array $attributes): ?string
+    {
+        $description = $attributes['description'] ?? null;
+
+        if (! is_string($description) || trim($description) === '') {
+            return null;
+        }
+
+        return $description;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function layoutShowClose(array $attributes): bool
+    {
+        $defaults = $this->defaultModalAttributes();
+        $showClose = $attributes['showClose'] ?? ($defaults['showClose'] ?? true);
+
+        return $this->normalizeBoolean($showClose, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<int, array<string, mixed>>
+     */
+    public function layoutFooterActions(array $attributes): array
+    {
+        $actions = $attributes['footerActions'] ?? [];
+
+        if (! is_array($actions)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($actions as $action) {
+            if (is_string($action) && trim($action) !== '') {
+                $method = trim($action);
+                $normalized[] = [
+                    'type' => 'method',
+                    'label' => ucwords(str_replace(['-', '_'], ' ', $method)),
+                    'method' => $method,
+                    'params' => [],
+                    'class' => '',
+                    'buttonType' => 'button',
+                ];
+
+                continue;
+            }
+
+            if (! is_array($action)) {
+                continue;
+            }
+
+            $label = is_string($action['label'] ?? null) && trim((string) $action['label']) !== ''
+                ? trim((string) $action['label'])
+                : null;
+            $class = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
+            $type = is_string($action['type'] ?? null) ? strtolower(trim((string) $action['type'])) : null;
+
+            if (is_null($type) && $this->normalizeBoolean($action['close'] ?? false, false)) {
+                $type = 'close';
+            }
+
+            if ($type === 'close') {
+                $normalized[] = [
+                    'type' => 'close',
+                    'label' => $label ?? 'Close',
+                    'class' => $class,
+                    'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
+                    'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
+                    'force' => $this->normalizeBoolean($action['force'] ?? false, false),
+                ];
+
+                continue;
+            }
+
+            $method = is_string($action['method'] ?? null) ? trim((string) $action['method']) : '';
+
+            if ($method === '') {
+                continue;
+            }
+
+            $params = $action['params'] ?? [];
+
+            if (! is_array($params)) {
+                $params = [$params];
+            }
+
+            $buttonType = is_string($action['buttonType'] ?? null)
+                ? strtolower(trim((string) $action['buttonType']))
+                : 'button';
+
+            if (! in_array($buttonType, ['button', 'submit', 'reset'], true)) {
+                $buttonType = 'button';
+            }
+
+            $normalized[] = [
+                'type' => 'method',
+                'label' => $label ?? ucwords(str_replace(['-', '_'], ' ', $method)),
+                'method' => $method,
+                'params' => $params,
+                'class' => $class,
+                'buttonType' => $buttonType,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function mergedModalClasses(array $attributes): string
     {
         $sizeClasses = $this->modalSizeClasses($attributes);
@@ -404,7 +547,10 @@ class ModalConfig
         $attributes['drawer'] = $attributes['type'] === ModalType::Drawer->value;
         $attributes['sheet'] = $attributes['type'] === ModalType::Sheet->value;
         $attributes['isolate'] = $this->isIsolated($attributes);
+        $attributes['layout'] = $this->usesLayout($attributes);
+        $attributes['showClose'] = $this->layoutShowClose($attributes);
         unset($attributes['isolated']);
+        unset($attributes['plain']);
         $attributes['position'] = $this->modalPosition($attributes);
 
         return $attributes;
@@ -420,6 +566,10 @@ class ModalConfig
             $attributes['isolate'] = $attributes['isolated'];
         }
 
+        if (! array_key_exists('layout', $attributes) && array_key_exists('plain', $attributes)) {
+            $attributes['layout'] = ! $this->normalizeBoolean($attributes['plain'] ?? false, false);
+        }
+
         if (! array_key_exists('type', $attributes)) {
             if ($this->normalizeBoolean($attributes['drawer'] ?? false)) {
                 $attributes['type'] = ModalType::Drawer->value;
@@ -431,7 +581,7 @@ class ModalConfig
         return $attributes;
     }
 
-    private function normalizeBoolean(mixed $value): bool
+    private function normalizeBoolean(mixed $value, bool $fallback = false): bool
     {
         if (is_bool($value)) {
             return $value;
@@ -440,10 +590,21 @@ class ModalConfig
         if (is_string($value)) {
             return match (strtolower(trim($value))) {
                 '1', 'true', 'yes', 'on' => true,
-                default => false,
+                '0', 'false', 'no', 'off' => false,
+                default => $fallback,
             };
         }
 
-        return false;
+        if (is_int($value) || is_float($value)) {
+            if ((float) $value === 1.0) {
+                return true;
+            }
+
+            if ((float) $value === 0.0) {
+                return false;
+            }
+        }
+
+        return $fallback;
     }
 }

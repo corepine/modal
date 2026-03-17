@@ -12,6 +12,12 @@
     'isolated' => null,
     'position' => null,
     'height' => null,
+    'layout' => null,
+    'plain' => null,
+    'title' => null,
+    'description' => null,
+    'showClose' => null,
+    'footerActions' => null,
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
@@ -99,6 +105,54 @@
     @php($payloadModalAttributes['height'] = $height)
 @elseif (is_string($height) && trim($height) !== '')
     @php($payloadModalAttributes['height'] = trim($height))
+@endif
+@php($normalizedLayout = null)
+@if (is_bool($layout))
+    @php($normalizedLayout = $layout)
+@elseif (is_string($layout))
+    @php($normalizedLayout = match (strtolower(trim($layout))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedLayout))
+    @php($payloadModalAttributes['layout'] = $normalizedLayout)
+@endif
+@php($normalizedPlain = null)
+@if (is_bool($plain))
+    @php($normalizedPlain = $plain)
+@elseif (is_string($plain))
+    @php($normalizedPlain = match (strtolower(trim($plain))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedPlain))
+    @php($payloadModalAttributes['plain'] = $normalizedPlain)
+@endif
+@if (is_string($title) && trim($title) !== '')
+    @php($payloadModalAttributes['title'] = trim($title))
+@endif
+@if (is_string($description) && trim($description) !== '')
+    @php($payloadModalAttributes['description'] = trim($description))
+@endif
+@php($normalizedShowClose = null)
+@if (is_bool($showClose))
+    @php($normalizedShowClose = $showClose)
+@elseif (is_string($showClose))
+    @php($normalizedShowClose = match (strtolower(trim($showClose))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedShowClose))
+    @php($payloadModalAttributes['showClose'] = $normalizedShowClose)
+@endif
+@if (is_array($footerActions) && $footerActions !== [])
+    @php($payloadModalAttributes['footerActions'] = $footerActions)
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')

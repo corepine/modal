@@ -716,6 +716,29 @@
                     });
                 },
 
+                callModalMethod(id, method, params = []) {
+                    if (typeof method !== 'string' || method.trim() === '') {
+                        return;
+                    }
+
+                    const panel = this.$refs[`panel-${id}`];
+                    const livewireRoot = panel?.querySelector('.cp-modal-livewire [wire\\:id]');
+                    const componentId = livewireRoot?.getAttribute('wire:id');
+
+                    if (!componentId || typeof Livewire?.find !== 'function') {
+                        return;
+                    }
+
+                    const component = Livewire.find(componentId);
+
+                    if (!component || typeof component.call !== 'function') {
+                        return;
+                    }
+
+                    const payload = Array.isArray(params) ? params : [params];
+                    component.call(method, ...payload);
+                },
+
                 focusActiveModal() {
                     if (!this.activeModalId) {
                         return;
@@ -769,6 +792,11 @@
                 @php($hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false))
                 @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
                 @php($transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']))
+                @php($usesLayout = $modalConfig->usesLayout($modal['modalAttributes']))
+                @php($layoutTitle = $modalConfig->layoutTitle($modal['modalAttributes']))
+                @php($layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']))
+                @php($layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']))
+                @php($layoutFooterActions = $modalConfig->layoutFooterActions($modal['modalAttributes']))
 
                 <div
                     x-show="shouldShowModal(@js($id))"
@@ -832,7 +860,42 @@
                             </div>
                         @endif
                         <div class="cp-modal-livewire min-h-0 flex-1">
-                            @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
+                            @if ($usesLayout)
+                                <x-corepine.modal.layout :title="$layoutTitle" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
+                                    @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
+
+                                    @if ($layoutFooterActions !== [])
+                                        <x-slot:footer>
+                                            <div class="flex w-full items-center justify-end gap-2">
+                                                @foreach ($layoutFooterActions as $action)
+                                                    @php($actionClass = is_string($action['class'] ?? null) && trim((string) $action['class']) !== '' ? trim((string) $action['class']) : 'rounded-md border px-3 py-2 text-sm')
+
+                                                    @if (($action['type'] ?? 'method') === 'close')
+                                                        <x-corepine.modal.actions.close
+                                                            :count="$action['count'] ?? 1"
+                                                            :destroy="$action['destroy'] ?? true"
+                                                            :force="$action['force'] ?? false"
+                                                            :class="$actionClass"
+                                                        >
+                                                            {{ $action['label'] ?? 'Close' }}
+                                                        </x-corepine.modal.actions.close>
+                                                    @else
+                                                        <button
+                                                            type="{{ $action['buttonType'] ?? 'button' }}"
+                                                            class="{{ $actionClass }}"
+                                                            x-on:click.stop="callModalMethod(@js($id), @js($action['method'] ?? ''), @js($action['params'] ?? []))"
+                                                        >
+                                                            {{ $action['label'] ?? 'Action' }}
+                                                        </button>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </x-slot:footer>
+                                    @endif
+                                </x-corepine.modal.layout>
+                            @else
+                                @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -38,6 +38,12 @@ return [
             'size' => 'default',
             'height' => null,
             'class' => '',
+            'layout' => true,
+            'plain' => false,
+            'title' => null,
+            'description' => null,
+            'showClose' => true,
+            'footerActions' => [],
         ],
     ],
 
