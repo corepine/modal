@@ -137,9 +137,32 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ])
         ->assertSee('x-on:pointermove.window="moveSheetDrag($event)"', false)
         ->assertSee('x-on:pointerup.window="endSheetDrag($event)"', false)
-        ->assertSee('x-bind:style="sheetPanelStyle(', false)
+        ->assertSee('x-bind:style="panelStyle(', false)
         ->assertSee('startSheetResize(', false)
         ->assertSee('startSheetDrag(', false);
+});
+
+it('stores shared height attribute and preserves sheetHeight alias', function (): void {
+    $heightTest = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'height' => '65vh',
+        ]);
+
+    $heightStack = $heightTest->get('stack');
+    $heightModals = $heightTest->get('modals');
+
+    expect($heightModals[$heightStack[0]]['modalAttributes']['height'])->toBe('65vh');
+
+    $sheetHeightAliasTest = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'type' => 'sheet',
+            'sheetHeight' => '74vh',
+        ]);
+
+    $sheetStack = $sheetHeightAliasTest->get('stack');
+    $sheetModals = $sheetHeightAliasTest->get('modals');
+
+    expect($sheetModals[$sheetStack[0]]['modalAttributes']['sheetHeight'])->toBe('74vh');
 });
 
 it('opens a bottom sheet through the openBottomSheet event alias', function (): void {

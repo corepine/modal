@@ -21,7 +21,9 @@
                 sheetResizeStartHeight: 0,
                 sheetResizePointerId: null,
                 defaultSheetMinHeight: 260,
-                defaultSheetHeightRatio: 0.72,
+                defaultModalHeightRatio: 0.5,
+                defaultDrawerHeightRatio: 1,
+                defaultSheetHeightRatio: 0.7,
                 defaultSheetTopGap: 16,
 
                 init() {
@@ -121,6 +123,14 @@
 
                 normalizeHeightValue(value, fallback = null) {
                     if (typeof value === 'number' && Number.isFinite(value)) {
+                        if (value > 0 && value <= 1) {
+                            return this.viewportHeight() * value;
+                        }
+
+                        if (value > 1 && value <= 100) {
+                            return this.viewportHeight() * (value / 100);
+                        }
+
                         return value;
                     }
 
@@ -164,7 +174,55 @@
                         return this.viewportHeight() * numeric;
                     }
 
+                    if (numeric > 1 && numeric <= 100) {
+                        return this.viewportHeight() * (numeric / 100);
+                    }
+
                     return numeric;
+                },
+
+                modalType(id) {
+                    const attrs = this.modalAttributesById(id);
+
+                    if (attrs.type === 'drawer' || attrs.drawer === true) {
+                        return 'drawer';
+                    }
+
+                    if (attrs.type === 'sheet' || attrs.sheet === true) {
+                        return 'sheet';
+                    }
+
+                    return 'modal';
+                },
+
+                defaultHeightByType(type) {
+                    const viewport = this.viewportHeight();
+
+                    if (type === 'drawer') {
+                        return viewport * this.defaultDrawerHeightRatio;
+                    }
+
+                    if (type === 'sheet') {
+                        return viewport * this.defaultSheetHeightRatio;
+                    }
+
+                    return viewport * this.defaultModalHeightRatio;
+                },
+
+                resolvePanelHeight(id) {
+                    const attrs = this.modalAttributesById(id);
+                    const type = this.modalType(id);
+                    const fallback = this.defaultHeightByType(type);
+                    const configured = this.normalizeHeightValue(
+                        attrs.height ?? (type === 'sheet' ? attrs.sheetHeight : null),
+                        fallback
+                    );
+                    const max = type === 'drawer'
+                        ? this.viewportHeight()
+                        : this.viewportHeight() - this.defaultSheetTopGap;
+                    const min = type === 'drawer' ? 160 : 120;
+
+                    return Math.max(min, Math.min(max, Math.round(configured ?? fallback)));
                 },
 
                 sheetMinHeight(id) {
@@ -193,8 +251,8 @@
 
                 resolveInitialSheetHeight(id) {
                     const attrs = this.modalAttributesById(id);
-                    const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
-                    const preferred = this.normalizeHeightValue(attrs.sheetHeight ?? attrs.height, fallback);
+                    const fallback = this.defaultHeightByType('sheet');
+                    const preferred = this.normalizeHeightValue(attrs.height ?? attrs.sheetHeight, fallback);
 
                     return this.clampSheetHeight(preferred ?? fallback, id);
                 },
@@ -232,9 +290,7 @@
                 },
 
                 isSheetModal(id) {
-                    const attrs = this.modalAttributesById(id);
-
-                    return attrs.type === 'sheet' || attrs.sheet === true;
+                    return this.modalType(id) === 'sheet';
                 },
 
                 isSheetDraggable(id) {
@@ -459,6 +515,16 @@
                     const height = this.sheetHeights[id] ?? this.resolveInitialSheetHeight(id);
 
                     return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
+                },
+
+                panelStyle(id) {
+                    if (this.isSheetModal(id)) {
+                        return this.sheetPanelStyle(id);
+                    }
+
+                    const height = this.resolvePanelHeight(id);
+
+                    return `height: ${height}px; max-height: 100dvh;`;
                 },
 
                 activeIsolate() {
@@ -742,19 +808,18 @@
                     <div @class([
                         'cp-modal-component',
                         'w-full overflow-hidden bg-white dark:bg-zinc-800',
+                        'overflow-y-auto',
                         'mx-auto' => ! $isDrawer,
                         'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                         'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                         'cp-modal-shape-sheet' => $isSheet,
-                        'max-h-screen  overflow-y-auto' => $isDrawer,
-                        'max-h-[88dvh] overflow-y-auto' => $isSheet,
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
                     ])
                         x-ref="panel-{{ $id }}"
-                        x-bind:style="sheetPanelStyle(@js($id))"
+                        x-bind:style="panelStyle(@js($id))"
                         x-on:pointerdown.capture="startSheetDrag(@js($id), $event)"
                         x-on:touchstart.capture="startSheetDrag(@js($id), $event)"
                         x-on:mousedown.capture="startSheetDrag(@js($id), $event)"

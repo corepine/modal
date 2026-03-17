@@ -173,7 +173,7 @@ Open helper props:
 - `component`, `componentClass`
 - `arguments`
 - `modalAttributes` (raw modal attributes array)
-- `size`, `blur`, `type`, `drawer`, `sheet`, `isolate`, `isolated`, `position`
+- `size`, `height`, `blur`, `type`, `drawer`, `sheet`, `isolate`, `isolated`, `position`
 - `class` (forwarded to modal surface class, not trigger wrapper class)
 
 ## Close Modals
@@ -281,6 +281,13 @@ For `type=sheet`:
 - Drag-close threshold defaults to `30%` of current sheet height.
 - Sheet closes through normal close events, so stack behavior remains consistent.
 
+Height defaults by type:
+- `modal`: `50vh`
+- `drawer`: `100vh`
+- `sheet`: `70vh`
+
+Use `height` for all three types.
+
 Recommended sheet config:
 
 ```php
@@ -289,7 +296,7 @@ public static function modalAttributes(): array
     return [
         'type' => 'sheet',
         'draggable' => true,
-        'sheetHeight' => '72vh',
+        'height' => '70vh',
         'sheetMinHeight' => '40vh',
         'sheetMaxHeight' => '95vh',
         'dragCloseThreshold' => 0.3,
@@ -298,8 +305,9 @@ public static function modalAttributes(): array
 ```
 
 Height value formats supported:
-- integer/float as pixels (`520`)
-- ratio `0..1` (`0.7` = 70vh-ish behavior against viewport)
+- integer/float `0..1` as viewport ratio (`0.7` = 70% viewport height)
+- integer/float `1..100` as viewport percent (`70` = 70% viewport height)
+- integer/float `>100` as pixels (`520`)
 - strings with `px`, `vh`, `dvh`, `%`
 - `'full'`
 
@@ -322,12 +330,12 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
 | `position` | string | type-based | all | Normalized per type rules. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
+| `height` | string/number | type-based | all | Shared height attribute for modal/drawer/sheet (`50vh`, `100vh`, `70vh`). |
 | `class` | string | `''` | all | Extra classes merged on modal surface (`cp-modal-component`). |
 | `draggable` | bool | `true` for sheet | sheet | Enables sheet drag/resize behavior. |
 | `dragCloseThreshold` | float | `0.3` | sheet | Close when drag-down reaches threshold ratio. |
 | `sheetDragThreshold` | float | alias | sheet | Alias of `dragCloseThreshold`. |
-| `sheetHeight` | string/number | `72vh` runtime default | sheet | Initial sheet height. |
-| `height` | string/number | alias | sheet | Alias for `sheetHeight`. |
+| `sheetHeight` | string/number | alias | sheet | Legacy alias for `height` on sheets. |
 | `sheetMinHeight` | string/number | `260px` runtime default | sheet | Minimum sheet height. |
 | `minHeight` | string/number | alias | sheet | Alias for `sheetMinHeight`. |
 | `sheetMaxHeight` | string/number | `calc(100dvh - 16px)` runtime default | sheet | Maximum sheet height. |

@@ -85,6 +85,7 @@ it('renders open helper with new alias and forwards class to modal attributes', 
     :arguments="['user' => 5]"
     class="p-8 rounded-2xl"
     size="2xl"
+    height="70vh"
     blur="true"
     drawer="true"
     isolate="true"
@@ -106,6 +107,7 @@ BLADE);
     expect($flat)->toContain('modalAttributes: JSON.parse');
     expect($flat)->toContain('p-8 rounded-2xl');
     expect($flat)->toContain('\u0022size\u0022:\u00222xl\u0022');
+    expect($flat)->toContain('\u0022height\u0022:\u002270vh\u0022');
     expect($flat)->toContain('\u0022blur\u0022:true');
     expect($flat)->toContain('\u0022drawer\u0022:true');
     expect($flat)->toContain('\u0022type\u0022:\u0022drawer\u0022');

@@ -7,7 +7,7 @@
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
 @php($hasFooter = isset($footer) && $footer->isNotEmpty())
 
-<section {{ $attributes->merge(['class' => 'cp-modal-layout dark:bg-zinc-800 dark:text-white max-h-full flex flex-col overflow-hidden bg-inherit']) }}>
+<section {{ $attributes->merge(['class' => 'cp-modal-layout overscroll-contain dark:bg-zinc-800 dark:text-white max-h-full flex flex-col overflow-hidden bg-inherit']) }}>
     @if ($resolvedTitle !== null || $showClose)
         <header class="cp-modal-header flex items-center sticky top-0 justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
             

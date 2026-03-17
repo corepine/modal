@@ -11,6 +11,7 @@
     'isolate' => null,
     'isolated' => null,
     'position' => null,
+    'height' => null,
 ])
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
@@ -93,6 +94,11 @@
 @endif
 @if (is_string($position) && trim($position) !== '')
     @php($payloadModalAttributes['position'] = strtolower(trim($position)))
+@endif
+@if (is_int($height) || is_float($height))
+    @php($payloadModalAttributes['height'] = $height)
+@elseif (is_string($height) && trim($height) !== '')
+    @php($payloadModalAttributes['height'] = trim($height))
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')

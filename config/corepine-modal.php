@@ -36,6 +36,7 @@ return [
             'isolate' => false,
             'position' => 'center',
             'size' => 'default',
+            'height' => null,
             'class' => '',
         ],
     ],
