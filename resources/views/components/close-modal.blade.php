@@ -4,7 +4,7 @@
     'force' => false,
 ])
 
-@php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
+@php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
 @php($resolvedCount = is_numeric($count) ? max(1, (int) $count) : 1)
 @php($resolvedDestroy = is_bool($destroy)
     ? $destroy
@@ -35,11 +35,11 @@
             force: @js($resolvedForce),
         });
     } else if (@js($resolvedForce)) {
-        Livewire.dispatch(@js($modalConfig->listenEvent('close_all')), {
+        Livewire.dispatch(@js($modalEvents->closeAllModals()), {
             destroy: @js($resolvedDestroy),
         });
     } else {
-        Livewire.dispatch(@js($modalConfig->listenEvent('close')), {
+        Livewire.dispatch(@js($modalEvents->closeModal()), {
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),
         });

@@ -176,6 +176,34 @@ Open helper props:
 - `size`, `height`, `blur`, `type`, `drawer`, `sheet`, `isolate`, `isolated`, `position`
 - `class` (forwarded to modal surface class, not trigger wrapper class)
 
+## Modal Service + Facade
+
+The package exposes a config-aware service and facade so event names are never hardcoded.
+The facade alias `Modal` is auto-registered via Laravel package discovery.
+
+PHP usage:
+
+```php
+use Corepine\Modal\Facades\Modal;
+
+$openEvent = Modal::event()->openModal();
+$openSheetEvent = Modal::event()->openBottomSheet();
+$closeEvent = Modal::event()->closeModal();
+```
+
+Blade + JS usage:
+
+```blade
+<button
+    onclick="Livewire.dispatch(@js(\Corepine\Modal\Facades\Modal::event()->openBottomSheet()), {
+        component: 'users.view',
+        arguments: { user: {{ $listedUser->id }} }
+    })"
+>
+    View user
+</button>
+```
+
 ## Close Modals
 
 From modal class:

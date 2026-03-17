@@ -14,7 +14,7 @@
     'height' => null,
 ])
 
-@php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
+@php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
 @php($targetComponent = $componentClass ?: $component)
 @php($triggerAttributes = $attributes->except('class'))
 @php($payloadModalAttributes = is_array($modalAttributes) ? $modalAttributes : [])
@@ -110,7 +110,7 @@
 <div
     x-data
     {{ $triggerAttributes }}
-    x-on:click="Livewire.dispatch(@js($modalConfig->listenEvent('open')), {
+    x-on:click="Livewire.dispatch(@js($modalEvents->openModal()), {
         component: @js($targetComponent),
         arguments: @js($arguments),
         modalAttributes: @js($payloadModalAttributes),

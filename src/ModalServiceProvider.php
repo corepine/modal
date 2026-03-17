@@ -15,6 +15,11 @@ class ModalServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/corepine-modal.php', 'corepine-modal');
 
         $this->app->singleton(ModalConfig::class, static fn (): ModalConfig => new ModalConfig);
+        $this->app->singleton(ModalService::class, static fn ($app): ModalService => new ModalService(
+            $app->make(ModalConfig::class)
+        ));
+        $this->app->alias(ModalService::class, 'corepine-modal.service');
+        $this->app->alias(ModalService::class, \Corepine\Modal\Facades\Modal::class);
     }
 
     public function boot(): void

@@ -65,7 +65,10 @@
         "laravel": {
             "providers": [
                 "Corepine\\Modal\\ModalServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Modal": "Corepine\\Modal\\Facades\\Modal"
+            }
         }
     },
     "minimum-stability": "stable",
