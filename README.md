@@ -59,13 +59,14 @@ Preferred dotted aliases:
 - `<x-corepine.modal.assets />`: renders the global Livewire modal host.
 - `<x-corepine.modal.layout />`: reusable shell (header/body/footer) for modal content.
 - `<x-corepine.modal.template />`: alias of `x-corepine.modal.layout`.
+- `<x-corepine.modal.footer />`: inline footer marker for `x-corepine.modal.layout`.
 - `<x-corepine.modal.actions.open />`: trigger helper (dispatches open event).
 - `<x-corepine.modal.actions.close />`: close helper (dispatches close event).
 - `<x-corepine.modal.open />`: alias of `x-corepine.modal.actions.open`.
 - `<x-corepine.modal.close />`: alias of `x-corepine.modal.actions.close`.
 
 Legacy aliases still supported:
-- `<x-corepine-modal />`, `<x-corepine-modal-layout />`, `<x-corepine-modal-template />`
+- `<x-corepine-modal />`, `<x-corepine-modal-layout />`, `<x-corepine-modal-template />`, `<x-corepine-modal-footer />`
 - `<x-corepine-modal-actions-open />`, `<x-corepine-modal-actions-close />`
 - `<x-corepine-modal-open />`, `<x-corepine-modal-close />`
 - `<x-corepine-open-modal />`, `<x-corepine-close-modal />`
@@ -224,6 +225,34 @@ public static function modalAttributes(): array
 - `type=close`: uses modal close behavior (`count`, `destroy`, `force` are optional).
 - `type=method`: calls the active modal Livewire method (`method`, optional `params`).
 
+Fluent API (`Corepine\Modal\Actions\Action`) is also supported:
+
+```php
+use Corepine\Modal\Actions\Action;
+
+public static function modalAttributes(): array
+{
+    return [
+        'title' => 'Manage Users',
+        'footerActions' => [
+            Action::make('cancel')
+                ->label('Cancel')
+                ->class('rounded-md border px-3 py-2 text-sm')
+                ->close(),
+
+            Action::make('saveUsers')
+                ->label('Save')
+                ->class('rounded-md bg-zinc-900 px-3 py-2 text-sm text-white')
+                ->action('saveUsers', [5]),
+        ],
+    ];
+}
+```
+
+Notes:
+- `action()` and `method()` map to Livewire component methods.
+- Closure callbacks (for example `fn () => ...`) are not supported in `footerActions` because modal attributes must be serializable.
+
 ## Layout Shell (`x-corepine.modal.layout`)
 
 Use this inside your modal view so you do not repeat title/close/footer structure.
@@ -240,6 +269,12 @@ Props:
 Named slot:
 - `footer` (optional)
 
+Inline alternative:
+- Use `<x-corepine.modal.footer>...</x-corepine.modal.footer>` anywhere inside layout body content.
+- The layout extracts it server-side and renders it in the real footer region (no sticky/teleport hack).
+- You can pass normal attributes (for example `id="users-footer-actions"` or custom classes) and they are preserved on the rendered footer wrapper.
+- If both are provided, named `x-slot:footer` takes precedence.
+
 Example:
 
 ```blade
@@ -254,6 +289,23 @@ Example:
             <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
         </div>
     </x-slot:footer>
+</x-corepine.modal.layout>
+```
+
+Inline footer marker example:
+
+```blade
+<x-corepine.modal.layout title="Manage Users">
+    <div class="space-y-3">
+        <!-- body content -->
+    </div>
+
+    <x-corepine.modal.footer>
+        <div class="flex justify-end gap-2">
+            <x-corepine.modal.actions.close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine.modal.actions.close>
+            <button type="button" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
+        </div>
+    </x-corepine.modal.footer>
 </x-corepine.modal.layout>
 ```
 

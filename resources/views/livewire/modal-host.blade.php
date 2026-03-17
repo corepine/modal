@@ -819,7 +819,7 @@
                     x-transition:leave="{{ $transitionClasses['leave'] }}"
                     x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                     x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
-                    x-on:click="closeOnClickAway()"
+                    x-on:click="if ($event.target === $event.currentTarget) closeOnClickAway()"
                     x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
                     style="z-index: {{ 21 + ($loop->index * 2) }};"
                     class="{{ $panelWrapClasses }}"

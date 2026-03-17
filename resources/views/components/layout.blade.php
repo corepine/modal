@@ -4,8 +4,36 @@
     'showClose' => true,
 ])
 
-@php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
-@php($hasFooter = isset($footer) && $footer->isNotEmpty())
+@php
+    $resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null;
+    $namedFooter = isset($footer) && $footer->isNotEmpty() ? $footer : null;
+    $renderedBody = $slot;
+    $inlineFooterBlocks = [];
+
+    if ($namedFooter === null) {
+        $slotHtml = (string) $slot;
+
+        if (str_contains($slotHtml, 'corepine-modal-footer:start')) {
+            $inlineFooterPattern = '/<!--\s*corepine-modal-footer:start\s*-->(.*?)<!--\s*corepine-modal-footer:end\s*-->/is';
+            preg_match_all($inlineFooterPattern, $slotHtml, $inlineFooterMatches);
+            $rawInlineFooterBlocks = $inlineFooterMatches[1] ?? [];
+
+            if ($rawInlineFooterBlocks !== []) {
+                $inlineFooterBlocks = array_values(array_filter(
+                    array_map(static fn (string $block): string => trim($block), $rawInlineFooterBlocks),
+                    static fn (string $block): bool => $block !== '',
+                ));
+
+                $renderedBody = new \Illuminate\Support\HtmlString(
+                    trim((string) preg_replace($inlineFooterPattern, '', $slotHtml))
+                );
+            }
+        }
+    }
+
+    $hasInlineFooter = $inlineFooterBlocks !== [];
+    $hasFooter = $namedFooter !== null || $hasInlineFooter;
+@endphp
 
 <section {{ $attributes->merge(['class' => 'cp-modal-layout overscroll-contain dark:bg-zinc-800 dark:text-white h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-inherit']) }}>
     @if ($resolvedTitle !== null || filled($description) || $showClose)
@@ -40,12 +68,22 @@
     @endif
 
     <main class="cp-modal-body min-h-0 flex flex-1 flex-col overscroll-contain overflow-y-auto px-5 py-4">
-        {{ $slot }}
+        @if ($hasInlineFooter)
+            {!! $renderedBody !!}
+        @else
+            {{ $renderedBody }}
+        @endif
     </main>
 
-    @if ($hasFooter)
-        <footer {{ $footer->attributes->class('cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
-            {{ $footer }}
+    @if ($namedFooter !== null)
+        <footer {{ $namedFooter->attributes->class('cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
+            {{ $namedFooter }}
+        </footer>
+    @elseif ($hasInlineFooter)
+        <footer class="cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
+            @foreach ($inlineFooterBlocks as $inlineFooterBlock)
+                {!! $inlineFooterBlock !!}
+            @endforeach
         </footer>
     @endif
 </section>

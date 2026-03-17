@@ -708,7 +708,7 @@
                         x-transition:leave="{{ $transitionClasses['leave'] }}"
                         x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                         x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
-                        x-on:click="handleClickAway()"
+                        x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"
                         class="{{ $panelWrapClasses }}"
                     >
                         <section

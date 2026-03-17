@@ -1,5 +1,6 @@
 <?php
 
+use Corepine\Modal\Actions\Action;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Support\ModalConfig;
 
@@ -105,4 +106,30 @@ it('normalizes declarative footer actions for auto layout', function (): void {
 
     expect($actions[2]['type'])->toBe('method');
     expect($actions[2]['method'])->toBe('refreshList');
+});
+
+it('normalizes fluent Action objects for auto layout footer actions', function (): void {
+    $config = app(ModalConfig::class);
+
+    $actions = $config->layoutFooterActions([
+        'footerActions' => [
+            Action::make('cancel')
+                ->label('Cancel')
+                ->class('rounded-md border px-3 py-2 text-sm')
+                ->close(),
+            Action::make('saveUsers')
+                ->label('Save')
+                ->class('rounded-md bg-zinc-900 px-3 py-2 text-sm text-white')
+                ->action('saveUsers', [42]),
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(2);
+    expect($actions[0]['type'])->toBe('close');
+    expect($actions[0]['label'])->toBe('Cancel');
+    expect($actions[0]['destroy'])->toBeTrue();
+
+    expect($actions[1]['type'])->toBe('method');
+    expect($actions[1]['method'])->toBe('saveUsers');
+    expect($actions[1]['params'])->toBe([42]);
 });

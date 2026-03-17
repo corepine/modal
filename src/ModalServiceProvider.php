@@ -34,6 +34,7 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.standalone-modal', 'corepine.modal');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-layout');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-template');
+        Blade::component('corepine-modal::components.footer', 'corepine-modal-footer');
         Blade::component('corepine-modal::components.actions.open', 'corepine-modal-actions-open');
         Blade::component('corepine-modal::components.actions.close', 'corepine-modal-actions-close');
         Blade::component('corepine-modal::components.open-modal', 'corepine-modal-open');
@@ -41,6 +42,7 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.modal', 'corepine.modal.assets');
         Blade::component('corepine-modal::components.layout', 'corepine.modal.layout');
         Blade::component('corepine-modal::components.layout', 'corepine.modal.template');
+        Blade::component('corepine-modal::components.footer', 'corepine.modal.footer');
         Blade::component('corepine-modal::components.actions.open', 'corepine.modal.actions.open');
         Blade::component('corepine-modal::components.actions.close', 'corepine.modal.actions.close');
         Blade::component('corepine-modal::components.open-modal', 'corepine.modal.open');

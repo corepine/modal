@@ -150,6 +150,28 @@ BLADE);
     expect($html)->toContain('Layout content');
 });
 
+it('supports inline footer component inside modal layout body', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout title="Inline Footer">
+    <div>Body content</div>
+
+    <x-corepine.modal.footer id="users-footer-actions" class="w-full">
+        <div class="inline-footer-actions flex justify-end gap-2">
+            <button type="button">Inline Save</button>
+        </div>
+    </x-corepine.modal.footer>
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('cp-modal-footer');
+    expect($html)->toContain('id="users-footer-actions"');
+    expect($html)->toContain('inline-footer-actions');
+    expect($html)->toContain('Inline Save');
+    expect($html)->toContain('Body content');
+    expect($html)->not->toContain('<corepine-modal-footer');
+    expect($html)->not->toContain('corepine-modal-footer:start');
+});
+
 it('renders open helper with new alias and forwards class to modal attributes', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open

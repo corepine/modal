@@ -2,6 +2,7 @@
 
 namespace Corepine\Modal\Support;
 
+use Corepine\Modal\Actions\Action as ModalAction;
 use Corepine\Modal\Enums\ModalType;
 
 class ModalConfig
@@ -445,6 +446,10 @@ class ModalConfig
     {
         $actions = $attributes['footerActions'] ?? [];
 
+        if ($actions instanceof \Traversable) {
+            $actions = iterator_to_array($actions);
+        }
+
         if (! is_array($actions)) {
             return [];
         }
@@ -452,6 +457,10 @@ class ModalConfig
         $normalized = [];
 
         foreach ($actions as $action) {
+            if ($action instanceof ModalAction) {
+                $action = $action->toArray();
+            }
+
             if (is_string($action) && trim($action) !== '') {
                 $method = trim($action);
                 $normalized[] = [
@@ -549,6 +558,7 @@ class ModalConfig
         $attributes['isolate'] = $this->isIsolated($attributes);
         $attributes['layout'] = $this->usesLayout($attributes);
         $attributes['showClose'] = $this->layoutShowClose($attributes);
+        $attributes['footerActions'] = $this->layoutFooterActions($attributes);
         unset($attributes['isolated']);
         unset($attributes['plain']);
         $attributes['position'] = $this->modalPosition($attributes);

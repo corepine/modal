@@ -1,5 +1,6 @@
 <?php
 
+use Corepine\Modal\Actions\Action;
 use Corepine\Modal\Livewire\ModalHost;
 use Corepine\Modal\Tests\Fixtures\Livewire\AttributeSizedModal;
 use Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal;
@@ -233,7 +234,7 @@ it('handles click-away from overlay layer while preventing panel clicks from bub
         ->dispatch('openModal', component: 'test.example-modal')
         ->assertSee('cp-modal-livewire', false)
         ->assertSee('cp-modal-layer-backdrop', false)
-        ->assertSee('x-on:click="closeOnClickAway()"', false)
+        ->assertSee('x-on:click="if ($event.target === $event.currentTarget) closeOnClickAway()"', false)
         ->assertSee('x-on:click.stop', false);
 });
 
@@ -272,6 +273,34 @@ it('renders automatic layout chrome and declarative footer actions', function ()
         ->assertSee('Save')
         ->assertSee('callModalMethod(', false)
         ->assertSee('saveUsers', false);
+});
+
+it('supports fluent Action objects inside footerActions', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'title' => 'Manage Users',
+            'footerActions' => [
+                Action::make('cancel')
+                    ->label('Cancel')
+                    ->class('rounded-md border px-3 py-2 text-sm')
+                    ->close(),
+                Action::make('saveUsers')
+                    ->label('Save')
+                    ->class('rounded-md bg-zinc-900 px-3 py-2 text-sm text-white')
+                    ->action('saveUsers', [5]),
+            ],
+        ])
+        ->assertSee('Cancel')
+        ->assertSee('Save');
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $actions = $modals[$stack[0]]['modalAttributes']['footerActions'] ?? [];
+
+    expect($actions)->toHaveCount(2);
+    expect($actions[0]['type'])->toBe('close');
+    expect($actions[1]['type'])->toBe('method');
+    expect($actions[1]['method'])->toBe('saveUsers');
 });
 
 it('supports disabling automatic layout with plain attribute', function (): void {
