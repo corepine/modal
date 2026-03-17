@@ -221,6 +221,29 @@ Example:
 </x-corepine.modal.layout>
 ```
 
+Scrollable body tip:
+
+When your content includes a list/table that should scroll inside the modal body (while footer stays visible), make the first slot wrapper a flex column with `min-h-0` and put `overflow-y-auto` on the inner list container.
+
+```blade
+<x-corepine.modal.layout title="Manage Users">
+    <div class="flex h-full min-h-0 flex-col gap-3">
+        <input type="text" class="..." />
+
+        <div class="min-h-0 flex-1 overflow-y-auto rounded-lg border">
+            <!-- scrollable list -->
+        </div>
+    </div>
+
+    <x-slot:footer>
+        <div class="flex justify-end gap-2">
+            <x-corepine.modal.actions.close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine.modal.actions.close>
+            <button type="button" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
+        </div>
+    </x-slot:footer>
+</x-corepine.modal.layout>
+```
+
 ## Open Modals
 
 ### Outside Livewire (JavaScript)

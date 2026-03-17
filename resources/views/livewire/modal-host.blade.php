@@ -801,7 +801,7 @@
                     <div @class([
                         'cp-modal-component',
                         'w-full overflow-hidden bg-white dark:bg-zinc-800',
-                        'overflow-y-auto',
+                        'flex min-h-0 flex-col',
                         'cp-modal-panel-default-height' => ! $isDrawer && ! $isSheet,
                         'cp-modal-panel-drawer-height' => $isDrawer,
                         'mx-auto' => ! $isDrawer,
@@ -831,7 +831,7 @@
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif
-                        <div class="cp-modal-livewire h-full min-h-0">
+                        <div class="cp-modal-livewire min-h-0 flex-1">
                             @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
                         </div>
                     </div>

@@ -19,12 +19,13 @@
     }
 
     .cp-modal-livewire {
-        height: 100%;
+        display: flex;
+        flex: 1 1 auto;
         min-height: 0;
     }
 
     .cp-modal-livewire > * {
-        height: 100%;
+        flex: 1 1 auto;
         min-height: 0;
     }
 
