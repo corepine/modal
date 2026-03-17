@@ -144,8 +144,22 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ->assertSee('x-on:resize.window.debounce.120ms="handleViewportResize()"', false)
         ->assertSee('x-bind:style="panelStyle(', false)
         ->assertSee('const releaseY = this.eventClientY(event);', false)
+        ->assertSee('classHeightHint(value)', false)
+        ->assertSee('const classPreferred = this.classHeightHint(attrs.class ?? \'\');', false)
+        ->assertSee('const preferredSource = attrs.height ?? attrs.sheetHeight ?? null;', false)
         ->assertSee('startSheetResize(', false)
         ->assertSee('startSheetDrag(', false);
+});
+
+it('applies explicit non-sheet height through panel style binding', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'type' => 'modal',
+            'height' => '600px',
+        ])
+        ->assertSee('normalizePanelHeightValue(value, fallback = null)', false)
+        ->assertSee('return this.nonSheetPanelStyle(id);', false)
+        ->assertSee('const explicitHeight = this.normalizePanelHeightValue(attrs.height ?? null, null);', false);
 });
 
 it('stores shared height attribute and preserves sheetHeight alias', function (): void {

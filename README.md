@@ -115,7 +115,7 @@ Use this when you want a modal without a Livewire modal component stack.
 | `drawer` | `bool \| null` | `null` | Legacy alias for `type=drawer`. |
 | `sheet` | `bool \| null` | `null` | Legacy alias for `type=sheet`. |
 | `position` | `string \| null` | type default | Normalized by type (`center/right/bottom`). |
-| `height` | `string \| number \| null` | `null` | Used by sheet sizing logic. |
+| `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
 | `sheetHeight` | `string \| number \| null` | `null` | Alias of `height` for sheets. |
 | `sheetMinHeight` | `string \| number \| null` | `null` | Sheet minimum height. |
 | `minHeight` | `string \| number \| null` | `null` | Alias of `sheetMinHeight`. |
@@ -384,7 +384,7 @@ When your content includes a list/table that should scroll inside the modal body
 | `arguments` | `array` | `[]` | Payload passed to modal component mount/properties. |
 | `modalAttributes` | `array` | `[]` | Raw modal attribute payload. |
 | `size` | `string \| null` | `null` | Width token/raw classes. |
-| `height` | `string \| number \| null` | `null` | Primarily for sheet sizing. |
+| `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
 | `blur` | `bool \| string \| null` | `null` | Backdrop blur toggle. |
 | `type` | `string \| ModalType \| null` | `null` | `modal`, `drawer`, `sheet`. |
 | `drawer` | `bool \| string \| null` | `null` | Legacy alias to set drawer type. |
@@ -545,9 +545,13 @@ Height defaults by type:
 - `drawer`: CSS class `100dvh` (`cp-modal-panel-drawer-height`)
 - `sheet`: runtime default `70dvh`
 
-Use `height` for sheet sizing.
-For modal/drawer, customize height via panel classes (`class` / `modalAttributes.class`), for example `h-[70dvh]`.
-For responsive height behavior, use classes like `h-full md:h-[600px]`.
+Use `height` when you want explicit height precedence on all types (`modal`, `drawer`, `sheet`).
+For responsive behavior, use panel classes (`class` / `modalAttributes.class`) like `h-full md:h-[600px]`.
+
+For sheets, precedence order is:
+1. `height`
+2. `sheetHeight` (legacy alias)
+3. class height hints (`h-[...]`, `h-full`, `h-screen`, fractions)
 
 Recommended sheet config:
 
@@ -571,6 +575,13 @@ Height value formats supported:
 - integer/float `>100` as pixels (`520`)
 - strings with `px`, `vh`, `dvh`, `%`
 - `'full'`
+
+Sheet class-height hints supported:
+- `h-[...]`
+- `h-full`, `h-screen`, `h-dvh`, `h-svh`, `h-lvh`
+- fractions like `h-3/4`
+
+Note: `height` is converted to inline style, so responsive strings like `h-full md:h-[600px]` should be placed in `class`, not `height`.
 
 ## Complete Modal Attributes Reference
 
@@ -597,7 +608,7 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `footerActions` | array | `[]` | layout | Declarative footer actions (`close` / `method`). |
 | `position` | string | type-based | all | Normalized per type rules. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
-| `height` | string/number | `null` | sheet-focused | Sheet height value (`vh`, `dvh`, `%`, `px`, numeric ratios). |
+| `height` | string/number | `null` | all | Explicit panel height for modal/drawer and initial sheet height (`vh`, `dvh`, `%`, `px`, numeric ratios, or `h-[...]`/`h-full` style tokens). |
 | `class` | string | `''` | all | Extra classes merged on modal surface (`cp-modal-component`). |
 | `draggable` | bool | `true` for sheet | sheet | Enables sheet drag/resize behavior. |
 | `dragCloseThreshold` | float | `0.3` | sheet | Close when drag-down reaches threshold ratio. |

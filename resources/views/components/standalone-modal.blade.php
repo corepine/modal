@@ -156,6 +156,7 @@
     'sheetHeight' => $resolvedModalAttributes['sheetHeight'] ?? null,
     'sheetMinHeight' => $resolvedModalAttributes['sheetMinHeight'] ?? ($resolvedModalAttributes['minHeight'] ?? null),
     'sheetMaxHeight' => $resolvedModalAttributes['sheetMaxHeight'] ?? ($resolvedModalAttributes['maxHeight'] ?? null),
+    'panelClass' => is_string($resolvedModalAttributes['class'] ?? null) ? $resolvedModalAttributes['class'] : '',
 ])
 
 @if (isset($__livewire))
@@ -175,6 +176,7 @@
             sheetHeightValue: options.sheetHeight ?? null,
             sheetMinHeightValue: options.sheetMinHeight ?? null,
             sheetMaxHeightValue: options.sheetMaxHeight ?? null,
+            panelClassValue: options.panelClass ?? '',
             defaultSheetHeightRatio: 0.7,
             defaultSheetTopGap: 16,
             defaultSheetMinHeight: 260,
@@ -376,6 +378,165 @@
                 return numeric;
             },
 
+            normalizePanelHeightValue(value, fallback = null) {
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    if (value > 0 && value <= 1) {
+                        return `${value * 100}dvh`;
+                    }
+
+                    if (value > 1 && value <= 100) {
+                        return `${value}dvh`;
+                    }
+
+                    return `${value}px`;
+                }
+
+                if (typeof value !== 'string') {
+                    return fallback;
+                }
+
+                const normalized = value.trim();
+
+                if (normalized === '') {
+                    return fallback;
+                }
+
+                if (normalized.includes(' ')) {
+                    return fallback;
+                }
+
+                const lowered = normalized.toLowerCase();
+
+                if (lowered === 'full' || lowered === 'h-full') {
+                    return '100%';
+                }
+
+                if (lowered === 'h-screen') {
+                    return '100vh';
+                }
+
+                if (lowered === 'h-dvh') {
+                    return '100dvh';
+                }
+
+                if (lowered === 'h-svh') {
+                    return '100svh';
+                }
+
+                if (lowered === 'h-lvh') {
+                    return '100lvh';
+                }
+
+                const arbitraryHeight = lowered.match(/^h-\[(.+)\]$/);
+
+                if (arbitraryHeight?.[1]) {
+                    return arbitraryHeight[1];
+                }
+
+                const fractionHeight = lowered.match(/^h-(\d+)\/(\d+)$/);
+
+                if (fractionHeight) {
+                    const numerator = Number.parseFloat(fractionHeight[1]);
+                    const denominator = Number.parseFloat(fractionHeight[2]);
+
+                    if (denominator > 0) {
+                        return `${(numerator / denominator) * 100}%`;
+                    }
+                }
+
+                if (
+                    lowered.startsWith('calc(')
+                    || lowered.endsWith('px')
+                    || lowered.endsWith('rem')
+                    || lowered.endsWith('em')
+                    || lowered.endsWith('vh')
+                    || lowered.endsWith('dvh')
+                    || lowered.endsWith('svh')
+                    || lowered.endsWith('lvh')
+                    || lowered.endsWith('%')
+                ) {
+                    return lowered;
+                }
+
+                const numeric = Number.parseFloat(lowered);
+
+                if (Number.isNaN(numeric)) {
+                    return fallback;
+                }
+
+                if (numeric > 0 && numeric <= 1) {
+                    return `${numeric * 100}dvh`;
+                }
+
+                if (numeric > 1 && numeric <= 100) {
+                    return `${numeric}dvh`;
+                }
+
+                return `${numeric}px`;
+            },
+
+            classHeightHint(value) {
+                if (typeof value !== 'string' || value.trim() === '') {
+                    return null;
+                }
+
+                const tokens = value.trim().split(/\s+/);
+                let heightToken = null;
+
+                for (const token of tokens) {
+                    if (
+                        /^h-\[.+\]$/.test(token)
+                        || /^h-\d+\/\d+$/.test(token)
+                        || ['h-full', 'h-screen', 'h-dvh', 'h-svh', 'h-lvh'].includes(token)
+                    ) {
+                        heightToken = token;
+                    }
+                }
+
+                if (!heightToken) {
+                    return null;
+                }
+
+                if (heightToken === 'h-full') {
+                    return 'full';
+                }
+
+                if (heightToken === 'h-screen') {
+                    return '100vh';
+                }
+
+                if (heightToken === 'h-dvh') {
+                    return '100dvh';
+                }
+
+                if (heightToken === 'h-svh') {
+                    return '100svh';
+                }
+
+                if (heightToken === 'h-lvh') {
+                    return '100lvh';
+                }
+
+                const arbitrary = heightToken.match(/^h-\[(.+)\]$/);
+
+                if (arbitrary?.[1]) {
+                    return arbitrary[1];
+                }
+
+                const fraction = heightToken.match(/^h-(\d+)\/(\d+)$/);
+
+                if (fraction) {
+                    const numerator = Number.parseFloat(fraction[1]);
+                    const denominator = Number.parseFloat(fraction[2]);
+
+                    if (denominator > 0) {
+                        return `${(numerator / denominator) * 100}%`;
+                    }
+                }
+
+                return null;
+            },
+
             handleViewportResize() {
                 if (this.isSheet() && this.sheetHeight !== null) {
                     this.sheetHeight = this.clampSheetHeight(this.sheetHeight);
@@ -406,8 +567,13 @@
 
             resolveInitialSheetHeight() {
                 const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
+                const classPreferred = this.classHeightHint(this.panelClassValue);
+                const preferredSource = this.heightValue ?? this.sheetHeightValue ?? null;
+                const normalizedPreferredSource = this.classHeightHint(
+                    typeof preferredSource === 'string' ? preferredSource : ''
+                ) ?? preferredSource;
                 const preferred = this.normalizeHeightValue(
-                    this.heightValue ?? this.sheetHeightValue,
+                    normalizedPreferredSource ?? classPreferred,
                     fallback
                 );
 
@@ -449,7 +615,17 @@
                     return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
                 }
 
-                return '';
+                const explicitHeight = this.normalizePanelHeightValue(this.heightValue, null);
+
+                if (!explicitHeight) {
+                    return '';
+                }
+
+                if (this.isDrawer()) {
+                    return `height: ${explicitHeight}; max-height: 100dvh;`;
+                }
+
+                return `height: ${explicitHeight};`;
             },
 
             startSheetDrag(event) {
