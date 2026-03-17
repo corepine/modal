@@ -14,6 +14,26 @@ it('renders modal host using dotted assets alias', function (): void {
     expect($html)->toContain('cp-modal fixed inset-0');
 });
 
+it('renders standalone dotted modal component without livewire host dependency', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="standalone-user-modal" title="Standalone Modal" description="Simple Blade-only modal.">
+    <div>Standalone body</div>
+    <x-slot:footer>
+        <button type="button">Done</button>
+    </x-slot:footer>
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('data-corepine-modal-id="standalone-user-modal"');
+    expect($html)->toContain('x-on:corepine-modal:open.window');
+    expect($html)->toContain('x-on:corepine-modal:close.window');
+    expect($html)->toContain('x-on:corepine-modal:toggle.window');
+    expect($html)->toContain('Standalone Modal');
+    expect($html)->toContain('Simple Blade-only modal.');
+    expect($html)->toContain('Standalone body');
+    expect($html)->toContain('Done');
+});
+
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-layout title="Edit User">

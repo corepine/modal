@@ -40,6 +40,7 @@ Notes:
 - This host must exist for open/close dispatch events to work.
 - `<x-corepine.modal.assets include-styles />` can include the published CSS file (`public/vendor/corepine-modal/app.css`) if you need it.
 - Legacy host alias `<x-corepine-modal />` still works.
+- Use `<x-corepine.modal />` when you want a standalone Blade modal (no Livewire modal host).
 
 ## Tailwind v4 Setup
 
@@ -54,6 +55,7 @@ No `tailwind.config.js` is required for this package itself.
 ## Blade Components
 
 Preferred dotted aliases:
+- `<x-corepine.modal />`: standalone Alpine Blade modal (no Livewire component required).
 - `<x-corepine.modal.assets />`: renders the global Livewire modal host.
 - `<x-corepine.modal.layout />`: reusable shell (header/body/footer) for modal content.
 - `<x-corepine.modal.template />`: alias of `x-corepine.modal.layout`.
@@ -65,6 +67,39 @@ Legacy aliases still supported:
 - `<x-corepine-modal-actions-open />`, `<x-corepine-modal-actions-close />`
 - `<x-corepine-modal-open />`, `<x-corepine-modal-close />`
 - `<x-corepine-open-modal />`, `<x-corepine-close-modal />`
+
+## Standalone Blade Modal (`x-corepine.modal`)
+
+Use this when you want a modal without a Livewire modal component stack.
+
+```blade
+<x-corepine.modal id="user-sheet" title="User Details" description="Blade-only modal">
+    <p class="text-sm text-zinc-600">This modal does not require Livewire host registration.</p>
+
+    <x-slot:footer>
+        <button
+            type="button"
+            class="rounded-md border px-3 py-2 text-sm"
+            x-on:click="$dispatch('corepine-modal:close', { id: 'user-sheet' })"
+        >
+            Close
+        </button>
+    </x-slot:footer>
+</x-corepine.modal>
+```
+
+Standalone modal events:
+- `corepine-modal:open`
+- `corepine-modal:close`
+- `corepine-modal:toggle`
+
+Examples:
+
+```html
+<button type="button" onclick="window.dispatchEvent(new CustomEvent('corepine-modal:open', { detail: { id: 'user-sheet' } }))">
+    Open
+</button>
+```
 
 ## Create A Modal Class
 
