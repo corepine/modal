@@ -10,6 +10,19 @@
                 localClosingIds: [],
                 closeTimeout: null,
                 requestCloseHandler: null,
+                draggingSheetId: null,
+                sheetDragStartY: 0,
+                sheetDragOffsetY: 0,
+                sheetDragPointerId: null,
+                defaultSheetDragThreshold: 0.3,
+                sheetHeights: {},
+                resizingSheetId: null,
+                sheetResizeStartY: 0,
+                sheetResizeStartHeight: 0,
+                sheetResizePointerId: null,
+                defaultSheetMinHeight: 260,
+                defaultSheetHeightRatio: 0.72,
+                defaultSheetTopGap: 16,
 
                 init() {
                     this.syncFromServer();
@@ -56,6 +69,7 @@
                         }
                     }
 
+                    this.syncSheetHeights();
                     this.setShow(Boolean(this.activeModalId) || this.localClosingIds.length > 0);
                     this.focusActiveModal();
                 },
@@ -67,6 +81,14 @@
 
                 stack() {
                     return this.$wire.get('stack') ?? [];
+                },
+
+                modalById(id) {
+                    return this.$wire.get('modals')?.[id] ?? null;
+                },
+
+                modalAttributesById(id) {
+                    return this.modalById(id)?.modalAttributes ?? {};
                 },
 
                 activeModal() {
@@ -85,6 +107,358 @@
 
                 activeAttributes() {
                     return this.activeModal()?.modalAttributes ?? {};
+                },
+
+                eventClientY(event) {
+                    const point = event?.touches?.[0] ?? event?.changedTouches?.[0] ?? event;
+
+                    return typeof point?.clientY === 'number' ? point.clientY : null;
+                },
+
+                viewportHeight() {
+                    return window.innerHeight || document.documentElement?.clientHeight || 800;
+                },
+
+                normalizeHeightValue(value, fallback = null) {
+                    if (typeof value === 'number' && Number.isFinite(value)) {
+                        return value;
+                    }
+
+                    if (typeof value !== 'string') {
+                        return fallback;
+                    }
+
+                    const normalized = value.trim().toLowerCase();
+
+                    if (normalized === '') {
+                        return fallback;
+                    }
+
+                    if (normalized === 'full') {
+                        return this.viewportHeight() - this.defaultSheetTopGap;
+                    }
+
+                    if (normalized.endsWith('vh') || normalized.endsWith('dvh') || normalized.endsWith('%')) {
+                        const ratio = Number.parseFloat(normalized);
+
+                        if (! Number.isNaN(ratio)) {
+                            return this.viewportHeight() * (ratio / 100);
+                        }
+
+                        return fallback;
+                    }
+
+                    if (normalized.endsWith('px')) {
+                        const pixels = Number.parseFloat(normalized);
+
+                        return Number.isNaN(pixels) ? fallback : pixels;
+                    }
+
+                    const numeric = Number.parseFloat(normalized);
+
+                    if (Number.isNaN(numeric)) {
+                        return fallback;
+                    }
+
+                    if (numeric > 0 && numeric <= 1) {
+                        return this.viewportHeight() * numeric;
+                    }
+
+                    return numeric;
+                },
+
+                sheetMinHeight(id) {
+                    const attrs = this.modalAttributesById(id);
+                    const configured = this.normalizeHeightValue(attrs.sheetMinHeight ?? attrs.minHeight, this.defaultSheetMinHeight);
+
+                    return Math.max(120, Math.round(configured ?? this.defaultSheetMinHeight));
+                },
+
+                sheetMaxHeight(id) {
+                    const attrs = this.modalAttributesById(id);
+                    const viewport = this.viewportHeight();
+                    const fallback = viewport - this.defaultSheetTopGap;
+                    const configured = this.normalizeHeightValue(attrs.sheetMaxHeight ?? attrs.maxHeight, fallback);
+                    const max = Math.min(viewport, Math.round(configured ?? fallback));
+
+                    return Math.max(this.sheetMinHeight(id), max);
+                },
+
+                clampSheetHeight(height, id) {
+                    const min = this.sheetMinHeight(id);
+                    const max = this.sheetMaxHeight(id);
+
+                    return Math.max(min, Math.min(max, Math.round(height)));
+                },
+
+                resolveInitialSheetHeight(id) {
+                    const attrs = this.modalAttributesById(id);
+                    const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
+                    const preferred = this.normalizeHeightValue(attrs.sheetHeight ?? attrs.height, fallback);
+
+                    return this.clampSheetHeight(preferred ?? fallback, id);
+                },
+
+                ensureSheetHeight(id) {
+                    if (!this.isSheetModal(id)) {
+                        return;
+                    }
+
+                    if (this.sheetHeights[id] === undefined) {
+                        this.sheetHeights[id] = this.resolveInitialSheetHeight(id);
+                    }
+                },
+
+                syncSheetHeights() {
+                    const activeStack = this.stack();
+                    const activeIds = new Set(activeStack);
+
+                    Object.keys(this.sheetHeights).forEach((id) => {
+                        if (!activeIds.has(id)) {
+                            delete this.sheetHeights[id];
+                        }
+                    });
+
+                    activeStack.forEach((id) => {
+                        if (this.isSheetModal(id)) {
+                            this.ensureSheetHeight(id);
+                            this.sheetHeights[id] = this.clampSheetHeight(this.sheetHeights[id], id);
+                        }
+                    });
+
+                    if (this.resizingSheetId && !activeIds.has(this.resizingSheetId)) {
+                        this.clearSheetResize();
+                    }
+                },
+
+                isSheetModal(id) {
+                    const attrs = this.modalAttributesById(id);
+
+                    return attrs.type === 'sheet' || attrs.sheet === true;
+                },
+
+                isSheetDraggable(id) {
+                    if (!this.isSheetModal(id)) {
+                        return false;
+                    }
+
+                    const attrs = this.modalAttributesById(id);
+
+                    if (attrs.draggable === undefined || attrs.draggable === null) {
+                        return true;
+                    }
+
+                    return this.normalizedBoolean(attrs.draggable, true);
+                },
+
+                sheetDragThreshold(id) {
+                    const attrs = this.modalAttributesById(id);
+                    const raw = Number.parseFloat(attrs.dragCloseThreshold ?? attrs.sheetDragThreshold ?? this.defaultSheetDragThreshold);
+
+                    if (Number.isNaN(raw)) {
+                        return this.defaultSheetDragThreshold;
+                    }
+
+                    return Math.min(0.95, Math.max(0.05, raw));
+                },
+
+                startSheetDrag(id, event, fromHandle = false) {
+                    if (this.resizingSheetId) {
+                        return;
+                    }
+
+                    if (!this.isTopModal(id) || !this.shouldShowModal(id) || !this.isSheetDraggable(id)) {
+                        return;
+                    }
+
+                    if (event?.type === 'mousedown' && event.button !== 0) {
+                        return;
+                    }
+
+                    if (event?.pointerType === 'mouse' && event.button !== 0) {
+                        return;
+                    }
+
+                    const startY = this.eventClientY(event);
+
+                    if (startY === null) {
+                        return;
+                    }
+
+                    this.draggingSheetId = id;
+                    this.sheetDragStartY = startY;
+                    this.sheetDragOffsetY = 0;
+                    this.sheetDragPointerId = event?.pointerId ?? null;
+
+                    if (fromHandle && event?.cancelable) {
+                        event.preventDefault();
+                    }
+                },
+
+                moveSheetDrag(event) {
+                    if (this.resizingSheetId) {
+                        this.moveSheetResize(event);
+
+                        return;
+                    }
+
+                    if (!this.draggingSheetId) {
+                        return;
+                    }
+
+                    if (this.sheetDragPointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetDragPointerId) {
+                        return;
+                    }
+
+                    const currentY = this.eventClientY(event);
+
+                    if (currentY === null) {
+                        return;
+                    }
+
+                    const deltaY = Math.max(0, currentY - this.sheetDragStartY);
+                    this.sheetDragOffsetY = deltaY;
+
+                    if (deltaY > 0 && event?.cancelable) {
+                        event.preventDefault();
+                    }
+                },
+
+                clearSheetDrag() {
+                    this.draggingSheetId = null;
+                    this.sheetDragStartY = 0;
+                    this.sheetDragOffsetY = 0;
+                    this.sheetDragPointerId = null;
+                },
+
+                endSheetDrag(event) {
+                    if (this.resizingSheetId) {
+                        this.endSheetResize(event);
+
+                        return;
+                    }
+
+                    if (!this.draggingSheetId) {
+                        return;
+                    }
+
+                    if (this.sheetDragPointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetDragPointerId) {
+                        return;
+                    }
+
+                    const id = this.draggingSheetId;
+                    const panel = this.$refs[`panel-${id}`];
+                    const panelHeight = panel?.offsetHeight ?? window.innerHeight;
+                    const threshold = panelHeight * this.sheetDragThreshold(id);
+                    const shouldClose = this.sheetDragOffsetY >= threshold;
+                    const attrs = this.modalAttributesById(id);
+                    const destroyOnClose = attrs.destroyOnClose ?? true;
+
+                    this.clearSheetDrag();
+
+                    if (!shouldClose) {
+                        return;
+                    }
+
+                    this.requestClose({
+                        id,
+                        count: 1,
+                        destroy: destroyOnClose,
+                    });
+                },
+
+                startSheetResize(id, event) {
+                    if (this.draggingSheetId) {
+                        return;
+                    }
+
+                    if (!this.isTopModal(id) || !this.shouldShowModal(id) || !this.isSheetDraggable(id)) {
+                        return;
+                    }
+
+                    if (event?.type === 'mousedown' && event.button !== 0) {
+                        return;
+                    }
+
+                    if (event?.pointerType === 'mouse' && event.button !== 0) {
+                        return;
+                    }
+
+                    const startY = this.eventClientY(event);
+
+                    if (startY === null) {
+                        return;
+                    }
+
+                    this.ensureSheetHeight(id);
+                    this.resizingSheetId = id;
+                    this.sheetResizeStartY = startY;
+                    this.sheetResizeStartHeight = this.sheetHeights[id] ?? this.resolveInitialSheetHeight(id);
+                    this.sheetResizePointerId = event?.pointerId ?? null;
+
+                    if (event?.cancelable) {
+                        event.preventDefault();
+                    }
+                },
+
+                moveSheetResize(event) {
+                    if (!this.resizingSheetId) {
+                        return;
+                    }
+
+                    if (this.sheetResizePointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetResizePointerId) {
+                        return;
+                    }
+
+                    const currentY = this.eventClientY(event);
+
+                    if (currentY === null) {
+                        return;
+                    }
+
+                    const deltaY = currentY - this.sheetResizeStartY;
+                    const nextHeight = this.sheetResizeStartHeight - deltaY;
+                    this.sheetHeights[this.resizingSheetId] = this.clampSheetHeight(nextHeight, this.resizingSheetId);
+
+                    if (event?.cancelable) {
+                        event.preventDefault();
+                    }
+                },
+
+                clearSheetResize() {
+                    this.resizingSheetId = null;
+                    this.sheetResizeStartY = 0;
+                    this.sheetResizeStartHeight = 0;
+                    this.sheetResizePointerId = null;
+                },
+
+                endSheetResize(event) {
+                    if (!this.resizingSheetId) {
+                        return;
+                    }
+
+                    if (this.sheetResizePointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetResizePointerId) {
+                        return;
+                    }
+
+                    this.clearSheetResize();
+                },
+
+                sheetPanelStyle(id) {
+                    if (!this.isSheetModal(id)) {
+                        return '';
+                    }
+
+                    this.ensureSheetHeight(id);
+                    const isDraggingCurrent = this.draggingSheetId === id;
+                    const isResizingCurrent = this.resizingSheetId === id;
+                    const offset = isDraggingCurrent ? this.sheetDragOffsetY : 0;
+                    const transition = (isDraggingCurrent || isResizingCurrent)
+                        ? 'none'
+                        : 'transform 180ms ease-out, height 140ms ease-out';
+                    const height = this.sheetHeights[id] ?? this.resolveInitialSheetHeight(id);
+
+                    return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
                 },
 
                 activeIsolate() {
@@ -168,6 +542,8 @@
                     }
 
                     this.localClosingIds = [];
+                    this.clearSheetDrag();
+                    this.clearSheetResize();
                 },
 
                 requestClose(payload = {}) {
@@ -309,6 +685,14 @@
         })"
         x-cloak
         x-on:keydown.escape.window.stop="closeOnEscape()"
+        x-on:pointermove.window="moveSheetDrag($event)"
+        x-on:pointerup.window="endSheetDrag($event)"
+        x-on:pointercancel.window="endSheetDrag($event)"
+        x-on:touchmove.window="moveSheetDrag($event)"
+        x-on:touchend.window="endSheetDrag($event)"
+        x-on:touchcancel.window="endSheetDrag($event)"
+        x-on:mousemove.window="moveSheetDrag($event)"
+        x-on:mouseup.window="endSheetDrag($event)"
         x-show="show"
         class="cp-modal fixed inset-0 z-[999] overflow-y-auto"
         style="display: none;"
@@ -369,10 +753,21 @@
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
                     ])
+                        x-ref="panel-{{ $id }}"
+                        x-bind:style="sheetPanelStyle(@js($id))"
+                        x-on:pointerdown.capture="startSheetDrag(@js($id), $event)"
+                        x-on:touchstart.capture="startSheetDrag(@js($id), $event)"
+                        x-on:mousedown.capture="startSheetDrag(@js($id), $event)"
                         x-on:click.stop
                     >
                         @if ($isSheet)
-                            <div class="cp-modal-sheet-handle px-4 pt-3 sm:pt-4">
+                            <div
+                                class="cp-modal-sheet-handle cursor-row-resize select-none px-4 pt-3 sm:pt-4"
+                                x-on:pointerdown.stop.prevent="startSheetResize(@js($id), $event)"
+                                x-on:touchstart.stop.prevent="startSheetResize(@js($id), $event)"
+                                x-on:mousedown.stop.prevent="startSheetResize(@js($id), $event)"
+                                style="touch-action: none;"
+                            >
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif

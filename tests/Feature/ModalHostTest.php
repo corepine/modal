@@ -130,6 +130,18 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
         ->assertSee('cp-modal-sheet-handle');
 });
 
+it('renders sheet drag handlers and panel style binding', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'type' => 'sheet',
+        ])
+        ->assertSee('x-on:pointermove.window="moveSheetDrag($event)"', false)
+        ->assertSee('x-on:pointerup.window="endSheetDrag($event)"', false)
+        ->assertSee('x-bind:style="sheetPanelStyle(', false)
+        ->assertSee('startSheetResize(', false)
+        ->assertSee('startSheetDrag(', false);
+});
+
 it('opens a bottom sheet through the openBottomSheet event alias', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openBottomSheet', component: 'test.example-modal');

@@ -3,10 +3,12 @@
 Corepine Modal is a stack-based modal package for **Livewire v3/v4** with **Laravel 11/12/13** support.
 
 It is built around:
-- `dispatch` events (no `$emit`)
-- reusable modal classes (`extends Modal`)
-- child modal stacking
-- safe model argument resolution from IDs
+- dispatch events (no `$emit`)
+- reusable modal classes (`extends Corepine\Modal\Modal`)
+- stacked modals (open child on top of parent)
+- safe model/enum argument resolution from IDs
+- multiple presentation types: `modal`, `drawer`, `sheet`
+- mobile-friendly sheet interactions (drag down to close + resize handle)
 
 ## Requirements
 
@@ -20,103 +22,45 @@ It is built around:
 composer require corepine/modal
 ```
 
-## Add The Host
+## Render The Global Host
 
-Add once in your main layout:
+Add once in your app layout:
 
 ```blade
 <x-corepine-modal />
 ```
 
-or:
+Or with directive:
 
 ```blade
 @corepineModal
 ```
 
-`<x-corepine-modal />` (without slot content) renders the global modal host.
-
-Important naming:
-- `<x-corepine-modal />` is the global host renderer.
-- `<x-corepine-modal-layout />` is the reusable inner content shell for each modal view.
-
-## Modal Shell Component
-
-Use `<x-corepine-modal-layout>` as the reusable shell inside your modal views so you do not repeat header, close button, and footer layout.
-
-Alias: `<x-corepine-modal-template>`.
-
-Props:
-- `title` (nullable)
-- `description` (nullable)
-- `showClose` (default: `true`)
-
-Named slot:
-- `footer`
-
-Example:
-
-```blade
-<x-corepine-modal-layout title="Manage Users">
-    <div class="space-y-3">
-        <!-- main content -->
-    </div>
-
-    <x-slot:footer>
-        <div class="flex justify-end gap-2">
-            <x-corepine-modal-close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-modal-close>
-            <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
-        </div>
-    </x-slot:footer>
-</x-corepine-modal-layout>
-```
-
 Notes:
-- Header and footer are separated from body.
-- Body is the dedicated scroll area (`minmax(0,1fr)`), so footer stays visible and does not get overlapped by long content.
-- Title can be `null`; close button still appears by default.
-- Any attributes you pass to `<x-corepine-modal-layout ...>` are merged onto the shell wrapper.
+- This host must exist for open/close dispatch events to work.
+- `<x-corepine-modal include-styles />` can include the published CSS file (`public/vendor/corepine-modal/app.css`) if you need it.
 
 ## Tailwind v4 Setup
 
-Import package CSS in your app `app.css`:
+Import package CSS into your main stylesheet:
 
 ```css
 @import "../../vendor/corepine/modal/resources/css/app.css";
 ```
 
-No `tailwind.config.js` is required for this package setup.
+No `tailwind.config.js` is required for this package itself.
 
-## Blade Components Reference
+## Blade Components
 
-- `<x-corepine-modal />`: renders the global Livewire host.
-- `<x-corepine-modal-layout />`: standard modal content structure (header/body/footer).
-- `<x-corepine-modal-template />`: alias for `<x-corepine-modal-layout />`.
-- `<x-corepine-modal-open />`: dispatch-first trigger helper for opening modals.
-- `<x-corepine-modal-close />`: dispatch-first trigger helper for closing modals.
-- `<x-corepine-open-modal />`: backward-compatible alias for `<x-corepine-modal-open />`.
-- `<x-corepine-close-modal />`: backward-compatible alias for `<x-corepine-modal-close />`.
+- `<x-corepine-modal />`: renders the global Livewire modal host.
+- `<x-corepine-modal-layout />`: reusable shell (header/body/footer) for modal content.
+- `<x-corepine-modal-template />`: alias of `x-corepine-modal-layout`.
+- `<x-corepine-modal-open />`: trigger helper (dispatches open event).
+- `<x-corepine-modal-close />`: close helper (dispatches close event).
+- `<x-corepine-open-modal />`: backward-compatible alias of `x-corepine-modal-open`.
+- `<x-corepine-close-modal />`: backward-compatible alias of `x-corepine-modal-close`.
 
-## Open Helper Props
-
-`<x-corepine-modal-open />` supports:
-- `component`: Livewire component name (for example `modals.edit-user`).
-- `componentClass`: FQCN alternative to `component`.
-- `arguments`: arguments payload passed to Livewire modal component.
-- `modalAttributes`: raw modal attributes array (merged with normalized props below).
-- `size`: size token or raw width classes.
-- `blur`: boolean-like string or bool.
-- `type`: `modal`, `drawer`, or `sheet` (also supports enum value).
-- `drawer`: legacy bool alias that resolves `type="drawer"`.
-- `sheet`: legacy bool alias that resolves `type="sheet"`.
-- `isolate`: isolates stack layers.
-- `isolated`: legacy alias for `isolate`.
-- `position`: placement token (validated per type).
-- `class`: forwarded into modal attributes as the modal surface class (not trigger wrapper class).
-
-## Create A Modal
-
-Use `Corepine\Modal\Modal` as the base class:
+## Create A Modal Class
 
 ```php
 <?php
@@ -133,57 +77,58 @@ class EditUser extends Modal
 
     public static function modalSize(): string
     {
-        return 'xl'; // token from config('corepine-modal.sizes')
+        return 'xl';
     }
 
     public static function modalAttributes(): array
     {
         return [
-            'closeOnEscape' => true,
-            'closeOnClickAway' => true,
-            'blur' => true,
             'type' => ModalType::Modal,
             'position' => 'center',
+            'closeOnEscape' => true,
+            'closeOnClickAway' => true,
             'closeOnEscapeIsForceful' => false,
             'destroyOnClose' => true,
-            'dispatchCloseEvent' => true,
+            'dispatchCloseEvent' => false,
+            'blur' => false,
             'class' => 'p-6',
         ];
     }
-
-    public function save(): void
-    {
-        // ...
-        $this->closeModal();
-    }
-
-    public function render()
-    {
-        return view('livewire.modals.edit-user');
-    }
 }
 ```
 
-If you prefer, you can set size directly in `modalAttributes()`:
+## Layout Shell (`x-corepine-modal-layout`)
 
-```php
-public static function modalAttributes(): array
-{
-    return [
-        'size' => '3xl',
-        // or raw classes:
-        // 'size' => 'max-w-[960px] sm:max-w-full',
-        'blur' => true,
-        'type' => 'drawer',
-        'position' => 'right',
-        'class' => 'p-6',
-    ];
-}
+Use this inside your modal view so you do not repeat title/close/footer structure.
+
+Props:
+- `title` (nullable)
+- `description` (nullable)
+- `showClose` (`true` by default)
+
+Named slot:
+- `footer`
+
+Example:
+
+```blade
+<x-corepine-modal-layout title="Manage Users" description="Search and edit users">
+    <div class="space-y-3">
+        <!-- body content -->
+    </div>
+
+    <x-slot:footer>
+        <div class="flex justify-end gap-2">
+            <x-corepine-modal-close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-modal-close>
+            <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
+        </div>
+    </x-slot:footer>
+</x-corepine-modal-layout>
 ```
 
-## Open Modals (dispatch-first)
+## Open Modals
 
-### Outside Livewire (JS)
+### Outside Livewire (JavaScript)
 
 ```html
 <button onclick="Livewire.dispatch('openModal', { component: 'modals.edit-user', arguments: { user: 5 } })">
@@ -207,186 +152,52 @@ public static function modalAttributes(): array
 </button>
 ```
 
-### Blade Helper Component
+### Open Helper Component
 
 ```blade
 <x-corepine-modal-open
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
-    class="p-8 bg-white border border-zinc-200 rounded-3xl"
-    size="2xl"
-    blur="true"
-    position="right"
     type="drawer"
+    position="right"
+    size="2xl"
     isolate="true"
+    blur="true"
+    class="bg-white p-6 rounded-none"
 >
     <button type="button">Edit</button>
 </x-corepine-modal-open>
 ```
 
-You can also pass raw classes instead of a size token:
+Open helper props:
+- `component`, `componentClass`
+- `arguments`
+- `modalAttributes` (raw modal attributes array)
+- `size`, `blur`, `type`, `drawer`, `sheet`, `isolate`, `isolated`, `position`
+- `class` (forwarded to modal surface class, not trigger wrapper class)
 
-```blade
-<x-corepine-modal-open
-    component="modals.edit-user"
-    :arguments="['user' => $user->id]"
-    size="max-w-[900px] sm:max-w-full"
-/>
-```
-
-`class` is the styling hook for modal surface styling (background, border, rounded, padding, etc.).
-When used on `<x-corepine-modal-open ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
-
-## Type / Presentation
-
-Modal type supports:
-- `modal`
-- `drawer`
-- `sheet`
-
-You can pass type as:
-- string in Blade/config (`'sheet'`)
-- enum in PHP (`ModalType::Sheet`)
-
-From Blade:
-
-```blade
-<x-corepine-modal-open component="modals.profile" type="sheet" />
-```
+## Close Modals
 
 From modal class:
 
 ```php
-use Corepine\Modal\Enums\ModalType;
+// close current modal
+$this->closeModal();
 
-public static function modalAttributes(): array
-{
-    return [
-        'type' => ModalType::Drawer,
-        'position' => 'right',
-    ];
-}
+// close current + 1 previous modal
+$this->skipPreviousModal()->closeModal();
+
+// close current + N previous modals
+$this->skipPreviousModals(2)->closeModal();
+
+// force close all
+$this->forceClose()->closeModal();
+
+// close + dispatch other component events
+$this->closeModalWithEvents([
+    \App\Livewire\Users\Table::class => ['usersRefreshed', [$this->user->id]],
+]);
 ```
-
-`drawer=true` is still supported as a legacy alias, but `type="drawer"` is recommended.
-
-## Drawer And Position
-
-- `position` works for standard modals: `center`, `top`, `bottom`, `left`, `right`.
-- `type="drawer"` enables drawer mode with horizontal slide transitions.
-- Drawer mode only accepts `left` or `right`; invalid values fallback to `right`.
-- Drawer panels are `h-full` by default.
-- Drawer width is controlled by `size` (token or raw classes), same as regular modals.
-- Drawer edge behavior is enforced by default:
-  - `position="left"` => left edge is not rounded
-  - `position="right"` => right edge is not rounded
-
-Examples:
-
-```blade
-<x-corepine-modal-open
-    component="modals.filters"
-    type="drawer"
-    position="left"
-    size="max-w-[420px]"
-    class="h-full rounded-none border-r border-zinc-200"
-/>
-```
-
-```blade
-<x-corepine-modal-open
-    component="modals.profile"
-    type="drawer"
-    position="right"
-    size="sheet"
-/>
-```
-
-```php
-public static function modalAttributes(): array
-{
-    return [
-        'type' => 'drawer',
-        'position' => 'right',
-        'size' => 'sheet',
-    ];
-}
-```
-
-## Bottom Sheet
-
-- `type="sheet"` renders a bottom sheet presentation.
-- Sheet uses bottom-up transitions and rounded top corners.
-- Default sheet position is `bottom`.
-- Sheet defaults to `max-h-[88dvh]` with internal overflow.
-
-Open directly by event:
-
-```js
-Livewire.dispatch('openBottomSheet', { component: 'modals.quick-actions' })
-```
-
-Also supported via namespaced alias event:
-
-```js
-Livewire.dispatch('corepine-modal.open-sheet', { component: 'modals.quick-actions' })
-```
-
-From modal class:
-
-```php
-$this->openBottomSheet('modals.quick-actions');
-```
-
-From Blade helper:
-
-```blade
-<x-corepine-modal-open component="modals.quick-actions" type="sheet" />
-```
-
-## Isolate Stacking
-
-- `isolate=true` on the active modal keeps previous stacked modal layers visible.
-- Non-active layers remain non-interactive while isolated modal is on top.
-- `isolate=false` (default) keeps classic behavior where only the active modal layer is shown.
-- Each visible isolated layer still keeps its own backdrop behavior and visual options (such as `blur`).
-
-From Blade helper:
-
-```blade
-<x-corepine-modal-open component="modals.edit-user" isolate="true" />
-```
-
-From modal class:
-
-```php
-public static function modalAttributes(): array
-{
-    return [
-        'isolate' => true,
-    ];
-}
-```
-
-## Events Reference
-
-Default listen events (incoming):
-- `openModal` / `corepine-modal.open`
-- `openBottomSheet` / `corepine-modal.open-sheet`
-- `closeModal` / `corepine-modal.close`
-- `closeTopModal` / `corepine-modal.close-top`
-- `closeAllModals` / `corepine-modal.close-all`
-- `destroyModal` / `corepine-modal.destroy`
-- `resetModal` / `corepine-modal.reset`
-
-Default dispatch events (outgoing):
-- `modalOpened`
-- `modalClosed`
-- `activeModalChanged`
-- `allModalsClosed`
-- `modalComponentClosed`
-
-## Closing Modals
 
 From Blade:
 
@@ -396,50 +207,156 @@ From Blade:
 <button wire:click="$dispatch('closeAllModals')">Close All</button>
 ```
 
-From modal class:
-
-```php
-// Close current modal
-$this->closeModal();
-
-// Close current + previous modal
-$this->skipPreviousModal()->closeModal();
-
-// Close current + N previous
-$this->skipPreviousModals(2)->closeModal();
-
-// Force close everything
-$this->forceClose()->closeModal();
-
-// Close and dispatch to other components
-$this->closeModalWithEvents([
-    \App\Livewire\Users\Table::class => ['usersRefreshed', [$this->user->id]],
-]);
-```
-
-## Safe Model Argument Resolution
-
-If your modal has typed public properties (for example `public User $user`), passing `user: 5` will resolve the model via route binding before the component mounts.
-
-Enums are also resolved via `tryFrom` when type-hinted.
-
-## Prevent Close On Escape / Click Away
-
-The active modal receives these events:
-- `closingModalOnEscape`
-- `closingModalOnClickAway`
-
-Inside modal Blade you can cancel closing:
+Close helper:
 
 ```blade
-@script
-<script>
-    $wire.on('closingModalOnEscape', (payload) => {
-        if ($wire.isDirty) payload.closing = false;
-    });
-</script>
-@endscript
+<x-corepine-modal-close count="1" destroy="true" force="false">
+    Close
+</x-corepine-modal-close>
 ```
+
+Close helper props:
+- `count` (minimum 1)
+- `destroy` (default `true`)
+- `force` (default `false`, closes all)
+
+## Presentation Types
+
+Supported types:
+- `modal`
+- `drawer`
+- `sheet`
+
+Type can be passed as:
+- string (`'sheet'`, `'drawer'`, `'modal'`)
+- enum (`ModalType::Sheet`, etc.)
+
+Legacy aliases still supported:
+- `drawer=true` resolves type to `drawer`
+- `sheet=true` resolves type to `sheet`
+
+## Position Rules
+
+- `type=modal`: `center`, `top`, `bottom`, `left`, `right` (default `center`)
+- `type=drawer`: `left` or `right` only (default `right`)
+- `type=sheet`: `bottom` only (default `bottom`)
+
+Invalid positions are normalized to the safe default for that type.
+
+## Stack Isolation
+
+Use `isolate=true` when you want previous modal layers to remain visible while a new modal is active.
+
+Example:
+
+```blade
+<x-corepine-modal-open
+    component="modals.delete-user"
+    :arguments="['user' => $user->id]"
+    isolate="true"
+>
+    <button type="button">Delete</button>
+</x-corepine-modal-open>
+```
+
+Behavior:
+- Active modal remains the only interactive layer.
+- Previous layers can stay visible for context.
+- Works with `modal`, `drawer`, and `sheet`.
+
+## Size System
+
+`size` can be:
+- a token from `config('corepine-modal.sizes')` (for example `2xl`)
+- raw utility classes (for example `max-w-[900px] sm:max-w-full`)
+
+Defaults include:
+- `default`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `6xl`, `7xl`
+
+## Sheet Interaction (Drag + Resize)
+
+For `type=sheet`:
+- Top handle can resize sheet height.
+- You can drag the sheet downward to close.
+- Drag-close threshold defaults to `30%` of current sheet height.
+- Sheet closes through normal close events, so stack behavior remains consistent.
+
+Recommended sheet config:
+
+```php
+public static function modalAttributes(): array
+{
+    return [
+        'type' => 'sheet',
+        'draggable' => true,
+        'sheetHeight' => '72vh',
+        'sheetMinHeight' => '40vh',
+        'sheetMaxHeight' => '95vh',
+        'dragCloseThreshold' => 0.3,
+    ];
+}
+```
+
+Height value formats supported:
+- integer/float as pixels (`520`)
+- ratio `0..1` (`0.7` = 70vh-ish behavior against viewport)
+- strings with `px`, `vh`, `dvh`, `%`
+- `'full'`
+
+## Complete Modal Attributes Reference
+
+The table below covers all supported modal attributes (including legacy aliases and sheet-specific runtime options).
+
+| Attribute | Type | Default | Applies To | Notes |
+| --- | --- | --- | --- | --- |
+| `closeOnEscape` | bool | `true` | all | Escape key closes active modal when true. |
+| `closeOnClickAway` | bool | `true` | all | Backdrop click closes active modal when true. |
+| `closeOnEscapeIsForceful` | bool | `false` | all | Escape closes full stack when true. |
+| `destroyOnClose` | bool | `true` | all | Destroy component state when modal closes. |
+| `dispatchCloseEvent` | bool | `false` | all | Dispatches `modalComponentClosed` when closing this component. |
+| `blur` | bool | `false` | all | Adds blurred backdrop style. |
+| `type` | string/enum | `modal` | all | `modal`, `drawer`, `sheet`. |
+| `drawer` | bool | `false` | all | Legacy alias for `type=drawer`. |
+| `sheet` | bool | `false` | all | Legacy alias for `type=sheet`. |
+| `isolate` | bool | `false` | all | Keeps previous layers visible behind active modal. |
+| `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
+| `position` | string | type-based | all | Normalized per type rules. |
+| `size` | string | `default` | all | Token from config sizes or raw width classes. |
+| `class` | string | `''` | all | Extra classes merged on modal surface (`cp-modal-component`). |
+| `draggable` | bool | `true` for sheet | sheet | Enables sheet drag/resize behavior. |
+| `dragCloseThreshold` | float | `0.3` | sheet | Close when drag-down reaches threshold ratio. |
+| `sheetDragThreshold` | float | alias | sheet | Alias of `dragCloseThreshold`. |
+| `sheetHeight` | string/number | `72vh` runtime default | sheet | Initial sheet height. |
+| `height` | string/number | alias | sheet | Alias for `sheetHeight`. |
+| `sheetMinHeight` | string/number | `260px` runtime default | sheet | Minimum sheet height. |
+| `minHeight` | string/number | alias | sheet | Alias for `sheetMinHeight`. |
+| `sheetMaxHeight` | string/number | `calc(100dvh - 16px)` runtime default | sheet | Maximum sheet height. |
+| `maxHeight` | string/number | alias | sheet | Alias for `sheetMaxHeight`. |
+
+Attribute merge order:
+1. `config('corepine-modal.defaults.attributes')`
+2. modal component `modalAttributes()`
+3. runtime open payload (`openModal`, helper `modalAttributes`, etc.)
+
+## Events Reference
+
+Default listen events:
+- `openModal`, `corepine-modal.open`
+- `openBottomSheet`, `corepine-modal.open-sheet`
+- `closeModal`, `corepine-modal.close`
+- `closeTopModal`, `corepine-modal.close-top`
+- `closeAllModals`, `corepine-modal.close-all`
+- `destroyModal`, `corepine-modal.destroy`
+- `resetModal`, `corepine-modal.reset`
+
+Default dispatch events:
+- `modalOpened`
+- `modalClosed`
+- `activeModalChanged`
+- `allModalsClosed`
+- `modalComponentClosed`
+
+All names are customizable in config.
 
 ## Config
 
@@ -449,17 +366,17 @@ Publish config:
 php artisan vendor:publish --tag=corepine-modal-config
 ```
 
-Config file: `config/corepine-modal.php`
+Config file:
+- `config/corepine-modal.php`
 
-You can customize:
-- host component name
-- incoming/outgoing event names
-- modal defaults
-- size tokens
-- default blur
-- default type + position behavior
+Main config areas:
+- `host_component`
+- `events.listen`
+- `events.dispatch`
+- `defaults.attributes`
+- `sizes`
 
-Example:
+Example custom sizes:
 
 ```php
 'sizes' => [
@@ -470,80 +387,36 @@ Example:
 ],
 ```
 
-Default attributes include:
+## Safe Model + Enum Argument Resolution
 
-```php
-'defaults' => [
-    'attributes' => [
-        'closeOnEscape' => true,
-        'closeOnEscapeIsForceful' => false,
-        'dispatchCloseEvent' => false,
-        'destroyOnClose' => true,
-        'closeOnClickAway' => true,
-        'blur' => false,
-        'type' => 'modal',
-        'drawer' => false, // legacy alias
-        'sheet' => false, // legacy alias
-        'isolate' => false,
-        'position' => 'center',
-        'size' => 'default',
-        'class' => '',
-    ],
-],
-```
+When modal component public properties are type-hinted:
+- Eloquent model IDs are resolved through route binding (for example `user: 5` -> `User $user`)
+- backed enums are resolved with `tryFrom`
 
-How this works:
-- left side (`default`, `sheet`, `dialog`, `editor`) is the size name/token
-- right side is the Tailwind width classes applied to the modal component
+If a model cannot be resolved, a `ModelNotFoundException` is thrown.
 
-So:
-- `size="dialog"` applies `max-w-2xl`
-- `size="editor"` applies `max-w-5xl`
-- if no size is provided, `default` is used
+## Prevent Close Dynamically
 
-For drawers:
-- `size` still controls width
-- height is full by default (`h-full`)
-- position controls side (`left` or `right`)
+Active modal can listen for:
+- `closingModalOnEscape`
+- `closingModalOnClickAway`
 
-Use token from Blade:
+Set `payload.closing = false` to cancel close.
 
-```blade
-<x-corepine-modal-open size="editor" ... />
-```
-
-Use token from modal class:
-
-```php
-public static function modalSize(): string
-{
-    return 'editor';
-}
-```
-
-You can also bypass the token map and pass raw classes directly:
-
-```blade
-<x-corepine-modal-open size="max-w-[900px] sm:max-w-full" ... />
-```
-
-## Config Service
-
-Use `Corepine\Modal\Support\ModalConfig` if you need consistent package values in your own classes:
+## Config Service (Programmatic Access)
 
 ```php
 $modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
-$openEvent = $modalConfig->listenEvent('open'); // openModal
+
+$openEvent = $modalConfig->listenEvent('open');      // openModal
 $closedEvent = $modalConfig->dispatchEvent('closed'); // modalClosed
 ```
 
 ## Backward Compatibility
 
-- `Corepine\Modal\Livewire\ModalComponent` still exists for legacy projects, but `Corepine\Modal\Modal` is the recommended base class.
-- Legacy modal attribute aliases are normalized:
-  - `drawer` => type drawer
-  - `sheet` => type sheet
-  - `isolated` => `isolate`
+- `Corepine\Modal\Livewire\ModalComponent` still exists for legacy usage.
+- Recommended base class is `Corepine\Modal\Modal`.
+- Legacy aliases normalized automatically: `drawer`, `sheet`, `isolated`.
 
 ## Testing
 
