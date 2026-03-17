@@ -27,7 +27,7 @@ composer require corepine/modal
 Add once in your app layout:
 
 ```blade
-<x-corepine-modal />
+<x-corepine.modal.assets />
 ```
 
 Or with directive:
@@ -38,7 +38,8 @@ Or with directive:
 
 Notes:
 - This host must exist for open/close dispatch events to work.
-- `<x-corepine-modal include-styles />` can include the published CSS file (`public/vendor/corepine-modal/app.css`) if you need it.
+- `<x-corepine.modal.assets include-styles />` can include the published CSS file (`public/vendor/corepine-modal/app.css`) if you need it.
+- Legacy host alias `<x-corepine-modal />` still works.
 
 ## Tailwind v4 Setup
 
@@ -52,13 +53,18 @@ No `tailwind.config.js` is required for this package itself.
 
 ## Blade Components
 
-- `<x-corepine-modal />`: renders the global Livewire modal host.
-- `<x-corepine-modal-layout />`: reusable shell (header/body/footer) for modal content.
-- `<x-corepine-modal-template />`: alias of `x-corepine-modal-layout`.
-- `<x-corepine-modal-open />`: trigger helper (dispatches open event).
-- `<x-corepine-modal-close />`: close helper (dispatches close event).
-- `<x-corepine-open-modal />`: backward-compatible alias of `x-corepine-modal-open`.
-- `<x-corepine-close-modal />`: backward-compatible alias of `x-corepine-modal-close`.
+Preferred dotted aliases:
+- `<x-corepine.modal.assets />`: renders the global Livewire modal host.
+- `<x-corepine.modal.layout />`: reusable shell (header/body/footer) for modal content.
+- `<x-corepine.modal.template />`: alias of `x-corepine.modal.layout`.
+- `<x-corepine.modal.actions.open />`: trigger helper (dispatches open event).
+- `<x-corepine.modal.actions.close />`: close helper (dispatches close event).
+
+Legacy aliases still supported:
+- `<x-corepine-modal />`, `<x-corepine-modal-layout />`, `<x-corepine-modal-template />`
+- `<x-corepine-modal-actions-open />`, `<x-corepine-modal-actions-close />`
+- `<x-corepine-modal-open />`, `<x-corepine-modal-close />`
+- `<x-corepine-open-modal />`, `<x-corepine-close-modal />`
 
 ## Create A Modal Class
 
@@ -97,7 +103,7 @@ class EditUser extends Modal
 }
 ```
 
-## Layout Shell (`x-corepine-modal-layout`)
+## Layout Shell (`x-corepine.modal.layout`)
 
 Use this inside your modal view so you do not repeat title/close/footer structure.
 
@@ -112,18 +118,18 @@ Named slot:
 Example:
 
 ```blade
-<x-corepine-modal-layout title="Manage Users" description="Search and edit users">
+<x-corepine.modal.layout title="Manage Users" description="Search and edit users">
     <div class="space-y-3">
         <!-- body content -->
     </div>
 
     <x-slot:footer>
         <div class="flex justify-end gap-2">
-            <x-corepine-modal-close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine-modal-close>
+            <x-corepine.modal.actions.close class="rounded-md border px-3 py-2 text-sm">Cancel</x-corepine.modal.actions.close>
             <button type="submit" class="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Save</button>
         </div>
     </x-slot:footer>
-</x-corepine-modal-layout>
+</x-corepine.modal.layout>
 ```
 
 ## Open Modals
@@ -155,7 +161,7 @@ Example:
 ### Open Helper Component
 
 ```blade
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     :component-class="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
     type="drawer"
@@ -166,7 +172,7 @@ Example:
     class="bg-white p-6 rounded-none"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 ```
 
 Open helper props:
@@ -238,9 +244,9 @@ From Blade:
 Close helper:
 
 ```blade
-<x-corepine-modal-close count="1" destroy="true" force="false">
+<x-corepine.modal.actions.close count="1" destroy="true" force="false">
     Close
-</x-corepine-modal-close>
+</x-corepine.modal.actions.close>
 ```
 
 Close helper props:

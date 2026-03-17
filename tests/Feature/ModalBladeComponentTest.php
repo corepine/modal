@@ -8,6 +8,12 @@ it('renders modal host using corepine-modal component', function (): void {
     expect($html)->toContain('cp-modal fixed inset-0');
 });
 
+it('renders modal host using dotted assets alias', function (): void {
+    $html = Blade::render('<x-corepine.modal.assets />');
+
+    expect($html)->toContain('cp-modal fixed inset-0');
+});
+
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-layout title="Edit User">
@@ -76,6 +82,18 @@ BLADE);
     expect($html)->toContain('cp-modal-layout');
     expect($html)->toContain('Template Alias');
     expect($html)->toContain('Template content');
+});
+
+it('renders modal shell using dotted layout alias', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal.layout title="Dot Layout">
+    <div>Layout content</div>
+</x-corepine.modal.layout>
+BLADE);
+
+    expect($html)->toContain('cp-modal-layout');
+    expect($html)->toContain('Dot Layout');
+    expect($html)->toContain('Layout content');
 });
 
 it('renders open helper with new alias and forwards class to modal attributes', function (): void {
@@ -204,6 +222,48 @@ BLADE);
 <x-corepine-close-modal>
     <button type="button">Close</button>
 </x-corepine-close-modal>
+BLADE);
+
+    $openDecoded = preg_replace('/\s+/', ' ', html_entity_decode($open, ENT_QUOTES));
+    $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
+
+    expect($openDecoded)->toContain('Livewire.dispatch');
+    expect($openDecoded)->toContain('openModal');
+    expect($closeDecoded)->toContain('Livewire.dispatch');
+    expect($closeDecoded)->toContain('closeModal');
+});
+
+it('supports dotted actions open and close helper aliases', function (): void {
+    $open = Blade::render(<<<'BLADE'
+<x-corepine.modal.actions.open component="modals.edit-user">
+    <button type="button">Open</button>
+</x-corepine.modal.actions.open>
+BLADE);
+    $close = Blade::render(<<<'BLADE'
+<x-corepine.modal.actions.close>
+    <button type="button">Close</button>
+</x-corepine.modal.actions.close>
+BLADE);
+
+    $openDecoded = preg_replace('/\s+/', ' ', html_entity_decode($open, ENT_QUOTES));
+    $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
+
+    expect($openDecoded)->toContain('Livewire.dispatch');
+    expect($openDecoded)->toContain('openModal');
+    expect($closeDecoded)->toContain('Livewire.dispatch');
+    expect($closeDecoded)->toContain('closeModal');
+});
+
+it('supports dashed actions open and close aliases', function (): void {
+    $open = Blade::render(<<<'BLADE'
+<x-corepine-modal-actions-open component="modals.edit-user">
+    <button type="button">Open</button>
+</x-corepine-modal-actions-open>
+BLADE);
+    $close = Blade::render(<<<'BLADE'
+<x-corepine-modal-actions-close>
+    <button type="button">Close</button>
+</x-corepine-modal-actions-close>
 BLADE);
 
     $openDecoded = preg_replace('/\s+/', ' ', html_entity_decode($open, ENT_QUOTES));
