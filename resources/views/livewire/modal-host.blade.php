@@ -404,17 +404,34 @@
 
                     const id = this.draggingSheetId;
                     const panel = this.$refs[`panel-${id}`];
+                    const releaseY = this.eventClientY(event);
+
+                    if (releaseY !== null) {
+                        const releaseOffset = Math.max(0, releaseY - this.sheetDragStartY);
+                        this.sheetDragOffsetY = Math.max(this.sheetDragOffsetY, releaseOffset);
+                    }
+
+                    const finalOffset = this.sheetDragOffsetY;
                     const panelHeight = panel?.offsetHeight ?? window.innerHeight;
                     const threshold = panelHeight * this.sheetDragThreshold(id);
-                    const shouldClose = this.sheetDragOffsetY >= threshold;
+                    const shouldClose = finalOffset >= threshold;
                     const attrs = this.modalAttributesById(id);
                     const destroyOnClose = attrs.destroyOnClose ?? true;
 
-                    this.clearSheetDrag();
-
                     if (!shouldClose) {
+                        this.clearSheetDrag();
+
                         return;
                     }
+
+                    if (this.localClosingIds.length > 0) {
+                        return;
+                    }
+
+                    // Keep moving down when threshold is reached so close feels continuous.
+                    this.sheetDragOffsetY = Math.max(finalOffset, panelHeight);
+                    this.sheetDragPointerId = null;
+                    this.sheetDragStartY = 0;
 
                     this.requestClose({
                         id,

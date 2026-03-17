@@ -138,6 +138,7 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ->assertSee('x-on:pointermove.window="moveSheetDrag($event)"', false)
         ->assertSee('x-on:pointerup.window="endSheetDrag($event)"', false)
         ->assertSee('x-bind:style="panelStyle(', false)
+        ->assertSee('const releaseY = this.eventClientY(event);', false)
         ->assertSee('startSheetResize(', false)
         ->assertSee('startSheetDrag(', false);
 });
