@@ -25,6 +25,7 @@ it('renders standalone dotted modal component without livewire host dependency',
 BLADE);
 
     expect($html)->toContain('data-corepine-modal-id="standalone-user-modal"');
+    expect($html)->toContain('x-teleport="body"');
     expect($html)->toContain('x-on:corepine-modal:open.window');
     expect($html)->toContain('x-on:corepine-modal:close.window');
     expect($html)->toContain('x-on:corepine-modal:toggle.window');
@@ -32,6 +33,37 @@ BLADE);
     expect($html)->toContain('Simple Blade-only modal.');
     expect($html)->toContain('Standalone body');
     expect($html)->toContain('Done');
+});
+
+it('supports standalone modal presentation and sheet options', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal
+    id="settings-sheet"
+    type="sheet"
+    position="bottom"
+    size="2xl"
+    height="72vh"
+    sheet-min-height="40vh"
+    sheet-max-height="95vh"
+    drag-close-threshold="0.35"
+    close-on-click-away="false"
+    blur="true"
+    class="border border-zinc-200"
+>
+    <div>Standalone settings</div>
+</x-corepine.modal>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('cp-modal-shape-sheet');
+    expect($flat)->toContain('max-w-2xl');
+    expect($flat)->toContain('border border-zinc-200');
+    expect($flat)->toContain('backdrop-blur-sm');
+    expect($flat)->toContain('x-bind:style="panelStyle()"');
+    expect($flat)->toContain('startSheetResize($event)');
+    expect($flat)->toContain('\u0022dragCloseThreshold\u0022:\u00220.35\u0022');
+    expect($flat)->toContain('\u0022closeOnClickAway\u0022:false');
 });
 
 it('renders modal shell with header, body, and footer slots', function (): void {

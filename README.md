@@ -88,6 +88,19 @@ Use this when you want a modal without a Livewire modal component stack.
 </x-corepine.modal>
 ```
 
+Standalone props support the same presentation attributes used by stacked modals:
+- `type`, `drawer`, `sheet`, `position`
+- `size`, `height`
+- `blur`, `closeOnEscape`, `closeOnClickAway`
+- `draggable`, `dragCloseThreshold`/`sheetDragThreshold`
+- `sheetMinHeight`/`minHeight`, `sheetMaxHeight`/`maxHeight`
+- `class` (merged on modal panel)
+
+Stack-only behavior is intentionally not included for standalone mode:
+- no modal stack tracking
+- no previous modal restore
+- no close event dispatch chain to other modal layers
+
 Standalone modal events:
 - `corepine-modal:open`
 - `corepine-modal:close`

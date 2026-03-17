@@ -3,124 +3,816 @@
     'open' => false,
     'title' => null,
     'description' => null,
+    'showClose' => true,
+    'modalAttributes' => [],
     'size' => 'default',
+    'type' => null,
+    'drawer' => null,
+    'sheet' => null,
+    'position' => null,
+    'height' => null,
+    'sheetHeight' => null,
+    'sheetMinHeight' => null,
+    'minHeight' => null,
+    'sheetMaxHeight' => null,
+    'maxHeight' => null,
+    'draggable' => null,
+    'dragCloseThreshold' => null,
+    'sheetDragThreshold' => null,
     'closeOnEscape' => true,
     'closeOnClickAway' => true,
     'blur' => false,
-    'showClose' => true,
 ])
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
 @php($resolvedId = is_string($id) && trim($id) !== '' ? trim($id) : null)
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
 @php($resolvedDescription = is_string($description) && trim($description) !== '' ? $description : null)
-@php($sizeClasses = $modalConfig->modalSizeClasses(['size' => $size]))
-@php($extraClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')
 @php($hasFooter = isset($footer) && $footer->isNotEmpty())
 @php($panelAttributes = $attributes->except('class'))
+@php($normalizeBoolean = static function (mixed $value, ?bool $fallback = null): ?bool {
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_string($value)) {
+        return match (strtolower(trim($value))) {
+            '1', 'true', 'yes', 'on' => true,
+            '0', 'false', 'no', 'off' => false,
+            default => $fallback,
+        };
+    }
+
+    if (is_int($value) || is_float($value)) {
+        if ((float) $value === 1.0) {
+            return true;
+        }
+
+        if ((float) $value === 0.0) {
+            return false;
+        }
+    }
+
+    return $fallback;
+})
+@php($payloadModalAttributes = is_array($modalAttributes) ? $modalAttributes : [])
+@php($normalizedType = null)
+@if ($type instanceof \Corepine\Modal\Enums\ModalType)
+    @php($normalizedType = $type->value)
+@elseif (is_string($type))
+    @php($normalizedType = match (strtolower(trim($type))) {
+        'modal', 'drawer', 'sheet' => strtolower(trim($type)),
+        default => null,
+    })
+@endif
+@php($normalizedDrawer = ! is_null($drawer) ? $normalizeBoolean($drawer, null) : null)
+@php($normalizedSheet = ! is_null($sheet) ? $normalizeBoolean($sheet, null) : null)
+@if (! is_null($normalizedDrawer))
+    @php($payloadModalAttributes['drawer'] = $normalizedDrawer)
+    @if (is_null($normalizedType) && $normalizedDrawer === true)
+        @php($normalizedType = 'drawer')
+    @endif
+@endif
+@if (! is_null($normalizedSheet))
+    @php($payloadModalAttributes['sheet'] = $normalizedSheet)
+    @if (is_null($normalizedType) && $normalizedSheet === true)
+        @php($normalizedType = 'sheet')
+    @endif
+@endif
+@if (! is_null($normalizedType))
+    @php($payloadModalAttributes['type'] = $normalizedType)
+@endif
+@if (is_string($position) && trim($position) !== '')
+    @php($payloadModalAttributes['position'] = strtolower(trim($position)))
+@endif
+@if (is_string($size) && trim($size) !== '')
+    @php($payloadModalAttributes['size'] = trim($size))
+@endif
+@if (is_int($height) || is_float($height) || (is_string($height) && trim($height) !== ''))
+    @php($payloadModalAttributes['height'] = $height)
+@endif
+@if (is_int($sheetHeight) || is_float($sheetHeight) || (is_string($sheetHeight) && trim($sheetHeight) !== ''))
+    @php($payloadModalAttributes['sheetHeight'] = $sheetHeight)
+@endif
+@if (is_int($sheetMinHeight) || is_float($sheetMinHeight) || (is_string($sheetMinHeight) && trim($sheetMinHeight) !== ''))
+    @php($payloadModalAttributes['sheetMinHeight'] = $sheetMinHeight)
+@endif
+@if (is_int($minHeight) || is_float($minHeight) || (is_string($minHeight) && trim($minHeight) !== ''))
+    @php($payloadModalAttributes['minHeight'] = $minHeight)
+@endif
+@if (is_int($sheetMaxHeight) || is_float($sheetMaxHeight) || (is_string($sheetMaxHeight) && trim($sheetMaxHeight) !== ''))
+    @php($payloadModalAttributes['sheetMaxHeight'] = $sheetMaxHeight)
+@endif
+@if (is_int($maxHeight) || is_float($maxHeight) || (is_string($maxHeight) && trim($maxHeight) !== ''))
+    @php($payloadModalAttributes['maxHeight'] = $maxHeight)
+@endif
+@if (is_int($dragCloseThreshold) || is_float($dragCloseThreshold) || (is_string($dragCloseThreshold) && trim($dragCloseThreshold) !== ''))
+    @php($payloadModalAttributes['dragCloseThreshold'] = $dragCloseThreshold)
+@endif
+@if (is_int($sheetDragThreshold) || is_float($sheetDragThreshold) || (is_string($sheetDragThreshold) && trim($sheetDragThreshold) !== ''))
+    @php($payloadModalAttributes['sheetDragThreshold'] = $sheetDragThreshold)
+@endif
+@php($normalizedBlur = $normalizeBoolean($blur, null))
+@if (! is_null($normalizedBlur))
+    @php($payloadModalAttributes['blur'] = $normalizedBlur)
+@endif
+@php($normalizedCloseOnEscape = $normalizeBoolean($closeOnEscape, null))
+@if (! is_null($normalizedCloseOnEscape))
+    @php($payloadModalAttributes['closeOnEscape'] = $normalizedCloseOnEscape)
+@endif
+@php($normalizedCloseOnClickAway = $normalizeBoolean($closeOnClickAway, null))
+@if (! is_null($normalizedCloseOnClickAway))
+    @php($payloadModalAttributes['closeOnClickAway'] = $normalizedCloseOnClickAway)
+@endif
+@php($normalizedDraggable = ! is_null($draggable) ? $normalizeBoolean($draggable, true) : null)
+@if (! is_null($normalizedDraggable))
+    @php($payloadModalAttributes['draggable'] = $normalizedDraggable)
+@endif
+@php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
+@php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')
+@php($mergedClass = trim(implode(' ', array_filter([$existingClass, $incomingClass]))))
+@if ($mergedClass !== '')
+    @php($payloadModalAttributes['class'] = $mergedClass)
+@endif
+@php($resolvedModalAttributes = $modalConfig->mergedModalAttributes([], $payloadModalAttributes))
+@php($isDrawer = $modalConfig->isDrawer($resolvedModalAttributes))
+@php($isSheet = $modalConfig->isSheet($resolvedModalAttributes))
+@php($position = $modalConfig->modalPosition($resolvedModalAttributes))
+@php($hasBlur = (bool) ($resolvedModalAttributes['blur'] ?? false))
+@php($modalClasses = $modalConfig->mergedModalClasses($resolvedModalAttributes))
+@php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($resolvedModalAttributes))
+@php($transitionClasses = $modalConfig->modalTransitionClasses($resolvedModalAttributes))
+@php($standaloneOptions = [
+    'id' => $resolvedId,
+    'open' => (bool) $open,
+    'type' => $modalConfig->modalType($resolvedModalAttributes),
+    'closeOnEscape' => (bool) ($resolvedModalAttributes['closeOnEscape'] ?? true),
+    'closeOnClickAway' => (bool) ($resolvedModalAttributes['closeOnClickAway'] ?? true),
+    'draggable' => ! array_key_exists('draggable', $resolvedModalAttributes)
+        ? true
+        : (bool) $normalizeBoolean($resolvedModalAttributes['draggable'], true),
+    'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? ($resolvedModalAttributes['sheetDragThreshold'] ?? 0.3),
+    'height' => $resolvedModalAttributes['height'] ?? null,
+    'sheetHeight' => $resolvedModalAttributes['sheetHeight'] ?? null,
+    'sheetMinHeight' => $resolvedModalAttributes['sheetMinHeight'] ?? ($resolvedModalAttributes['minHeight'] ?? null),
+    'sheetMaxHeight' => $resolvedModalAttributes['sheetMaxHeight'] ?? ($resolvedModalAttributes['maxHeight'] ?? null),
+])
+
+@if (isset($__livewire))
+    @script
+@endif
+    <script>
+        if (typeof window.corepineStandaloneModal !== 'function') {
+            window.corepineStandaloneModal = (options = {}) => ({
+            open: Boolean(options.open ?? false),
+            modalId: options.id ?? null,
+            type: options.type ?? 'modal',
+            closeOnEscape: options.closeOnEscape !== false,
+            closeOnClickAway: options.closeOnClickAway !== false,
+            draggable: options.draggable !== false,
+            dragCloseThresholdValue: options.dragCloseThreshold ?? 0.3,
+            heightValue: options.height ?? null,
+            sheetHeightValue: options.sheetHeight ?? null,
+            sheetMinHeightValue: options.sheetMinHeight ?? null,
+            sheetMaxHeightValue: options.sheetMaxHeight ?? null,
+            defaultModalHeightRatio: 0.5,
+            defaultDrawerHeightRatio: 1,
+            defaultSheetHeightRatio: 0.7,
+            defaultSheetTopGap: 16,
+            defaultSheetMinHeight: 260,
+            sheetHeight: null,
+            sheetDragStartY: 0,
+            sheetDragOffsetY: 0,
+            sheetDragPointerId: null,
+            draggingSheet: false,
+            resizingSheet: false,
+            sheetResizeStartY: 0,
+            sheetResizeStartHeight: 0,
+            sheetResizePointerId: null,
+            closingFromDrag: false,
+            closeResetTimer: null,
+
+            init() {
+                this.syncBodyClass();
+
+                if (this.open && this.isSheet()) {
+                    this.ensureSheetHeight();
+                }
+
+                this.$watch('open', (value) => {
+                    if (value && this.isSheet()) {
+                        this.ensureSheetHeight();
+                        this.resetSheetCloseState();
+                    }
+
+                    if (!value && !this.closingFromDrag) {
+                        this.clearSheetDrag();
+                        this.clearSheetResize();
+                    }
+
+                    this.syncBodyClass();
+                });
+            },
+
+            isSheet() {
+                return this.type === 'sheet';
+            },
+
+            isDrawer() {
+                return this.type === 'drawer';
+            },
+
+            matches(payload = {}) {
+                const target = payload?.id ?? payload?.name ?? null;
+
+                if (target === null || target === '') {
+                    return this.modalId === null;
+                }
+
+                if (this.modalId === null) {
+                    return false;
+                }
+
+                return String(target) === String(this.modalId);
+            },
+
+            openFromEvent(payload = {}) {
+                if (!this.matches(payload)) {
+                    return;
+                }
+
+                this.resetSheetCloseState();
+                this.open = true;
+
+                if (this.isSheet()) {
+                    this.ensureSheetHeight();
+                }
+            },
+
+            closeFromEvent(payload = {}) {
+                if (!this.matches(payload)) {
+                    return;
+                }
+
+                this.close();
+            },
+
+            toggleFromEvent(payload = {}) {
+                if (!this.matches(payload)) {
+                    return;
+                }
+
+                if (this.open) {
+                    this.close();
+
+                    return;
+                }
+
+                this.openFromEvent(payload);
+            },
+
+            close() {
+                this.open = false;
+
+                if (!this.closingFromDrag) {
+                    this.clearSheetDrag();
+                    this.clearSheetResize();
+                }
+            },
+
+            handleEscape() {
+                if (!this.open || !this.closeOnEscape) {
+                    return;
+                }
+
+                this.close();
+            },
+
+            handleClickAway() {
+                if (!this.closeOnClickAway) {
+                    return;
+                }
+
+                this.close();
+            },
+
+            syncBodyClass() {
+                const openStandaloneCount = document.querySelectorAll('[data-corepine-standalone="true"][data-open="true"]').length;
+
+                if (openStandaloneCount > 0) {
+                    document.body.classList.add('cp-modal-open');
+
+                    return;
+                }
+
+                document.body.classList.remove('cp-modal-open');
+            },
+
+            eventClientY(event) {
+                const point = event?.touches?.[0] ?? event?.changedTouches?.[0] ?? event;
+
+                return typeof point?.clientY === 'number' ? point.clientY : null;
+            },
+
+            viewportHeight() {
+                return window.innerHeight || document.documentElement?.clientHeight || 800;
+            },
+
+            normalizeHeightValue(value, fallback = null) {
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    if (value > 0 && value <= 1) {
+                        return this.viewportHeight() * value;
+                    }
+
+                    if (value > 1 && value <= 100) {
+                        return this.viewportHeight() * (value / 100);
+                    }
+
+                    return value;
+                }
+
+                if (typeof value !== 'string') {
+                    return fallback;
+                }
+
+                const normalized = value.trim().toLowerCase();
+
+                if (normalized === '') {
+                    return fallback;
+                }
+
+                if (normalized === 'full') {
+                    return this.viewportHeight() - this.defaultSheetTopGap;
+                }
+
+                if (normalized.endsWith('vh') || normalized.endsWith('dvh') || normalized.endsWith('%')) {
+                    const ratio = Number.parseFloat(normalized);
+
+                    if (!Number.isNaN(ratio)) {
+                        return this.viewportHeight() * (ratio / 100);
+                    }
+
+                    return fallback;
+                }
+
+                if (normalized.endsWith('px')) {
+                    const pixels = Number.parseFloat(normalized);
+
+                    return Number.isNaN(pixels) ? fallback : pixels;
+                }
+
+                const numeric = Number.parseFloat(normalized);
+
+                if (Number.isNaN(numeric)) {
+                    return fallback;
+                }
+
+                if (numeric > 0 && numeric <= 1) {
+                    return this.viewportHeight() * numeric;
+                }
+
+                if (numeric > 1 && numeric <= 100) {
+                    return this.viewportHeight() * (numeric / 100);
+                }
+
+                return numeric;
+            },
+
+            defaultHeightByType() {
+                const viewport = this.viewportHeight();
+
+                if (this.isDrawer()) {
+                    return viewport * this.defaultDrawerHeightRatio;
+                }
+
+                if (this.isSheet()) {
+                    return viewport * this.defaultSheetHeightRatio;
+                }
+
+                return viewport * this.defaultModalHeightRatio;
+            },
+
+            resolvePanelHeight() {
+                const fallback = this.defaultHeightByType();
+                const preferred = this.normalizeHeightValue(
+                    this.heightValue ?? (this.isSheet() ? this.sheetHeightValue : null),
+                    fallback
+                );
+                const max = this.isDrawer()
+                    ? this.viewportHeight()
+                    : this.viewportHeight() - this.defaultSheetTopGap;
+                const min = this.isDrawer() ? 160 : 120;
+
+                return Math.max(min, Math.min(max, Math.round(preferred ?? fallback)));
+            },
+
+            sheetMinHeight() {
+                const configured = this.normalizeHeightValue(this.sheetMinHeightValue, this.defaultSheetMinHeight);
+
+                return Math.max(120, Math.round(configured ?? this.defaultSheetMinHeight));
+            },
+
+            sheetMaxHeight() {
+                const viewport = this.viewportHeight();
+                const fallback = viewport - this.defaultSheetTopGap;
+                const configured = this.normalizeHeightValue(this.sheetMaxHeightValue, fallback);
+                const max = Math.min(viewport, Math.round(configured ?? fallback));
+
+                return Math.max(this.sheetMinHeight(), max);
+            },
+
+            clampSheetHeight(height) {
+                const min = this.sheetMinHeight();
+                const max = this.sheetMaxHeight();
+
+                return Math.max(min, Math.min(max, Math.round(height)));
+            },
+
+            resolveInitialSheetHeight() {
+                const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
+                const preferred = this.normalizeHeightValue(
+                    this.heightValue ?? this.sheetHeightValue,
+                    fallback
+                );
+
+                return this.clampSheetHeight(preferred ?? fallback);
+            },
+
+            ensureSheetHeight() {
+                if (!this.isSheet()) {
+                    return;
+                }
+
+                if (this.sheetHeight === null) {
+                    this.sheetHeight = this.resolveInitialSheetHeight();
+                } else {
+                    this.sheetHeight = this.clampSheetHeight(this.sheetHeight);
+                }
+            },
+
+            resolvedDragThreshold() {
+                const raw = Number.parseFloat(this.dragCloseThresholdValue ?? 0.3);
+
+                if (Number.isNaN(raw)) {
+                    return 0.3;
+                }
+
+                return Math.min(0.95, Math.max(0.05, raw));
+            },
+
+            panelStyle() {
+                if (this.isSheet()) {
+                    this.ensureSheetHeight();
+
+                    const offset = (this.draggingSheet || this.closingFromDrag) ? this.sheetDragOffsetY : 0;
+                    const transition = (this.draggingSheet || this.resizingSheet)
+                        ? 'none'
+                        : 'transform 180ms ease-out, height 140ms ease-out';
+                    const height = this.sheetHeight ?? this.resolveInitialSheetHeight();
+
+                    return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
+                }
+
+                const height = this.resolvePanelHeight();
+                const maxHeight = this.isDrawer() ? '100dvh' : `calc(100dvh - ${this.defaultSheetTopGap}px)`;
+
+                return `height: ${height}px; max-height: ${maxHeight};`;
+            },
+
+            startSheetDrag(event) {
+                if (!this.isSheet() || !this.draggable || !this.open || this.resizingSheet) {
+                    return;
+                }
+
+                if (event?.type === 'mousedown' && event.button !== 0) {
+                    return;
+                }
+
+                if (event?.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+
+                const startY = this.eventClientY(event);
+
+                if (startY === null) {
+                    return;
+                }
+
+                this.draggingSheet = true;
+                this.sheetDragStartY = startY;
+                this.sheetDragOffsetY = 0;
+                this.sheetDragPointerId = event?.pointerId ?? null;
+            },
+
+            moveSheetDrag(event) {
+                if (this.resizingSheet) {
+                    this.moveSheetResize(event);
+
+                    return;
+                }
+
+                if (!this.draggingSheet) {
+                    return;
+                }
+
+                if (this.sheetDragPointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetDragPointerId) {
+                    return;
+                }
+
+                const currentY = this.eventClientY(event);
+
+                if (currentY === null) {
+                    return;
+                }
+
+                const deltaY = Math.max(0, currentY - this.sheetDragStartY);
+                this.sheetDragOffsetY = deltaY;
+
+                if (deltaY > 0 && event?.cancelable) {
+                    event.preventDefault();
+                }
+            },
+
+            clearSheetDrag(resetOffset = true) {
+                this.draggingSheet = false;
+                this.sheetDragStartY = 0;
+                this.sheetDragPointerId = null;
+
+                if (resetOffset) {
+                    this.sheetDragOffsetY = 0;
+                }
+            },
+
+            startSheetResize(event) {
+                if (!this.isSheet() || !this.draggable || !this.open || this.draggingSheet) {
+                    return;
+                }
+
+                if (event?.type === 'mousedown' && event.button !== 0) {
+                    return;
+                }
+
+                if (event?.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+
+                const startY = this.eventClientY(event);
+
+                if (startY === null) {
+                    return;
+                }
+
+                this.ensureSheetHeight();
+                this.resizingSheet = true;
+                this.sheetResizeStartY = startY;
+                this.sheetResizeStartHeight = this.sheetHeight ?? this.resolveInitialSheetHeight();
+                this.sheetResizePointerId = event?.pointerId ?? null;
+
+                if (event?.cancelable) {
+                    event.preventDefault();
+                }
+            },
+
+            moveSheetResize(event) {
+                if (!this.resizingSheet) {
+                    return;
+                }
+
+                if (this.sheetResizePointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetResizePointerId) {
+                    return;
+                }
+
+                const currentY = this.eventClientY(event);
+
+                if (currentY === null) {
+                    return;
+                }
+
+                const deltaY = currentY - this.sheetResizeStartY;
+                const nextHeight = this.sheetResizeStartHeight - deltaY;
+                this.sheetHeight = this.clampSheetHeight(nextHeight);
+
+                if (event?.cancelable) {
+                    event.preventDefault();
+                }
+            },
+
+            clearSheetResize() {
+                this.resizingSheet = false;
+                this.sheetResizeStartY = 0;
+                this.sheetResizeStartHeight = 0;
+                this.sheetResizePointerId = null;
+            },
+
+            endSheetResize(event) {
+                if (!this.resizingSheet) {
+                    return;
+                }
+
+                if (this.sheetResizePointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetResizePointerId) {
+                    return;
+                }
+
+                this.clearSheetResize();
+            },
+
+            endSheetDrag(event) {
+                if (this.resizingSheet) {
+                    this.endSheetResize(event);
+
+                    return;
+                }
+
+                if (!this.draggingSheet) {
+                    return;
+                }
+
+                if (this.sheetDragPointerId !== null && event?.pointerId !== undefined && event.pointerId !== this.sheetDragPointerId) {
+                    return;
+                }
+
+                const releaseY = this.eventClientY(event);
+
+                if (releaseY !== null) {
+                    const releaseOffset = Math.max(0, releaseY - this.sheetDragStartY);
+                    this.sheetDragOffsetY = Math.max(this.sheetDragOffsetY, releaseOffset);
+                }
+
+                const finalOffset = this.sheetDragOffsetY;
+                const panel = this.$refs.panel;
+                const panelHeight = panel?.offsetHeight ?? this.viewportHeight();
+                const threshold = panelHeight * this.resolvedDragThreshold();
+                const shouldClose = finalOffset >= threshold;
+
+                if (!shouldClose) {
+                    this.clearSheetDrag();
+
+                    return;
+                }
+
+                this.resetSheetCloseState();
+                this.closingFromDrag = true;
+                this.sheetDragOffsetY = Math.max(finalOffset, panelHeight);
+                this.sheetDragStartY = 0;
+                this.sheetDragPointerId = null;
+                this.draggingSheet = false;
+                this.open = false;
+
+                this.closeResetTimer = setTimeout(() => {
+                    this.resetSheetCloseState();
+                    this.clearSheetDrag();
+                    this.clearSheetResize();
+                    this.syncBodyClass();
+                }, 260);
+            },
+
+            resetSheetCloseState() {
+                if (this.closeResetTimer) {
+                    clearTimeout(this.closeResetTimer);
+                    this.closeResetTimer = null;
+                }
+
+                this.closingFromDrag = false;
+            },
+            });
+
+            // Ensure global identifier access for Alpine expression evaluation.
+            if (typeof globalThis !== 'undefined') {
+                globalThis.corepineStandaloneModal = window.corepineStandaloneModal;
+            }
+        }
+    </script>
+@if (isset($__livewire))
+    @endscript
+@endif
 
 <div
-    x-data="{
-        open: @js((bool) $open),
-        modalId: @js($resolvedId),
-        matches(payload = {}) {
-            const target = payload?.id ?? payload?.name ?? null;
-
-            if (target === null || target === '') {
-                return this.modalId === null;
-            }
-
-            if (this.modalId === null) {
-                return false;
-            }
-
-            return String(target) === String(this.modalId);
-        },
-    }"
-    x-init="$watch('open', (value) => document.body.classList.toggle('cp-modal-open', value)); if (open) document.body.classList.add('cp-modal-open');"
-    x-on:corepine-modal:open.window="if (matches($event.detail ?? {})) open = true"
-    x-on:corepine-modal:close.window="if (matches($event.detail ?? {})) open = false"
-    x-on:corepine-modal:toggle.window="if (matches($event.detail ?? {})) open = !open"
-    x-on:keydown.escape.window.stop="if (@js((bool) $closeOnEscape) && open) open = false"
-    x-cloak
-    x-show="open"
-    class="cp-modal fixed inset-0 z-[999] overflow-y-auto"
-    style="display: none;"
-    role="dialog"
-    aria-modal="true"
+    x-data="window.corepineStandaloneModal(@js($standaloneOptions))"
+    x-init="init()"
+    x-on:corepine-modal:open.window="openFromEvent($event.detail ?? {})"
+    x-on:corepine-modal:close.window="closeFromEvent($event.detail ?? {})"
+    x-on:corepine-modal:toggle.window="toggleFromEvent($event.detail ?? {})"
+    x-on:keydown.escape.window.stop="handleEscape()"
+    x-on:pointermove.window="moveSheetDrag($event)"
+    x-on:pointerup.window="endSheetDrag($event)"
+    x-on:pointercancel.window="endSheetDrag($event)"
+    x-on:touchmove.window="moveSheetDrag($event)"
+    x-on:touchend.window="endSheetDrag($event)"
+    x-on:touchcancel.window="endSheetDrag($event)"
+    x-on:mousemove.window="moveSheetDrag($event)"
+    x-on:mouseup.window="endSheetDrag($event)"
+    x-bind:data-open="open ? 'true' : 'false'"
+    data-corepine-standalone="true"
     data-corepine-modal-id="{{ $resolvedId }}"
 >
-    <div class="cp-modal-viewport relative min-h-full">
-        <div
-            x-show="open"
-            x-transition.opacity.duration.200ms
-            x-on:click="if (@js((bool) $closeOnClickAway)) open = false"
-            @class([
-                'cp-modal-layer-backdrop absolute inset-0 bg-zinc-950/50',
-                'backdrop-blur-sm' => (bool) $blur,
-            ])
-        ></div>
-
-        <div
-            x-show="open"
-            x-transition:enter="duration-200 ease-out"
-            x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave="duration-150 ease-in"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95"
-            x-on:click="if (@js((bool) $closeOnClickAway)) open = false"
-            class="cp-modal-panel-wrap absolute inset-0 flex w-full items-center justify-center p-4 sm:p-8"
-        >
-            <section
-                {{ $panelAttributes->merge(['class' => trim("cp-modal-component cp-modal-shape-default w-full overflow-hidden bg-white text-zinc-900 shadow-xl dark:bg-zinc-800 dark:text-zinc-100 {$sizeClasses} {$extraClass}")]) }}
-                x-on:click.stop
+        <template x-teleport="body">
+            <div
+                x-cloak
+                x-show="open"
+                class="cp-modal fixed inset-0 z-[999] overflow-y-auto"
+                style="display: none;"
+                role="dialog"
+                aria-modal="true"
+                data-corepine-modal-id="{{ $resolvedId }}"
             >
-                @if ($resolvedTitle !== null || $resolvedDescription !== null || $showClose)
-                    <header class="cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
-                        <div class="min-w-0">
-                            @if ($resolvedTitle !== null)
-                                <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
-                                    {{ $resolvedTitle }}
-                                </h2>
+                <div class="cp-modal-viewport relative min-h-full">
+                    <div
+                        x-show="open"
+                        x-transition.opacity.duration.200ms
+                        x-on:click="handleClickAway()"
+                        @class([
+                            'cp-modal-layer-backdrop absolute inset-0 bg-zinc-950/50',
+                            'backdrop-blur-sm' => $hasBlur,
+                        ])
+                    ></div>
+
+                    <div
+                        x-show="open"
+                        x-transition:enter="{{ $transitionClasses['enter'] }}"
+                        x-transition:enter-start="{{ $transitionClasses['enterStart'] }}"
+                        x-transition:enter-end="{{ $transitionClasses['enterEnd'] }}"
+                        x-transition:leave="{{ $transitionClasses['leave'] }}"
+                        x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
+                        x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
+                        x-on:click="handleClickAway()"
+                        class="{{ $panelWrapClasses }}"
+                    >
+                        <section
+                            x-ref="panel"
+                            x-bind:style="panelStyle()"
+                            x-on:pointerdown.capture="startSheetDrag($event)"
+                            x-on:touchstart.capture="startSheetDrag($event)"
+                            x-on:mousedown.capture="startSheetDrag($event)"
+                            x-on:click.stop
+                            @class([
+                                'cp-modal-component w-full overflow-hidden bg-white text-zinc-900 shadow-xl dark:bg-zinc-800 dark:text-zinc-100',
+                                'flex h-full flex-col',
+                                'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
+                                'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
+                                'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
+                                'cp-modal-shape-sheet' => $isSheet,
+                                $modalClasses,
+                                'rounded-l-none' => $isDrawer && $position === 'left',
+                                'rounded-r-none' => $isDrawer && $position === 'right',
+                            ])
+                            {{ $panelAttributes }}
+                        >
+                            @if ($isSheet)
+                                <div
+                                    x-show="draggable"
+                                    class="cp-modal-sheet-handle cursor-row-resize select-none px-4 pt-3 sm:pt-4"
+                                    x-on:pointerdown.stop.prevent="startSheetResize($event)"
+                                    x-on:touchstart.stop.prevent="startSheetResize($event)"
+                                    x-on:mousedown.stop.prevent="startSheetResize($event)"
+                                    style="touch-action: none;"
+                                >
+                                    <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
+                                </div>
                             @endif
 
-                            @if ($resolvedDescription !== null)
-                                <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                                    {{ $resolvedDescription }}
-                                </p>
+                            @if ($resolvedTitle !== null || $resolvedDescription !== null || $showClose)
+                                <header class="cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
+                                    <div class="min-w-0">
+                                        @if ($resolvedTitle !== null)
+                                            <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                                                {{ $resolvedTitle }}
+                                            </h2>
+                                        @endif
+
+                                        @if ($resolvedDescription !== null)
+                                            <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                                                {{ $resolvedDescription }}
+                                            </p>
+                                        @endif
+                                    </div>
+
+                                    @if ($showClose)
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+                                            x-on:click="close()"
+                                        >
+                                            <span class="sr-only">Close</span>
+                                            <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+                                                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </header>
                             @endif
-                        </div>
 
-                        @if ($showClose)
-                            <button
-                                type="button"
-                                class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
-                                x-on:click="open = false"
-                            >
-                                <span class="sr-only">Close</span>
-                                <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
-                                    <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-                                </svg>
-                            </button>
-                        @endif
-                    </header>
-                @endif
+                            <main class="cp-modal-body grow overflow-y-auto px-5 py-4">
+                                {{ $slot }}
+                            </main>
 
-                <main @class([
-                    'cp-modal-body overflow-y-auto px-5 py-4',
-                    'max-h-[78dvh]' => ! $hasFooter,
-                    'max-h-[70dvh]' => $hasFooter,
-                ])>
-                    {{ $slot }}
-                </main>
-
-                @if ($hasFooter)
-                    <footer {{ $footer->attributes->class('cp-modal-footer flex items-center border-t border-zinc-200/70 px-5 py-3 dark:border-zinc-700/70') }}>
-                        {{ $footer }}
-                    </footer>
-                @endif
-            </section>
-        </div>
-    </div>
+                            @if ($hasFooter)
+                                <footer {{ $footer->attributes->class('cp-modal-footer flex items-center border-t border-zinc-200/70 px-5 py-3 dark:border-zinc-700/70') }}>
+                                    {{ $footer }}
+                                </footer>
+                            @endif
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </template>
 </div>
