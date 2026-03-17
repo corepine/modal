@@ -26,9 +26,11 @@ BLADE);
 
     expect($html)->toContain('data-corepine-modal-id="standalone-user-modal"');
     expect($html)->toContain('x-teleport="body"');
+    expect($html)->toContain('x-on:resize.window.debounce.120ms="handleViewportResize()"');
     expect($html)->toContain('x-on:corepine-modal:open.window');
     expect($html)->toContain('x-on:corepine-modal:close.window');
     expect($html)->toContain('x-on:corepine-modal:toggle.window');
+    expect($html)->toContain('cp-modal-panel-default-height');
     expect($html)->toContain('Standalone Modal');
     expect($html)->toContain('Simple Blade-only modal.');
     expect($html)->toContain('Standalone body');

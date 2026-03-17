@@ -8,6 +8,16 @@
         overflow: hidden;
     }
 
+    .cp-modal-panel-default-height {
+        height: 50dvh;
+        max-height: calc(100dvh - 1rem);
+    }
+
+    .cp-modal-panel-drawer-height {
+        height: 100dvh;
+        max-height: 100dvh;
+    }
+
     .cp-modal-shape-default {
         border-radius: 0.5rem;
     }

@@ -175,8 +175,6 @@
             sheetHeightValue: options.sheetHeight ?? null,
             sheetMinHeightValue: options.sheetMinHeight ?? null,
             sheetMaxHeightValue: options.sheetMaxHeight ?? null,
-            defaultModalHeightRatio: 0.5,
-            defaultDrawerHeightRatio: 1,
             defaultSheetHeightRatio: 0.7,
             defaultSheetTopGap: 16,
             defaultSheetMinHeight: 260,
@@ -378,32 +376,10 @@
                 return numeric;
             },
 
-            defaultHeightByType() {
-                const viewport = this.viewportHeight();
-
-                if (this.isDrawer()) {
-                    return viewport * this.defaultDrawerHeightRatio;
+            handleViewportResize() {
+                if (this.isSheet() && this.sheetHeight !== null) {
+                    this.sheetHeight = this.clampSheetHeight(this.sheetHeight);
                 }
-
-                if (this.isSheet()) {
-                    return viewport * this.defaultSheetHeightRatio;
-                }
-
-                return viewport * this.defaultModalHeightRatio;
-            },
-
-            resolvePanelHeight() {
-                const fallback = this.defaultHeightByType();
-                const preferred = this.normalizeHeightValue(
-                    this.heightValue ?? (this.isSheet() ? this.sheetHeightValue : null),
-                    fallback
-                );
-                const max = this.isDrawer()
-                    ? this.viewportHeight()
-                    : this.viewportHeight() - this.defaultSheetTopGap;
-                const min = this.isDrawer() ? 160 : 120;
-
-                return Math.max(min, Math.min(max, Math.round(preferred ?? fallback)));
             },
 
             sheetMinHeight() {
@@ -473,10 +449,7 @@
                     return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
                 }
 
-                const height = this.resolvePanelHeight();
-                const maxHeight = this.isDrawer() ? '100dvh' : `calc(100dvh - ${this.defaultSheetTopGap}px)`;
-
-                return `height: ${height}px; max-height: ${maxHeight};`;
+                return '';
             },
 
             startSheetDrag(event) {
@@ -701,6 +674,7 @@
     x-on:touchcancel.window="endSheetDrag($event)"
     x-on:mousemove.window="moveSheetDrag($event)"
     x-on:mouseup.window="endSheetDrag($event)"
+    x-on:resize.window.debounce.120ms="handleViewportResize()"
     x-bind:data-open="open ? 'true' : 'false'"
     data-corepine-standalone="true"
     data-corepine-modal-id="{{ $resolvedId }}"
@@ -746,7 +720,9 @@
                             x-on:click.stop
                             @class([
                                 'cp-modal-component w-full overflow-hidden bg-white text-zinc-900 shadow-xl dark:bg-zinc-800 dark:text-zinc-100',
-                                'flex h-full flex-col',
+                                'flex flex-col',
+                                'cp-modal-panel-default-height' => ! $isDrawer && ! $isSheet,
+                                'cp-modal-panel-drawer-height' => $isDrawer,
                                 'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
                                 'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                                 'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',

@@ -20,9 +20,8 @@
                 sheetResizeStartY: 0,
                 sheetResizeStartHeight: 0,
                 sheetResizePointerId: null,
+                viewportVersion: 0,
                 defaultSheetMinHeight: 260,
-                defaultModalHeightRatio: 0.5,
-                defaultDrawerHeightRatio: 1,
                 defaultSheetHeightRatio: 0.7,
                 defaultSheetTopGap: 16,
 
@@ -195,36 +194,6 @@
                     return 'modal';
                 },
 
-                defaultHeightByType(type) {
-                    const viewport = this.viewportHeight();
-
-                    if (type === 'drawer') {
-                        return viewport * this.defaultDrawerHeightRatio;
-                    }
-
-                    if (type === 'sheet') {
-                        return viewport * this.defaultSheetHeightRatio;
-                    }
-
-                    return viewport * this.defaultModalHeightRatio;
-                },
-
-                resolvePanelHeight(id) {
-                    const attrs = this.modalAttributesById(id);
-                    const type = this.modalType(id);
-                    const fallback = this.defaultHeightByType(type);
-                    const configured = this.normalizeHeightValue(
-                        attrs.height ?? (type === 'sheet' ? attrs.sheetHeight : null),
-                        fallback
-                    );
-                    const max = type === 'drawer'
-                        ? this.viewportHeight()
-                        : this.viewportHeight() - this.defaultSheetTopGap;
-                    const min = type === 'drawer' ? 160 : 120;
-
-                    return Math.max(min, Math.min(max, Math.round(configured ?? fallback)));
-                },
-
                 sheetMinHeight(id) {
                     const attrs = this.modalAttributesById(id);
                     const configured = this.normalizeHeightValue(attrs.sheetMinHeight ?? attrs.minHeight, this.defaultSheetMinHeight);
@@ -251,7 +220,7 @@
 
                 resolveInitialSheetHeight(id) {
                     const attrs = this.modalAttributesById(id);
-                    const fallback = this.defaultHeightByType('sheet');
+                    const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
                     const preferred = this.normalizeHeightValue(attrs.height ?? attrs.sheetHeight, fallback);
 
                     return this.clampSheetHeight(preferred ?? fallback, id);
@@ -287,6 +256,11 @@
                     if (this.resizingSheetId && !activeIds.has(this.resizingSheetId)) {
                         this.clearSheetResize();
                     }
+                },
+
+                handleViewportResize() {
+                    this.viewportVersion += 1;
+                    this.syncSheetHeights();
                 },
 
                 isSheetModal(id) {
@@ -536,12 +510,13 @@
 
                 panelStyle(id) {
                     if (this.isSheetModal(id)) {
+                        const viewportVersion = this.viewportVersion;
+                        void viewportVersion;
+
                         return this.sheetPanelStyle(id);
                     }
 
-                    const height = this.resolvePanelHeight(id);
-
-                    return `height: ${height}px; max-height: 100dvh;`;
+                    return '';
                 },
 
                 activeIsolate() {
@@ -776,6 +751,7 @@
         x-on:touchcancel.window="endSheetDrag($event)"
         x-on:mousemove.window="moveSheetDrag($event)"
         x-on:mouseup.window="endSheetDrag($event)"
+        x-on:resize.window.debounce.120ms="handleViewportResize()"
         x-show="show"
         class="cp-modal fixed inset-0 z-[999] overflow-y-auto"
         style="display: none;"
@@ -826,6 +802,8 @@
                         'cp-modal-component',
                         'w-full overflow-hidden bg-white dark:bg-zinc-800',
                         'overflow-y-auto',
+                        'cp-modal-panel-default-height' => ! $isDrawer && ! $isSheet,
+                        'cp-modal-panel-drawer-height' => $isDrawer,
                         'mx-auto' => ! $isDrawer,
                         'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',

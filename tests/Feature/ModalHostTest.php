@@ -110,6 +110,7 @@ it('stores drawer and position attributes', function (): void {
 
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeTrue();
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('left');
+    $test->assertSee('cp-modal-panel-drawer-height');
 });
 
 it('stores explicit sheet type and renders sheet classes', function (): void {
@@ -137,6 +138,7 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ])
         ->assertSee('x-on:pointermove.window="moveSheetDrag($event)"', false)
         ->assertSee('x-on:pointerup.window="endSheetDrag($event)"', false)
+        ->assertSee('x-on:resize.window.debounce.120ms="handleViewportResize()"', false)
         ->assertSee('x-bind:style="panelStyle(', false)
         ->assertSee('const releaseY = this.eventClientY(event);', false)
         ->assertSee('startSheetResize(', false)
