@@ -7,11 +7,10 @@
 @php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
 @php($hasFooter = isset($footer) && $footer->isNotEmpty())
 
-<section {{ $attributes->merge(['class' => 'cp-modal-layout overscroll-contain dark:bg-zinc-800 dark:text-white max-h-full flex flex-col overflow-hidden bg-inherit']) }}>
-    @if ($resolvedTitle !== null || $showClose)
-        <header class="cp-modal-header flex items-center sticky top-0 justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
-            
-            <div class="flex flex-col gap-2 ">
+<section {{ $attributes->merge(['class' => 'cp-modal-layout overscroll-contain dark:bg-zinc-800 dark:text-white h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-inherit']) }}>
+    @if ($resolvedTitle !== null || filled($description) || $showClose)
+        <header class="cp-modal-header flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
+            <div class="min-w-0 flex flex-col gap-2">
 
             @if ($resolvedTitle !== null)
                 <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
@@ -40,17 +39,12 @@
         </header>
     @endif
 
-    <main 
-         @class([
-            'cp-modal-body  grow  overscroll-contain overflow-y-auto px-5 py-4',
-            'h-full'=> !$hasFooter,
-            'h-[calc(100vh_-_7.5rem)]'=> $hasFooter,
-            ])>
+    <main class="cp-modal-body min-h-0 flex flex-1 flex-col overscroll-contain overflow-y-auto px-5 py-4">
         {{ $slot }}
     </main>
 
     @if ($hasFooter)
-        <footer {{ $footer->attributes->class('cp-modal-footer sticky bottom-0 flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
+        <footer {{ $footer->attributes->class('cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
             {{ $footer }}
         </footer>
     @endif

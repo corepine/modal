@@ -82,7 +82,7 @@ BLADE);
     expect($html)->toContain('cp-modal-header');
     expect($html)->toContain('cp-modal-body');
     expect($html)->toContain('cp-modal-footer');
-    expect($html)->toContain('h-[calc(100vh_-_7.5rem)]');
+    expect($html)->toContain('min-h-0 flex flex-1');
     expect($html)->toContain('Edit User');
     expect($html)->toContain('Modal body content');
     expect($html)->toContain('Save');

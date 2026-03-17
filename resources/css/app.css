@@ -18,6 +18,16 @@
         max-height: 100dvh;
     }
 
+    .cp-modal-livewire {
+        height: 100%;
+        min-height: 0;
+    }
+
+    .cp-modal-livewire > * {
+        height: 100%;
+        min-height: 0;
+    }
+
     .cp-modal-shape-default {
         border-radius: 0.5rem;
     }

@@ -831,7 +831,9 @@
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif
-                        @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
+                        <div class="cp-modal-livewire h-full min-h-0">
+                            @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
+                        </div>
                     </div>
                 </div>
             @endforeach
