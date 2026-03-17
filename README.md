@@ -547,6 +547,7 @@ Height defaults by type:
 
 Use `height` for sheet sizing.
 For modal/drawer, customize height via panel classes (`class` / `modalAttributes.class`), for example `h-[70dvh]`.
+For responsive height behavior, use classes like `h-full md:h-[600px]`.
 
 Recommended sheet config:
 
