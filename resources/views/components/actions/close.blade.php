@@ -2,6 +2,7 @@
     'count' => 1,
     'destroy' => true,
     'force' => false,
+    'disabled' => false,
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
@@ -24,11 +25,23 @@
             default => false,
         }
         : (bool) $force))
+@php($resolvedDisabled = is_bool($disabled)
+    ? $disabled
+    : (is_string($disabled)
+        ? match (strtolower(trim($disabled))) {
+            '1', 'true', 'yes', 'on' => true,
+            '0', 'false', 'no', 'off' => false,
+            default => false,
+        }
+        : (bool) $disabled))
 
-<div
+<button
+    type="button"
     x-data
     {{ $attributes }}
-    x-on:click="if (typeof window.corepineModalRequestClose === 'function') {
+    @if ($resolvedDisabled) disabled @endif
+    @if (! $resolvedDisabled)
+        x-on:click="if (typeof window.corepineModalRequestClose === 'function') {
         window.corepineModalRequestClose({
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),
@@ -44,6 +57,7 @@
             destroy: @js($resolvedDestroy),
         });
     }"
+    @endif
 >
     {{ $slot }}
-</div>
+</button>

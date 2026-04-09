@@ -224,11 +224,24 @@ public static function modalAttributes(): array
 `footerActions` supports:
 - `type=close`: uses modal close behavior (`count`, `destroy`, `force` are optional).
 - `type=method`: calls the active modal Livewire method (`method`, optional `params`).
+- `class`: custom classes for the rendered button.
+- `buttonType`: HTML button type for method actions (`button`, `submit`, `reset`).
+- `disabled`: disables the action.
+- `color`: built-in support color name, registered support color alias, or full palette array.
+- `outline`: toggles outline styling.
+- `attributes`: extra HTML attributes like `data-*`, `aria-*`, or `id`.
 
 Fluent API (`Corepine\Modal\Actions\Action`) is also supported:
 
 ```php
 use Corepine\Modal\Actions\Action;
+use Corepine\Support\Colors\Color;
+use Corepine\Support\Facades\CorepineColor;
+
+// For example in a service provider boot() method:
+CorepineColor::register([
+    'brand' => Color::Fuchsia,
+]);
 
 public static function modalAttributes(): array
 {
@@ -237,12 +250,15 @@ public static function modalAttributes(): array
         'footerActions' => [
             Action::make('cancel')
                 ->label('Cancel')
-                ->class('rounded-md border px-3 py-2 text-sm')
+                ->gray()
+                ->outline()
                 ->close(),
 
             Action::make('saveUsers')
                 ->label('Save')
-                ->class('rounded-md bg-zinc-900 px-3 py-2 text-sm text-white')
+                ->color('brand')
+                ->attributes(['data-testid' => 'save-users'])
+                ->disabled(fn (): bool => false)
                 ->action('saveUsers', [5]),
         ],
     ];
@@ -251,7 +267,10 @@ public static function modalAttributes(): array
 
 Notes:
 - `action()` and `method()` map to Livewire component methods.
-- Closure callbacks (for example `fn () => ...`) are not supported in `footerActions` because modal attributes must be serializable.
+- Fluent actions also support `primary()`, `danger()`, `success()`, `warning()`, `info()`, `gray()`, and `dark()` as shortcuts for `color(...)`.
+- When you build actions in PHP with `Action::make(...)`, `disabled()`, `color()`, `outline()`, and `attributes()` can accept closures and will be evaluated server-side.
+- Raw array footer actions should stay serializable. Closures are not supported when `footerActions` are sent through the Blade open helper or browser payloads.
+- If no custom `class` is provided, modal applies default button styling. If you set `color()` or `outline()`, the preset action styles are used and your custom classes are merged in.
 
 ## Layout Shell (`x-corepine.modal.layout`)
 
@@ -478,6 +497,7 @@ Close helper:
 | `count` | `int` | `1` | How many layers to close (min `1`). |
 | `destroy` | `bool` | `true` | Remove closed modal instances from stack storage. |
 | `force` | `bool` | `false` | Close all layers instead of top `count`. |
+| `disabled` | `bool` | `false` | Renders the close action as disabled and suppresses click handling. |
 
 ## Presentation Types
 

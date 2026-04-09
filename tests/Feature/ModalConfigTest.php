@@ -133,3 +133,22 @@ it('normalizes fluent Action objects for auto layout footer actions', function (
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([42]);
 });
+
+it('supports fluent action helpers for colors, outlines, disabled state, and attributes', function (): void {
+    $action = Action::make('saveUsers')
+        ->label('Save')
+        ->primary()
+        ->outlined()
+        ->disabled(fn (): bool => true)
+        ->attributes(fn (): array => ['data-testid' => 'save-users'])
+        ->action('saveUsers');
+
+    $payload = $action->toArray();
+
+    expect($payload['color'])->toBe('primary');
+    expect($payload['outline'])->toBeTrue();
+    expect($payload['disabled'])->toBeTrue();
+    expect($payload['attributes'])->toMatchArray([
+        'data-testid' => 'save-users',
+    ]);
+});

@@ -53,4 +53,84 @@
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
+
+    .cp-modal-action {
+        display: inline-flex;
+        min-height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 0.375rem;
+        border-width: 1px;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.25rem;
+        transition:
+            background-color 150ms ease,
+            border-color 150ms ease,
+            color 150ms ease,
+            box-shadow 150ms ease,
+            opacity 150ms ease;
+    }
+
+    .cp-modal-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgb(255 255 255 / 0.8), 0 0 0 4px rgb(24 24 27 / 0.16);
+    }
+
+    .cp-modal-action-solid {
+        background-color: var(--cp-action-bg, #18181b);
+        border-color: var(--cp-action-border, #18181b);
+        color: var(--cp-action-text, #ffffff);
+    }
+
+    .cp-modal-action-solid:hover {
+        background-color: var(--cp-action-bg-hover, var(--cp-action-bg, #27272a));
+        border-color: var(--cp-action-border-hover, var(--cp-action-border, #27272a));
+        color: var(--cp-action-text-hover, var(--cp-action-text, #ffffff));
+    }
+
+    .dark .cp-modal-action-solid {
+        background-color: var(--cp-action-dark-bg, var(--cp-action-bg, #27272a));
+        border-color: var(--cp-action-dark-border, var(--cp-action-border, #27272a));
+        color: var(--cp-action-dark-text, var(--cp-action-text, #ffffff));
+    }
+
+    .dark .cp-modal-action-solid:hover {
+        background-color: var(--cp-action-dark-bg-hover, var(--cp-action-dark-bg, #3f3f46));
+        border-color: var(--cp-action-dark-border-hover, var(--cp-action-dark-border, #3f3f46));
+        color: var(--cp-action-dark-text-hover, var(--cp-action-dark-text, #ffffff));
+    }
+
+    .cp-modal-action-outline {
+        background-color: var(--cp-action-bg, transparent);
+        border-color: var(--cp-action-border, #d4d4d8);
+        color: var(--cp-action-text, #3f3f46);
+    }
+
+    .cp-modal-action-outline:hover {
+        background-color: var(--cp-action-bg-hover, #fafafa);
+        border-color: var(--cp-action-border-hover, #a1a1aa);
+        color: var(--cp-action-text-hover, var(--cp-action-text, #18181b));
+    }
+
+    .dark .cp-modal-action-outline {
+        background-color: var(--cp-action-dark-bg, transparent);
+        border-color: var(--cp-action-dark-border, #52525b);
+        color: var(--cp-action-dark-text, #f4f4f5);
+    }
+
+    .dark .cp-modal-action-outline:hover {
+        background-color: var(--cp-action-dark-bg-hover, rgb(39 39 42 / 0.8));
+        border-color: var(--cp-action-dark-border-hover, #71717a);
+        color: var(--cp-action-dark-text-hover, #ffffff);
+    }
+
+    .cp-modal-action-disabled,
+    .cp-modal-action:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+        pointer-events: none;
+    }
 }

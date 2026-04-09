@@ -5,6 +5,8 @@ use Corepine\Modal\Livewire\ModalHost;
 use Corepine\Modal\Tests\Fixtures\Livewire\AttributeSizedModal;
 use Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal;
 use Corepine\Modal\Tests\Fixtures\Livewire\ManualLayoutModal;
+use Corepine\Support\Colors\Color as SupportColor;
+use Corepine\Support\Facades\CorepineColor;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -315,6 +317,75 @@ it('supports fluent Action objects inside footerActions', function (): void {
     expect($actions[0]['type'])->toBe('close');
     expect($actions[1]['type'])->toBe('method');
     expect($actions[1]['method'])->toBe('saveUsers');
+});
+
+it('resolves support colors and richer action options inside footerActions', function (): void {
+    CorepineColor::register([
+        'brand' => SupportColor::Fuchsia,
+    ]);
+
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'title' => 'Manage Users',
+            'footerActions' => [
+                Action::make('cancel')
+                    ->label('Cancel')
+                    ->color('purple')
+                    ->outline()
+                    ->attributes(['data-testid' => 'cancel-action'])
+                    ->close(),
+                Action::make('saveUsers')
+                    ->label('Save')
+                    ->color(fn () => 'brand')
+                    ->disabled(fn () => true)
+                    ->attributes(fn (): array => ['data-testid' => 'save-action'])
+                    ->action('saveUsers', [5]),
+            ],
+        ])
+        ->assertSee('data-testid="cancel-action"', false)
+        ->assertSee('data-testid="save-action"', false)
+        ->assertSee('disabled', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $actions = $modals[$stack[0]]['modalAttributes']['footerActions'] ?? [];
+
+    expect($actions)->toHaveCount(2);
+    expect($actions[0]['class'])->toContain('cp-modal-action-outline');
+    expect($actions[0]['style'])->toContain(SupportColor::Purple[700]);
+    expect($actions[0]['attributes'])->toMatchArray(['data-testid' => 'cancel-action']);
+    expect($actions[1]['disabled'])->toBeTrue();
+    expect($actions[1]['class'])->toContain('cp-modal-action-solid');
+    expect($actions[1]['style'])->toContain(SupportColor::Fuchsia[500]);
+    expect($actions[1]['attributes'])->toMatchArray(['data-testid' => 'save-action']);
+});
+
+it('supports raw footer action arrays with color and outline options', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+            'title' => 'Manage Users',
+            'footerActions' => [
+                [
+                    'type' => 'method',
+                    'method' => 'saveUsers',
+                    'label' => 'Review',
+                    'color' => 'rose',
+                    'outline' => true,
+                    'attributes' => [
+                        'data-testid' => 'review-action',
+                    ],
+                ],
+            ],
+        ])
+        ->assertSee('data-testid="review-action"', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $action = $modals[$stack[0]]['modalAttributes']['footerActions'][0] ?? [];
+
+    expect($action['class'])->toContain('cp-modal-action-outline');
+    expect($action['style'])->toContain(SupportColor::Rose[700]);
+    expect($action['attributes'])->toMatchArray(['data-testid' => 'review-action']);
 });
 
 it('supports disabling automatic layout with plain attribute', function (): void {

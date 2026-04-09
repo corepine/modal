@@ -1,4 +1,6 @@
-@php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
+@php
+    $modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
+@endphp
 
 <div>
     @once
@@ -969,20 +971,24 @@
     >
         <div class="cp-modal-viewport relative min-h-full">
             @foreach ($stack as $id)
-                @php($modal = $modals[$id] ?? null)
+                @php
+                    $modal = $modals[$id] ?? null;
+                @endphp
                 @continue(! $modal)
-                @php($modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']))
-                @php($isDrawer = $modalConfig->isDrawer($modal['modalAttributes']))
-                @php($isSheet = $modalConfig->isSheet($modal['modalAttributes']))
-                @php($position = $modalConfig->modalPosition($modal['modalAttributes']))
-                @php($hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false))
-                @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']))
-                @php($transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']))
-                @php($usesLayout = $modalConfig->usesLayout($modal['modalAttributes']))
-                @php($layoutTitle = $modalConfig->layoutTitle($modal['modalAttributes']))
-                @php($layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']))
-                @php($layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']))
-                @php($layoutFooterActions = $modalConfig->layoutFooterActions($modal['modalAttributes']))
+                @php
+                    $modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']);
+                    $isDrawer = $modalConfig->isDrawer($modal['modalAttributes']);
+                    $isSheet = $modalConfig->isSheet($modal['modalAttributes']);
+                    $position = $modalConfig->modalPosition($modal['modalAttributes']);
+                    $hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false);
+                    $panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']);
+                    $transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']);
+                    $usesLayout = $modalConfig->usesLayout($modal['modalAttributes']);
+                    $layoutTitle = $modalConfig->layoutTitle($modal['modalAttributes']);
+                    $layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']);
+                    $layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']);
+                    $layoutFooterActions = $modalConfig->layoutFooterActions($modal['modalAttributes']);
+                @endphp
 
                 <div
                     x-show="shouldShowModal(@js($id))"
@@ -1051,24 +1057,44 @@
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])
-                                        <x-slot:footer>
+                                        <x-corepine.modal.footer>
                                             <div class="flex w-full items-center justify-end gap-2">
                                                 @foreach ($layoutFooterActions as $action)
-                                                    @php($actionClass = is_string($action['class'] ?? null) && trim((string) $action['class']) !== '' ? trim((string) $action['class']) : 'rounded-md border px-3 py-2 text-sm')
+                                                    @php
+                                                        $actionClass = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
+                                                        $actionStyle = is_string($action['style'] ?? null) ? trim((string) $action['style']) : '';
+                                                        $actionDisabled = (bool) ($action['disabled'] ?? false);
+                                                        $actionAttributes = new \Illuminate\View\ComponentAttributeBag(is_array($action['attributes'] ?? null) ? $action['attributes'] : []);
+
+                                                        if ($actionClass !== '') {
+                                                            $actionAttributes = $actionAttributes->class($actionClass);
+                                                        }
+
+                                                        if ($actionStyle !== '') {
+                                                            $actionAttributes = $actionAttributes->merge(['style' => $actionStyle]);
+                                                        }
+                                                    @endphp
 
                                                     @if (($action['type'] ?? 'method') === 'close')
-                                                        <x-corepine.modal.actions.close
-                                                            :count="$action['count'] ?? 1"
-                                                            :destroy="$action['destroy'] ?? true"
-                                                            :force="$action['force'] ?? false"
-                                                            :class="$actionClass"
+                                                        <button
+                                                            type="button"
+                                                            @if ($actionDisabled) disabled @endif
+                                                            {{ $actionAttributes }}
+                                                            @if (! $actionDisabled)
+                                                                x-on:click.stop="requestClose({
+                                                                    count: @js($action['count'] ?? 1),
+                                                                    destroy: @js($action['destroy'] ?? true),
+                                                                    force: @js($action['force'] ?? false),
+                                                                })"
+                                                            @endif
                                                         >
                                                             {{ $action['label'] ?? 'Close' }}
-                                                        </x-corepine.modal.actions.close>
+                                                        </button>
                                                     @else
                                                         <button
                                                             type="{{ $action['buttonType'] ?? 'button' }}"
-                                                            class="{{ $actionClass }}"
+                                                            @if ($actionDisabled) disabled @endif
+                                                            {{ $actionAttributes }}
                                                             x-on:click.stop="callModalMethod(@js($id), @js($action['method'] ?? ''), @js($action['params'] ?? []))"
                                                         >
                                                             {{ $action['label'] ?? 'Action' }}
@@ -1076,7 +1102,7 @@
                                                     @endif
                                                 @endforeach
                                             </div>
-                                        </x-slot:footer>
+                                        </x-corepine.modal.footer>
                                     @endif
                                 </x-corepine.modal.layout>
                             @else

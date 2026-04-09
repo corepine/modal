@@ -4,6 +4,8 @@ namespace Corepine\Modal\Support;
 
 use Corepine\Modal\Actions\Action as ModalAction;
 use Corepine\Modal\Enums\ModalType;
+use Corepine\Support\Colors\Color as SupportColor;
+use Corepine\Support\Colors\ColorManager as SupportColorManager;
 
 class ModalConfig
 {
@@ -463,12 +465,21 @@ class ModalConfig
 
             if (is_string($action) && trim($action) !== '') {
                 $method = trim($action);
+                $presentation = $this->normalizeFooterActionPresentation([
+                    'class' => '',
+                    'attributes' => [],
+                ], 'method');
+
                 $normalized[] = [
                     'type' => 'method',
                     'label' => ucwords(str_replace(['-', '_'], ' ', $method)),
                     'method' => $method,
                     'params' => [],
-                    'class' => '',
+                    'class' => $presentation['class'],
+                    'style' => $presentation['style'],
+                    'disabled' => $presentation['disabled'],
+                    'outline' => $presentation['outline'],
+                    'attributes' => $presentation['attributes'],
                     'buttonType' => 'button',
                 ];
 
@@ -482,7 +493,6 @@ class ModalConfig
             $label = is_string($action['label'] ?? null) && trim((string) $action['label']) !== ''
                 ? trim((string) $action['label'])
                 : null;
-            $class = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
             $type = is_string($action['type'] ?? null) ? strtolower(trim((string) $action['type'])) : null;
 
             if (is_null($type) && $this->normalizeBoolean($action['close'] ?? false, false)) {
@@ -490,10 +500,16 @@ class ModalConfig
             }
 
             if ($type === 'close') {
+                $presentation = $this->normalizeFooterActionPresentation($action, 'close');
+
                 $normalized[] = [
                     'type' => 'close',
                     'label' => $label ?? 'Close',
-                    'class' => $class,
+                    'class' => $presentation['class'],
+                    'style' => $presentation['style'],
+                    'disabled' => $presentation['disabled'],
+                    'outline' => $presentation['outline'],
+                    'attributes' => $presentation['attributes'],
                     'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
                     'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
                     'force' => $this->normalizeBoolean($action['force'] ?? false, false),
@@ -522,17 +538,247 @@ class ModalConfig
                 $buttonType = 'button';
             }
 
+            $presentation = $this->normalizeFooterActionPresentation($action, 'method');
+
             $normalized[] = [
                 'type' => 'method',
                 'label' => $label ?? ucwords(str_replace(['-', '_'], ' ', $method)),
                 'method' => $method,
                 'params' => $params,
-                'class' => $class,
+                'class' => $presentation['class'],
+                'style' => $presentation['style'],
+                'disabled' => $presentation['disabled'],
+                'outline' => $presentation['outline'],
+                'attributes' => $presentation['attributes'],
                 'buttonType' => $buttonType,
             ];
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $action
+     * @return array{class: string, style: string, disabled: bool, outline: bool, attributes: array<string, mixed>}
+     */
+    private function normalizeFooterActionPresentation(array $action, string $type): array
+    {
+        $class = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
+        $disabled = $this->normalizeBoolean($action['disabled'] ?? false, false);
+        $attributes = $this->normalizeFooterActionAttributes($action['attributes'] ?? []);
+        $attributeClass = is_string($attributes['class'] ?? null) ? trim((string) $attributes['class']) : '';
+        $attributeStyle = is_string($attributes['style'] ?? null) ? trim((string) $attributes['style']) : '';
+        unset($attributes['class'], $attributes['style'], $attributes['disabled']);
+
+        if ($attributeClass !== '') {
+            $class = trim(implode(' ', array_filter([$class, $attributeClass])));
+        }
+
+        $hasColor = array_key_exists('color', $action)
+            && (
+                (is_string($action['color']) && trim((string) $action['color']) !== '')
+                || is_array($action['color'])
+            );
+        $hasOutline = array_key_exists('outline', $action) && ! is_null($action['outline']);
+        $outlineDefault = $type === 'close';
+        $outline = $hasOutline
+            ? $this->normalizeBoolean($action['outline'], $outlineDefault)
+            : $outlineDefault;
+        $usesPresetStyling = $class === '' || $hasColor || $hasOutline;
+        $style = '';
+
+        if ($usesPresetStyling) {
+            $palette = $this->resolveFooterActionPalette($action['color'] ?? ($type === 'close' ? 'gray' : 'primary'));
+            $class = trim(implode(' ', array_filter([
+                'cp-modal-action',
+                $outline ? 'cp-modal-action-outline' : 'cp-modal-action-solid',
+                $class,
+            ])));
+            $style = $this->footerActionStyle($palette, $outline);
+        }
+
+        if ($disabled) {
+            $class = trim(implode(' ', array_filter([
+                $class,
+                'cp-modal-action-disabled',
+            ])));
+        }
+
+        if ($attributeStyle !== '') {
+            $style = trim(implode('; ', array_filter([$style, $attributeStyle])));
+        }
+
+        return [
+            'class' => $class,
+            'style' => $style,
+            'disabled' => $disabled,
+            'outline' => $outline,
+            'attributes' => $attributes,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function normalizeFooterActionAttributes(mixed $attributes): array
+    {
+        if ($attributes instanceof \Traversable) {
+            $attributes = iterator_to_array($attributes);
+        }
+
+        if (! is_array($attributes)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($attributes as $key => $value) {
+            if (! is_string($key) || trim($key) === '') {
+                continue;
+            }
+
+            if (is_null($value) || $value === false) {
+                continue;
+            }
+
+            if ($value === true) {
+                $normalized[$key] = true;
+
+                continue;
+            }
+
+            if (is_scalar($value) || $value instanceof \Stringable) {
+                $normalized[$key] = (string) $value;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @return array<int|string, string>|null
+     */
+    private function resolveFooterActionPalette(mixed $color): ?array
+    {
+        if (is_string($color)) {
+            $color = trim($color);
+
+            if ($color === '') {
+                return null;
+            }
+
+            $palette = app()->bound(SupportColorManager::class)
+                ? app(SupportColorManager::class)->palette($color)
+                : null;
+
+            return is_array($palette) ? $palette : SupportColor::palette($color);
+        }
+
+        if (! is_array($color)) {
+            return null;
+        }
+
+        $normalized = [];
+
+        foreach ($color as $shade => $value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $value = trim($value);
+
+            if ($value === '') {
+                continue;
+            }
+
+            $normalized[is_int($shade) || ! ctype_digit((string) $shade) ? $shade : (int) $shade] = $value;
+        }
+
+        if ($normalized === []) {
+            return null;
+        }
+
+        ksort($normalized);
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<int|string, string>|null  $palette
+     */
+    private function footerActionStyle(?array $palette, bool $outline): string
+    {
+        if ($palette === null) {
+            return '';
+        }
+
+        $variables = $outline
+            ? [
+                '--cp-action-bg: transparent',
+                '--cp-action-bg-hover: ' . ($this->paletteShade($palette, 50) ?? 'transparent'),
+                '--cp-action-border: ' . ($this->paletteShade($palette, 200) ?? 'currentColor'),
+                '--cp-action-border-hover: ' . ($this->paletteShade($palette, 300) ?? 'currentColor'),
+                '--cp-action-text: ' . ($this->paletteShade($palette, 700) ?? 'currentColor'),
+                '--cp-action-text-hover: ' . ($this->paletteShade($palette, 800) ?? 'currentColor'),
+                '--cp-action-dark-bg: transparent',
+                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 950) ?? 'transparent'),
+                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 700) ?? 'currentColor'),
+                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 600) ?? 'currentColor'),
+                '--cp-action-dark-text: ' . ($this->paletteShade($palette, 200) ?? '#e4e4e7'),
+                '--cp-action-dark-text-hover: ' . ($this->paletteShade($palette, 100) ?? '#f4f4f5'),
+            ]
+            : [
+                '--cp-action-bg: ' . ($this->paletteShade($palette, 500) ?? '#18181b'),
+                '--cp-action-bg-hover: ' . ($this->paletteShade($palette, 600) ?? '#27272a'),
+                '--cp-action-border: ' . ($this->paletteShade($palette, 500) ?? '#18181b'),
+                '--cp-action-border-hover: ' . ($this->paletteShade($palette, 600) ?? '#27272a'),
+                '--cp-action-text: ' . $this->footerActionSolidTextColor($palette),
+                '--cp-action-text-hover: ' . $this->footerActionSolidTextColor($palette),
+                '--cp-action-dark-bg: ' . ($this->paletteShade($palette, 500) ?? '#27272a'),
+                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 400) ?? '#3f3f46'),
+                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 500) ?? '#27272a'),
+                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 400) ?? '#3f3f46'),
+                '--cp-action-dark-text: ' . $this->footerActionSolidTextColor($palette),
+                '--cp-action-dark-text-hover: ' . $this->footerActionSolidTextColor($palette),
+            ];
+
+        return implode('; ', array_filter($variables));
+    }
+
+    /**
+     * @param  array<int|string, string>  $palette
+     */
+    private function footerActionSolidTextColor(array $palette): string
+    {
+        $baseColor = $this->paletteShade($palette, 500) ?? '';
+
+        return $this->isLightFooterActionColor($baseColor) ? '#18181b' : '#ffffff';
+    }
+
+    /**
+     * @param  array<int|string, string>  $palette
+     */
+    private function paletteShade(array $palette, int $shade): ?string
+    {
+        return $palette[$shade] ?? $palette[500] ?? null;
+    }
+
+    private function isLightFooterActionColor(string $color): bool
+    {
+        if (preg_match('/^oklch\(\s*([0-9.]+)/i', $color, $matches) === 1) {
+            return (float) ($matches[1] ?? 0) >= 0.72;
+        }
+
+        if (preg_match('/^#([0-9a-f]{6})$/i', $color, $matches) === 1) {
+            $hex = $matches[1];
+            $red = hexdec(substr($hex, 0, 2));
+            $green = hexdec(substr($hex, 2, 2));
+            $blue = hexdec(substr($hex, 4, 2));
+
+            return ((0.299 * $red) + (0.587 * $green) + (0.114 * $blue)) / 255 >= 0.65;
+        }
+
+        return false;
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Corepine\Modal\Actions;
 
+use Closure;
+
 class Action
 {
     private string $name;
@@ -20,6 +22,17 @@ class Action
     private string $class = '';
 
     private string $buttonType = 'button';
+
+    private bool | Closure $disabled = false;
+
+    private array | string | Closure | null $color = null;
+
+    private bool | Closure | null $outline = null;
+
+    /**
+     * @var array<string, mixed>|Closure
+     */
+    private array | Closure $attributes = [];
 
     private int $count = 1;
 
@@ -96,6 +109,105 @@ class Action
         return $this;
     }
 
+    public function disabled(bool | Closure $condition = true): self
+    {
+        $this->disabled = $condition;
+
+        return $this;
+    }
+
+    public function color(array | string | Closure | null $color): self
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
+    public function primary(): self
+    {
+        return $this->color('primary');
+    }
+
+    public function danger(): self
+    {
+        return $this->color('danger');
+    }
+
+    public function success(): self
+    {
+        return $this->color('success');
+    }
+
+    public function warning(): self
+    {
+        return $this->color('warning');
+    }
+
+    public function info(): self
+    {
+        return $this->color('info');
+    }
+
+    public function gray(): self
+    {
+        return $this->color('gray');
+    }
+
+    public function dark(): self
+    {
+        return $this->color('dark');
+    }
+
+    public function outline(bool | Closure $condition = true): self
+    {
+        $this->outline = $condition;
+
+        return $this;
+    }
+
+    public function outlined(bool | Closure $condition = true): self
+    {
+        return $this->outline($condition);
+    }
+
+    /**
+     * @param  array<string, mixed>|Closure  $attributes
+     */
+    public function attributes(array | Closure $attributes): self
+    {
+        $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<string, mixed>|Closure  $attributes
+     */
+    public function extraAttributes(array | Closure $attributes): self
+    {
+        return $this->attributes($attributes);
+    }
+
+    public function attribute(string $name, mixed $value = true): self
+    {
+        $name = trim($name);
+
+        if ($name === '') {
+            return $this;
+        }
+
+        $attributes = $this->evaluate($this->attributes);
+
+        if (! is_array($attributes)) {
+            $attributes = [];
+        }
+
+        $attributes[$name] = $value;
+        $this->attributes = $attributes;
+
+        return $this;
+    }
+
     public function close(int $count = 1, bool $destroy = true, bool $force = false): self
     {
         $this->type = 'close';
@@ -111,11 +223,26 @@ class Action
      */
     public function toArray(): array
     {
+        $disabled = (bool) $this->evaluate($this->disabled);
+        $color = $this->evaluate($this->color);
+        $outline = $this->outline instanceof Closure || is_bool($this->outline)
+            ? $this->evaluate($this->outline)
+            : null;
+        $attributes = $this->evaluate($this->attributes);
+
+        if (! is_array($attributes)) {
+            $attributes = [];
+        }
+
         if ($this->type === 'close') {
             return [
                 'type' => 'close',
                 'label' => $this->label ?? 'Close',
                 'class' => $this->class,
+                'disabled' => $disabled,
+                'color' => $color,
+                'outline' => is_bool($outline) ? $outline : null,
+                'attributes' => $attributes,
                 'count' => $this->count,
                 'destroy' => $this->destroy,
                 'force' => $this->force,
@@ -134,7 +261,22 @@ class Action
             'method' => $method,
             'params' => $this->params,
             'class' => $this->class,
+            'disabled' => $disabled,
+            'color' => $color,
+            'outline' => is_bool($outline) ? $outline : null,
+            'attributes' => $attributes,
             'buttonType' => $this->buttonType,
         ];
+    }
+
+    private function evaluate(mixed $value): mixed
+    {
+        if (! $value instanceof Closure) {
+            return $value;
+        }
+
+        return app()->call($value, [
+            'action' => $this,
+        ]);
     }
 }
