@@ -111,25 +111,34 @@ Use this when you want a modal without a Livewire modal component stack.
 | `showClose` | `bool` | `true` | Shows built-in close icon in header. |
 | `modalAttributes` | `array` | `[]` | Raw attribute payload merged with explicit props. |
 | `size` | `string` | `default` | Width token or raw width utility classes. |
-| `type` | `string \| ModalType \| null` | config default (`modal`) | `modal`, `drawer`, `sheet`. |
+| `type` | `string \| ModalType \| null` | config default (`modal`) | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
 | `drawer` | `bool \| null` | `null` | Legacy alias for `type=drawer`. |
 | `sheet` | `bool \| null` | `null` | Legacy alias for `type=sheet`. |
-| `position` | `string \| null` | type default | Normalized by type (`center/right/bottom`). |
+| `bottomSheet` | `bool \| null` | `null` | Friendly alias for `type=sheet`. |
+| `position` | `string \| null` | type default | Normalized by type (`center/right/bottom`). Bottom sheets are always forced to `bottom`. |
 | `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
 | `sheetHeight` | `string \| number \| null` | `null` | Alias of `height` for sheets. |
 | `sheetMinHeight` | `string \| number \| null` | `null` | Sheet minimum height. |
 | `minHeight` | `string \| number \| null` | `null` | Alias of `sheetMinHeight`. |
 | `sheetMaxHeight` | `string \| number \| null` | `null` | Sheet maximum height. |
 | `maxHeight` | `string \| number \| null` | `null` | Alias of `sheetMaxHeight`. |
-| `draggable` | `bool \| null` | `null` | For sheet: drag down / resize handle behavior. |
+| `draggable` | `bool \| null` | `null` | For sheet: drag down / resize behavior. |
+| `enableDrag` | `bool \| null` | `null` | Alias of `draggable`. |
+| `showDragHandle` | `bool \| null` | `null` | For sheet: toggles the visible top drag handle independently of drag behavior. |
 | `dragCloseThreshold` | `float \| string \| null` | `null` | For sheet: close threshold ratio (`0.3`). |
 | `sheetDragThreshold` | `float \| string \| null` | `null` | Alias of `dragCloseThreshold`. |
 | `closeOnEscape` | `bool` | `true` | Escape key closes modal. |
-| `closeOnClickAway` | `bool` | `true` | Backdrop click closes modal. |
+| `closeAllOnEscape` | `bool` | `false` | In stack mode, Escape closes the full stack. Legacy `closeOnEscapeIsForceful` is still supported. |
+| `dismissible` | `bool \| null` | `null` | Backdrop/scrim click closes modal when true. |
+| `closeOnClickAway` | `bool` | `true` | Legacy alias of `dismissible`. |
 | `blur` | `bool` | `false` | Enables backdrop blur style. |
 | `class` | `string` | `''` | Merged into modal panel classes. |
 
 Additional non-class attributes are merged onto the panel element.
+
+For bottom sheets:
+- The `dismissible` parameter specifies whether the bottom sheet will be dismissed when user taps on the scrim.
+- The `enableDrag` parameter specifies whether the bottom sheet can be dragged up and down and dismissed by swiping downwards.
 
 Stack-only behavior is intentionally not included for standalone mode:
 - no modal stack tracking
@@ -182,8 +191,8 @@ class EditUser extends Modal
             'showClose' => true,
             'position' => 'center',
             'closeOnEscape' => true,
-            'closeOnClickAway' => true,
-            'closeOnEscapeIsForceful' => false,
+            'dismissible' => true,
+            'closeAllOnEscape' => false,
             'destroyOnClose' => true,
             'dispatchCloseEvent' => false,
             'blur' => false,
@@ -199,6 +208,7 @@ Livewire modals now support built-in shell rendering from `modalAttributes`:
 - `layout` (`true` by default): use built-in shell.
 - `plain` (`false` by default): force raw modal view rendering (no shell).
 - `title`, `description`, `showClose`: header chrome options.
+- `footerActionsAlignment`: align built-in footer actions (`start`, `center`, `end`).
 - `footerActions`: declarative footer actions.
 
 If you need fully custom slot/footer markup, set `plain => true` and render `<x-corepine.modal.layout>` manually inside your component view.
@@ -555,6 +565,7 @@ Defaults include:
 ## Sheet Interaction (Drag + Resize)
 
 For `type=sheet`:
+- Position is always forced to `bottom`.
 - Top handle can resize sheet height.
 - You can drag the sheet downward to close.
 - Drag-close threshold defaults to `30%` of current sheet height.
@@ -579,8 +590,10 @@ Recommended sheet config:
 public static function modalAttributes(): array
 {
     return [
-        'type' => 'sheet',
+        'bottomSheet' => true,
+        'dismissible' => true,
         'draggable' => true,
+        'showDragHandle' => true,
         'height' => '70vh',
         'sheetMinHeight' => '40vh',
         'sheetMaxHeight' => '95vh',
@@ -610,14 +623,16 @@ The table below covers all supported modal attributes (including legacy aliases 
 | Attribute | Type | Default | Applies To | Notes |
 | --- | --- | --- | --- | --- |
 | `closeOnEscape` | bool | `true` | all | Escape key closes active modal when true. |
-| `closeOnClickAway` | bool | `true` | all | Backdrop click closes active modal when true. |
-| `closeOnEscapeIsForceful` | bool | `false` | all | Escape closes full stack when true. |
+| `closeAllOnEscape` | bool | `false` | all | Escape closes the full modal stack when true. |
+| `dismissible` | bool | `true` | all | Backdrop/scrim click closes the active modal when true. |
+| `closeOnClickAway` | bool | alias | all | Legacy alias of `dismissible`. |
 | `destroyOnClose` | bool | `true` | all | Destroy component state when modal closes. |
 | `dispatchCloseEvent` | bool | `false` | all | Dispatches `modalComponentClosed` when closing this component. |
 | `blur` | bool | `false` | all | Adds blurred backdrop style. |
-| `type` | string/enum | `modal` | all | `modal`, `drawer`, `sheet`. |
+| `type` | string/enum | `modal` | all | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
 | `drawer` | bool | `false` | all | Legacy alias for `type=drawer`. |
 | `sheet` | bool | `false` | all | Legacy alias for `type=sheet`. |
+| `bottomSheet` | bool | `false` | all | Alias for `type=sheet`. |
 | `isolate` | bool | `false` | all | Keeps previous layers visible behind active modal. |
 | `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
 | `layout` | bool | `true` | Livewire host | Enables built-in shell (`x-corepine.modal.layout`) wrapping. |
@@ -625,12 +640,15 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `title` | string/null | `null` | layout | Shell header title. |
 | `description` | string/null | `null` | layout | Shell header description. |
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
+| `footerActionsAlignment` | string/enum | `end` | layout | Aligns built-in footer actions. Accepts `start`, `center`, `end`, `right`, `left`, or `Corepine\Support\Enums\Alignment`. |
 | `footerActions` | array | `[]` | layout | Declarative footer actions (`close` / `method`). |
-| `position` | string | type-based | all | Normalized per type rules. |
+| `position` | string | type-based | all | Normalized per type rules. Bottom sheets are always `bottom`. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
 | `height` | string/number | `null` | all | Explicit panel height for modal/drawer and initial sheet height (`vh`, `dvh`, `%`, `px`, numeric ratios, or `h-[...]`/`h-full` style tokens). |
 | `class` | string | `''` | all | Extra classes merged on modal surface (`cp-modal-component`). |
 | `draggable` | bool | `true` for sheet | sheet | Enables sheet drag/resize behavior. |
+| `enableDrag` | bool | alias | sheet | Alias of `draggable`. |
+| `showDragHandle` | bool | `true` for draggable sheets | sheet | Shows or hides the top drag handle without disabling drag itself. |
 | `dragCloseThreshold` | float | `0.3` | sheet | Close when drag-down reaches threshold ratio. |
 | `sheetDragThreshold` | float | alias | sheet | Alias of `dragCloseThreshold`. |
 | `sheetHeight` | string/number | alias | sheet | Legacy alias for `height` on sheets. |

@@ -9,6 +9,7 @@
     'type' => null,
     'drawer' => null,
     'sheet' => null,
+    'bottomSheet' => null,
     'position' => null,
     'height' => null,
     'sheetHeight' => null,
@@ -17,10 +18,14 @@
     'sheetMaxHeight' => null,
     'maxHeight' => null,
     'draggable' => null,
+    'enableDrag' => null,
+    'showDragHandle' => null,
     'dragCloseThreshold' => null,
     'sheetDragThreshold' => null,
     'closeOnEscape' => true,
+    'closeAllOnEscape' => false,
     'closeOnClickAway' => true,
+    'dismissible' => null,
     'blur' => false,
 ])
 
@@ -61,12 +66,14 @@
     @php($normalizedType = $type->value)
 @elseif (is_string($type))
     @php($normalizedType = match (strtolower(trim($type))) {
+        'bottomsheet', 'bottom-sheet', 'bottom_sheet' => 'sheet',
         'modal', 'drawer', 'sheet' => strtolower(trim($type)),
         default => null,
     })
 @endif
 @php($normalizedDrawer = ! is_null($drawer) ? $normalizeBoolean($drawer, null) : null)
 @php($normalizedSheet = ! is_null($sheet) ? $normalizeBoolean($sheet, null) : null)
+@php($normalizedBottomSheet = ! is_null($bottomSheet) ? $normalizeBoolean($bottomSheet, null) : null)
 @if (! is_null($normalizedDrawer))
     @php($payloadModalAttributes['drawer'] = $normalizedDrawer)
     @if (is_null($normalizedType) && $normalizedDrawer === true)
@@ -76,6 +83,12 @@
 @if (! is_null($normalizedSheet))
     @php($payloadModalAttributes['sheet'] = $normalizedSheet)
     @if (is_null($normalizedType) && $normalizedSheet === true)
+        @php($normalizedType = 'sheet')
+    @endif
+@endif
+@if (! is_null($normalizedBottomSheet))
+    @php($payloadModalAttributes['bottomSheet'] = $normalizedBottomSheet)
+    @if (is_null($normalizedType) && $normalizedBottomSheet === true)
         @php($normalizedType = 'sheet')
     @endif
 @endif
@@ -120,13 +133,25 @@
 @if (! is_null($normalizedCloseOnEscape))
     @php($payloadModalAttributes['closeOnEscape'] = $normalizedCloseOnEscape)
 @endif
-@php($normalizedCloseOnClickAway = $normalizeBoolean($closeOnClickAway, null))
-@if (! is_null($normalizedCloseOnClickAway))
-    @php($payloadModalAttributes['closeOnClickAway'] = $normalizedCloseOnClickAway)
+@php($normalizedCloseAllOnEscape = $normalizeBoolean($closeAllOnEscape, null))
+@if (! is_null($normalizedCloseAllOnEscape))
+    @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
 @endif
-@php($normalizedDraggable = ! is_null($draggable) ? $normalizeBoolean($draggable, true) : null)
+@php($rawDismissible = ! is_null($dismissible) ? $dismissible : $closeOnClickAway)
+@php($normalizedDismissible = $normalizeBoolean($rawDismissible, null))
+@if (! is_null($normalizedDismissible))
+    @php($payloadModalAttributes['dismissible'] = $normalizedDismissible)
+    @php($payloadModalAttributes['closeOnClickAway'] = $normalizedDismissible)
+@endif
+@php($rawDraggable = ! is_null($draggable) ? $draggable : $enableDrag)
+@php($normalizedDraggable = ! is_null($rawDraggable) ? $normalizeBoolean($rawDraggable, true) : null)
 @if (! is_null($normalizedDraggable))
     @php($payloadModalAttributes['draggable'] = $normalizedDraggable)
+    @php($payloadModalAttributes['enableDrag'] = $normalizedDraggable)
+@endif
+@php($normalizedShowDragHandle = ! is_null($showDragHandle) ? $normalizeBoolean($showDragHandle, true) : null)
+@if (! is_null($normalizedShowDragHandle))
+    @php($payloadModalAttributes['showDragHandle'] = $normalizedShowDragHandle)
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')
@@ -147,10 +172,10 @@
     'open' => (bool) $open,
     'type' => $modalConfig->modalType($resolvedModalAttributes),
     'closeOnEscape' => (bool) ($resolvedModalAttributes['closeOnEscape'] ?? true),
-    'closeOnClickAway' => (bool) ($resolvedModalAttributes['closeOnClickAway'] ?? true),
-    'draggable' => ! array_key_exists('draggable', $resolvedModalAttributes)
-        ? true
-        : (bool) $normalizeBoolean($resolvedModalAttributes['draggable'], true),
+    'closeAllOnEscape' => (bool) ($resolvedModalAttributes['closeAllOnEscape'] ?? false),
+    'dismissible' => (bool) ($resolvedModalAttributes['dismissible'] ?? ($resolvedModalAttributes['closeOnClickAway'] ?? true)),
+    'draggable' => (bool) ($resolvedModalAttributes['draggable'] ?? ($resolvedModalAttributes['enableDrag'] ?? $isSheet)),
+    'showDragHandle' => (bool) ($resolvedModalAttributes['showDragHandle'] ?? ($resolvedModalAttributes['draggable'] ?? ($resolvedModalAttributes['enableDrag'] ?? $isSheet))),
     'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? ($resolvedModalAttributes['sheetDragThreshold'] ?? 0.3),
     'height' => $resolvedModalAttributes['height'] ?? null,
     'sheetHeight' => $resolvedModalAttributes['sheetHeight'] ?? null,
@@ -169,8 +194,10 @@
             modalId: options.id ?? null,
             type: options.type ?? 'modal',
             closeOnEscape: options.closeOnEscape !== false,
-            closeOnClickAway: options.closeOnClickAway !== false,
+            closeAllOnEscape: options.closeAllOnEscape === true,
+            dismissible: options.dismissible !== false,
             draggable: options.draggable !== false,
+            showDragHandle: options.showDragHandle !== false,
             dragCloseThresholdValue: options.dragCloseThreshold ?? 0.3,
             heightValue: options.height ?? null,
             sheetHeightValue: options.sheetHeight ?? null,
@@ -220,6 +247,22 @@
 
             isDrawer() {
                 return this.type === 'drawer';
+            },
+
+            isDismissible() {
+                return this.dismissible !== false;
+            },
+
+            shouldCloseAllOnEscape() {
+                return this.closeAllOnEscape === true;
+            },
+
+            isSheetDraggable() {
+                return this.isSheet() && this.draggable !== false;
+            },
+
+            shouldShowSheetDragHandle() {
+                return this.isSheetDraggable() && this.showDragHandle !== false;
             },
 
             matches(payload = {}) {
@@ -289,7 +332,7 @@
             },
 
             handleClickAway() {
-                if (!this.closeOnClickAway) {
+                if (!this.isDismissible()) {
                     return;
                 }
 
@@ -629,7 +672,7 @@
             },
 
             startSheetDrag(event) {
-                if (!this.isSheet() || !this.draggable || !this.open || this.resizingSheet) {
+                if (!this.isSheetDraggable() || !this.open || this.resizingSheet) {
                     return;
                 }
 
@@ -693,7 +736,7 @@
             },
 
             startSheetResize(event) {
-                if (!this.isSheet() || !this.draggable || !this.open || this.draggingSheet) {
+                if (!this.isSheetDraggable() || !this.open || this.draggingSheet) {
                     return;
                 }
 
@@ -906,12 +949,13 @@
                                 $modalClasses,
                                 'rounded-l-none' => $isDrawer && $position === 'left',
                                 'rounded-r-none' => $isDrawer && $position === 'right',
+                                'rounded-b-none' => $isSheet,
                             ])
                             {{ $panelAttributes }}
                         >
                             @if ($isSheet)
                                 <div
-                                    x-show="draggable"
+                                    x-show="shouldShowSheetDragHandle()"
                                     class="cp-modal-sheet-handle cursor-row-resize select-none px-4 pt-3 sm:pt-4"
                                     x-on:pointerdown.stop.prevent="startSheetResize($event)"
                                     x-on:touchstart.stop.prevent="startSheetResize($event)"

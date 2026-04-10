@@ -41,14 +41,16 @@ it('supports standalone modal presentation and sheet options', function (): void
     $html = Blade::render(<<<'BLADE'
 <x-corepine.modal
     id="settings-sheet"
-    type="sheet"
+    type="bottomSheet"
     position="bottom"
     size="2xl"
     height="72vh"
     sheet-min-height="40vh"
     sheet-max-height="95vh"
     drag-close-threshold="0.35"
-    close-on-click-away="false"
+    dismissible="false"
+    enable-drag="true"
+    show-drag-handle="true"
     blur="true"
     class="border border-zinc-200"
 >
@@ -69,7 +71,9 @@ BLADE);
     expect($flat)->toContain('normalizedPreferredSource ?? classPreferred');
     expect($flat)->toContain('normalizePanelHeightValue(value, fallback = null)');
     expect($flat)->toContain('\u0022dragCloseThreshold\u0022:\u00220.35\u0022');
-    expect($flat)->toContain('\u0022closeOnClickAway\u0022:false');
+    expect($flat)->toContain('\u0022dismissible\u0022:false');
+    expect($flat)->toContain('\u0022draggable\u0022:true');
+    expect($flat)->toContain('\u0022showDragHandle\u0022:true');
 });
 
 it('renders modal shell with header, body, and footer slots', function (): void {
@@ -214,11 +218,15 @@ BLADE);
     expect($flat)->not->toContain('class="p-8 rounded-2xl"');
 });
 
-it('supports explicit type prop on open helper', function (): void {
+it('supports explicit bottom sheet aliases and presentation props on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open
     component="modals.edit-user"
-    type="sheet"
+    type="bottomSheet"
+    dismissible="false"
+    enable-drag="true"
+    show-drag-handle="true"
+    close-all-on-escape="true"
 >
     <button type="button">Edit</button>
 </x-corepine-modal-open>
@@ -227,6 +235,10 @@ BLADE);
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($flat)->toContain('\u0022type\u0022:\u0022sheet\u0022');
+    expect($flat)->toContain('\u0022dismissible\u0022:false');
+    expect($flat)->toContain('\u0022enableDrag\u0022:true');
+    expect($flat)->toContain('\u0022showDragHandle\u0022:true');
+    expect($flat)->toContain('\u0022closeAllOnEscape\u0022:true');
 });
 
 it('supports layout chrome props on open helper', function (): void {
@@ -238,6 +250,7 @@ it('supports layout chrome props on open helper', function (): void {
     title="Manage Users"
     description="Search and view users in your system."
     show-close="true"
+    footer-actions-alignment="center"
     :footer-actions="[
         ['type' => 'close', 'label' => 'Cancel'],
         ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
@@ -254,6 +267,7 @@ BLADE);
     expect($flat)->toContain('\u0022title\u0022:\u0022Manage Users\u0022');
     expect($flat)->toContain('\u0022description\u0022:\u0022Search and view users in your system.\u0022');
     expect($flat)->toContain('\u0022showClose\u0022:true');
+    expect($flat)->toContain('\u0022footerActionsAlignment\u0022:\u0022center\u0022');
     expect($flat)->toContain('\u0022footerActions\u0022');
     expect($flat)->toContain('saveUsers');
 });

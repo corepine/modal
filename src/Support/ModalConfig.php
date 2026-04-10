@@ -6,6 +6,7 @@ use Corepine\Modal\Actions\Action as ModalAction;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Support\Colors\Color as SupportColor;
 use Corepine\Support\Colors\ColorManager as SupportColorManager;
+use Corepine\Support\Enums\Alignment;
 
 class ModalConfig
 {
@@ -250,26 +251,17 @@ class ModalConfig
      */
     public function modalType(array $attributes): string
     {
-        $type = $attributes['type'] ?? null;
+        $resolvedType = $this->normalizeModalTypeValue($attributes['type'] ?? null);
 
-        if ($type instanceof ModalType) {
-            return $type->value;
-        }
-
-        if (is_string($type)) {
-            $normalized = strtolower(trim($type));
-            $resolved = ModalType::tryFrom($normalized);
-
-            if ($resolved !== null) {
-                return $resolved->value;
-            }
+        if ($resolvedType !== null) {
+            return $resolvedType;
         }
 
         if ($this->normalizeBoolean($attributes['drawer'] ?? false)) {
             return ModalType::Drawer->value;
         }
 
-        if ($this->normalizeBoolean($attributes['sheet'] ?? false)) {
+        if ($this->normalizeBoolean($attributes['sheet'] ?? ($attributes['bottomSheet'] ?? false))) {
             return ModalType::Sheet->value;
         }
 
@@ -290,12 +282,16 @@ class ModalConfig
     public function modalPosition(array $attributes): string
     {
         $type = $this->modalType($attributes);
+
+        if ($type === ModalType::Sheet->value) {
+            return self::DEFAULT_SHEET_POSITION;
+        }
+
         $position = $attributes['position'] ?? null;
 
         if (! is_string($position) || $position === '') {
             return match ($type) {
                 ModalType::Drawer->value => self::DEFAULT_DRAWER_POSITION,
-                ModalType::Sheet->value => self::DEFAULT_SHEET_POSITION,
                 default => self::DEFAULT_MODAL_POSITION,
             };
         }
@@ -306,12 +302,6 @@ class ModalConfig
             return in_array($normalized, self::DRAWER_POSITIONS, true)
                 ? $normalized
                 : self::DEFAULT_DRAWER_POSITION;
-        }
-
-        if ($type === ModalType::Sheet->value) {
-            return in_array($normalized, self::SHEET_POSITIONS, true)
-                ? $normalized
-                : self::DEFAULT_SHEET_POSITION;
         }
 
         return in_array($normalized, self::MODAL_POSITIONS, true)
@@ -558,6 +548,30 @@ class ModalConfig
     }
 
     /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function layoutFooterActionsAlignment(array $attributes): string
+    {
+        $defaults = $this->defaultModalAttributes();
+        $alignment = $attributes['footerActionsAlignment']
+            ?? ($attributes['footerActionsAlign'] ?? ($defaults['footerActionsAlignment'] ?? Alignment::Right));
+
+        return $this->normalizeAlignmentValue($alignment) ?? Alignment::Right->value;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function layoutFooterActionsAlignmentClass(array $attributes): string
+    {
+        return match ($this->layoutFooterActionsAlignment($attributes)) {
+            Alignment::Start->value => 'justify-start',
+            Alignment::Center->value => 'justify-center',
+            default => 'justify-end',
+        };
+    }
+
+    /**
      * @param  array<string, mixed>  $action
      * @return array{class: string, style: string, disabled: bool, outline: bool, attributes: array<string, mixed>}
      */
@@ -801,11 +815,31 @@ class ModalConfig
         $attributes['type'] = $this->modalType($attributes);
         $attributes['drawer'] = $attributes['type'] === ModalType::Drawer->value;
         $attributes['sheet'] = $attributes['type'] === ModalType::Sheet->value;
+        $attributes['bottomSheet'] = $attributes['sheet'];
+        $attributes['dismissible'] = $this->normalizeBoolean(
+            $attributes['dismissible'] ?? ($attributes['closeOnClickAway'] ?? true),
+            true
+        );
+        $attributes['closeOnClickAway'] = $attributes['dismissible'];
+        $attributes['closeAllOnEscape'] = $this->normalizeBoolean(
+            $attributes['closeAllOnEscape'] ?? ($attributes['closeOnEscapeIsForceful'] ?? false),
+            false
+        );
+        $attributes['closeOnEscapeIsForceful'] = $attributes['closeAllOnEscape'];
+        $attributes['draggable'] = $attributes['type'] === ModalType::Sheet->value
+            ? $this->normalizeBoolean($attributes['draggable'] ?? ($attributes['enableDrag'] ?? true), true)
+            : $this->normalizeBoolean($attributes['draggable'] ?? ($attributes['enableDrag'] ?? false), false);
+        $attributes['enableDrag'] = $attributes['draggable'];
+        $attributes['showDragHandle'] = $attributes['type'] === ModalType::Sheet->value
+            ? $this->normalizeBoolean($attributes['showDragHandle'] ?? $attributes['draggable'], $attributes['draggable'])
+            : $this->normalizeBoolean($attributes['showDragHandle'] ?? false, false);
         $attributes['isolate'] = $this->isIsolated($attributes);
         $attributes['layout'] = $this->usesLayout($attributes);
         $attributes['showClose'] = $this->layoutShowClose($attributes);
+        $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
         $attributes['footerActions'] = $this->layoutFooterActions($attributes);
         unset($attributes['isolated']);
+        unset($attributes['footerActionsAlign']);
         unset($attributes['plain']);
         $attributes['position'] = $this->modalPosition($attributes);
 
@@ -822,19 +856,104 @@ class ModalConfig
             $attributes['isolate'] = $attributes['isolated'];
         }
 
+        if (! array_key_exists('closeOnClickAway', $attributes) && array_key_exists('dismissible', $attributes)) {
+            $attributes['closeOnClickAway'] = $attributes['dismissible'];
+        }
+
+        if (! array_key_exists('dismissible', $attributes) && array_key_exists('closeOnClickAway', $attributes)) {
+            $attributes['dismissible'] = $attributes['closeOnClickAway'];
+        }
+
+        if (! array_key_exists('closeOnEscapeIsForceful', $attributes) && array_key_exists('closeAllOnEscape', $attributes)) {
+            $attributes['closeOnEscapeIsForceful'] = $attributes['closeAllOnEscape'];
+        }
+
+        if (! array_key_exists('closeAllOnEscape', $attributes) && array_key_exists('closeOnEscapeIsForceful', $attributes)) {
+            $attributes['closeAllOnEscape'] = $attributes['closeOnEscapeIsForceful'];
+        }
+
+        if (! array_key_exists('draggable', $attributes) && array_key_exists('enableDrag', $attributes)) {
+            $attributes['draggable'] = $attributes['enableDrag'];
+        }
+
+        if (! array_key_exists('enableDrag', $attributes) && array_key_exists('draggable', $attributes)) {
+            $attributes['enableDrag'] = $attributes['draggable'];
+        }
+
+        if (! array_key_exists('sheet', $attributes) && array_key_exists('bottomSheet', $attributes)) {
+            $attributes['sheet'] = $attributes['bottomSheet'];
+        }
+
+        if (! array_key_exists('bottomSheet', $attributes) && array_key_exists('sheet', $attributes)) {
+            $attributes['bottomSheet'] = $attributes['sheet'];
+        }
+
         if (! array_key_exists('layout', $attributes) && array_key_exists('plain', $attributes)) {
             $attributes['layout'] = ! $this->normalizeBoolean($attributes['plain'] ?? false, false);
+        }
+
+        if (! array_key_exists('footerActionsAlignment', $attributes) && array_key_exists('footerActionsAlign', $attributes)) {
+            $attributes['footerActionsAlignment'] = $attributes['footerActionsAlign'];
+        }
+
+        if (array_key_exists('type', $attributes)) {
+            $normalizedType = $this->normalizeModalTypeValue($attributes['type']);
+
+            if ($normalizedType !== null) {
+                $attributes['type'] = $normalizedType;
+            }
         }
 
         if (! array_key_exists('type', $attributes)) {
             if ($this->normalizeBoolean($attributes['drawer'] ?? false)) {
                 $attributes['type'] = ModalType::Drawer->value;
-            } elseif ($this->normalizeBoolean($attributes['sheet'] ?? false)) {
+            } elseif ($this->normalizeBoolean($attributes['sheet'] ?? ($attributes['bottomSheet'] ?? false))) {
                 $attributes['type'] = ModalType::Sheet->value;
             }
         }
 
         return $attributes;
+    }
+
+    private function normalizeModalTypeValue(mixed $type): ?string
+    {
+        if ($type instanceof ModalType) {
+            return $type->value;
+        }
+
+        if (! is_string($type)) {
+            return null;
+        }
+
+        $normalized = strtolower(trim($type));
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (in_array($normalized, ['bottomsheet', 'bottom-sheet', 'bottom_sheet'], true)) {
+            return ModalType::Sheet->value;
+        }
+
+        return ModalType::tryFrom($normalized)?->value;
+    }
+
+    private function normalizeAlignmentValue(mixed $alignment): ?string
+    {
+        if ($alignment instanceof Alignment) {
+            return $alignment->value;
+        }
+
+        if (! is_string($alignment)) {
+            return null;
+        }
+
+        return match (strtolower(trim($alignment))) {
+            'start', 'left' => Alignment::Start->value,
+            'center', 'middle' => Alignment::Center->value,
+            'end', 'right' => Alignment::Right->value,
+            default => null,
+        };
     }
 
     private function normalizeBoolean(mixed $value, bool $fallback = false): bool

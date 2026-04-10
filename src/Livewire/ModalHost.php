@@ -38,7 +38,7 @@ class ModalHost extends Component
         $this->openModal(
             $component,
             $arguments,
-            array_replace(['type' => 'sheet'], $modalAttributes)
+            array_replace($modalAttributes, ['type' => 'sheet', 'bottomSheet' => true])
         );
     }
 

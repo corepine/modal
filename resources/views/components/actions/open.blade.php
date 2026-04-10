@@ -8,15 +8,32 @@
     'type' => null,
     'drawer' => null,
     'sheet' => null,
+    'bottomSheet' => null,
     'isolate' => null,
     'isolated' => null,
     'position' => null,
     'height' => null,
+    'sheetHeight' => null,
+    'sheetMinHeight' => null,
+    'minHeight' => null,
+    'sheetMaxHeight' => null,
+    'maxHeight' => null,
+    'closeOnEscape' => null,
+    'closeOnClickAway' => null,
+    'dismissible' => null,
+    'closeAllOnEscape' => null,
+    'draggable' => null,
+    'enableDrag' => null,
+    'showDragHandle' => null,
+    'dragCloseThreshold' => null,
+    'sheetDragThreshold' => null,
     'layout' => null,
     'plain' => null,
     'title' => null,
     'description' => null,
     'showClose' => null,
+    'footerActionsAlignment' => null,
+    'footerActionsAlign' => null,
     'footerActions' => null,
 ])
 
@@ -24,6 +41,31 @@
 @php($targetComponent = $componentClass ?: $component)
 @php($triggerAttributes = $attributes->except('class'))
 @php($payloadModalAttributes = is_array($modalAttributes) ? $modalAttributes : [])
+@php($normalizeBoolean = static function (mixed $value): ?bool {
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_string($value)) {
+        return match (strtolower(trim($value))) {
+            '1', 'true', 'yes', 'on' => true,
+            '0', 'false', 'no', 'off' => false,
+            default => null,
+        };
+    }
+
+    if (is_int($value) || is_float($value)) {
+        if ((float) $value === 1.0) {
+            return true;
+        }
+
+        if ((float) $value === 0.0) {
+            return false;
+        }
+    }
+
+    return null;
+})
 @if (is_string($size) && $size !== '')
     @php($payloadModalAttributes['size'] = $size)
 @endif
@@ -45,6 +87,7 @@
     @php($normalizedType = $type->value)
 @elseif (is_string($type))
     @php($normalizedType = match (strtolower(trim($type))) {
+        'bottomsheet', 'bottom-sheet', 'bottom_sheet' => 'sheet',
         'modal', 'drawer', 'sheet' => strtolower(trim($type)),
         default => null,
     })
@@ -81,6 +124,13 @@
         @php($normalizedType = 'sheet')
     @endif
 @endif
+@php($normalizedBottomSheet = $normalizeBoolean($bottomSheet))
+@if (! is_null($normalizedBottomSheet))
+    @php($payloadModalAttributes['bottomSheet'] = $normalizedBottomSheet)
+    @if (is_null($normalizedType) && $normalizedBottomSheet === true)
+        @php($normalizedType = 'sheet')
+    @endif
+@endif
 @php($rawIsolate = ! is_null($isolate) ? $isolate : $isolated)
 @php($normalizedIsolate = null)
 @if (is_bool($rawIsolate))
@@ -105,6 +155,31 @@
     @php($payloadModalAttributes['height'] = $height)
 @elseif (is_string($height) && trim($height) !== '')
     @php($payloadModalAttributes['height'] = trim($height))
+@endif
+@if (is_int($sheetHeight) || is_float($sheetHeight))
+    @php($payloadModalAttributes['sheetHeight'] = $sheetHeight)
+@elseif (is_string($sheetHeight) && trim($sheetHeight) !== '')
+    @php($payloadModalAttributes['sheetHeight'] = trim($sheetHeight))
+@endif
+@if (is_int($sheetMinHeight) || is_float($sheetMinHeight))
+    @php($payloadModalAttributes['sheetMinHeight'] = $sheetMinHeight)
+@elseif (is_string($sheetMinHeight) && trim($sheetMinHeight) !== '')
+    @php($payloadModalAttributes['sheetMinHeight'] = trim($sheetMinHeight))
+@endif
+@if (is_int($minHeight) || is_float($minHeight))
+    @php($payloadModalAttributes['minHeight'] = $minHeight)
+@elseif (is_string($minHeight) && trim($minHeight) !== '')
+    @php($payloadModalAttributes['minHeight'] = trim($minHeight))
+@endif
+@if (is_int($sheetMaxHeight) || is_float($sheetMaxHeight))
+    @php($payloadModalAttributes['sheetMaxHeight'] = $sheetMaxHeight)
+@elseif (is_string($sheetMaxHeight) && trim($sheetMaxHeight) !== '')
+    @php($payloadModalAttributes['sheetMaxHeight'] = trim($sheetMaxHeight))
+@endif
+@if (is_int($maxHeight) || is_float($maxHeight))
+    @php($payloadModalAttributes['maxHeight'] = $maxHeight)
+@elseif (is_string($maxHeight) && trim($maxHeight) !== '')
+    @php($payloadModalAttributes['maxHeight'] = trim($maxHeight))
 @endif
 @php($normalizedLayout = null)
 @if (is_bool($layout))
@@ -132,6 +207,40 @@
 @if (! is_null($normalizedPlain))
     @php($payloadModalAttributes['plain'] = $normalizedPlain)
 @endif
+@php($normalizedCloseOnEscape = $normalizeBoolean($closeOnEscape))
+@if (! is_null($normalizedCloseOnEscape))
+    @php($payloadModalAttributes['closeOnEscape'] = $normalizedCloseOnEscape)
+@endif
+@php($rawDismissible = ! is_null($dismissible) ? $dismissible : $closeOnClickAway)
+@php($normalizedDismissible = $normalizeBoolean($rawDismissible))
+@if (! is_null($normalizedDismissible))
+    @php($payloadModalAttributes['dismissible'] = $normalizedDismissible)
+    @php($payloadModalAttributes['closeOnClickAway'] = $normalizedDismissible)
+@endif
+@php($normalizedCloseAllOnEscape = $normalizeBoolean($closeAllOnEscape))
+@if (! is_null($normalizedCloseAllOnEscape))
+    @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
+@endif
+@php($rawDraggable = ! is_null($draggable) ? $draggable : $enableDrag)
+@php($normalizedDraggable = ! is_null($rawDraggable) ? $normalizeBoolean($rawDraggable) : null)
+@if (! is_null($normalizedDraggable))
+    @php($payloadModalAttributes['draggable'] = $normalizedDraggable)
+    @php($payloadModalAttributes['enableDrag'] = $normalizedDraggable)
+@endif
+@php($normalizedShowDragHandle = ! is_null($showDragHandle) ? $normalizeBoolean($showDragHandle) : null)
+@if (! is_null($normalizedShowDragHandle))
+    @php($payloadModalAttributes['showDragHandle'] = $normalizedShowDragHandle)
+@endif
+@if (is_int($dragCloseThreshold) || is_float($dragCloseThreshold))
+    @php($payloadModalAttributes['dragCloseThreshold'] = $dragCloseThreshold)
+@elseif (is_string($dragCloseThreshold) && trim($dragCloseThreshold) !== '')
+    @php($payloadModalAttributes['dragCloseThreshold'] = trim($dragCloseThreshold))
+@endif
+@if (is_int($sheetDragThreshold) || is_float($sheetDragThreshold))
+    @php($payloadModalAttributes['sheetDragThreshold'] = $sheetDragThreshold)
+@elseif (is_string($sheetDragThreshold) && trim($sheetDragThreshold) !== '')
+    @php($payloadModalAttributes['sheetDragThreshold'] = trim($sheetDragThreshold))
+@endif
 @if (is_string($title) && trim($title) !== '')
     @php($payloadModalAttributes['title'] = trim($title))
 @endif
@@ -150,6 +259,12 @@
 @endif
 @if (! is_null($normalizedShowClose))
     @php($payloadModalAttributes['showClose'] = $normalizedShowClose)
+@endif
+@php($rawFooterActionsAlignment = ! is_null($footerActionsAlignment) ? $footerActionsAlignment : $footerActionsAlign)
+@if ($rawFooterActionsAlignment instanceof \Corepine\Support\Enums\Alignment)
+    @php($payloadModalAttributes['footerActionsAlignment'] = $rawFooterActionsAlignment->value)
+@elseif (is_string($rawFooterActionsAlignment) && trim($rawFooterActionsAlignment) !== '')
+    @php($payloadModalAttributes['footerActionsAlignment'] = trim($rawFooterActionsAlignment))
 @endif
 @if (is_array($footerActions) && $footerActions !== [])
     @php($payloadModalAttributes['footerActions'] = $footerActions)

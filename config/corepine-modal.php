@@ -25,10 +25,11 @@ return [
     'defaults' => [
         'attributes' => [
             'closeOnEscape' => true,
-            'closeOnEscapeIsForceful' => false,
+            'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,
+            'dismissible' => true,
             'blur' => false,
             'type' => 'modal',
             'drawer' => false,
@@ -43,6 +44,7 @@ return [
             'title' => null,
             'description' => null,
             'showClose' => true,
+            'footerActionsAlignment' => 'end',
             'footerActions' => [],
         ],
     ],

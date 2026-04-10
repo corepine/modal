@@ -121,7 +121,9 @@ it('stores drawer and position attributes', function (): void {
 it('stores explicit sheet type and renders sheet classes', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'type' => 'sheet',
+            'bottomSheet' => true,
+            'dismissible' => false,
+            'showDragHandle' => true,
         ]);
 
     $stack = $test->get('stack');
@@ -129,10 +131,13 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
 
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
     expect($modals[$stack[0]]['modalAttributes']['sheet'])->toBeTrue();
+    expect($modals[$stack[0]]['modalAttributes']['bottomSheet'])->toBeTrue();
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
+    expect($modals[$stack[0]]['modalAttributes']['dismissible'])->toBeFalse();
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('bottom');
 
     $test->assertSee('cp-modal-shape-sheet')
+        ->assertSee('rounded-b-none')
         ->assertSee('cp-modal-sheet-handle');
 });
 
@@ -149,6 +154,7 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ->assertSee('classHeightHint(value)', false)
         ->assertSee('const classPreferred = this.classHeightHint(attrs.class ?? \'\');', false)
         ->assertSee('const preferredSource = attrs.height ?? attrs.sheetHeight ?? null;', false)
+        ->assertSee('shouldShowSheetDragHandle(', false)
         ->assertSee('startSheetResize(', false)
         ->assertSee('startSheetDrag(', false);
 });
@@ -277,6 +283,7 @@ it('renders automatic layout chrome and declarative footer actions', function ()
         ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
             'title' => 'Manage Users',
             'description' => 'Search and view users in your system.',
+            'footerActionsAlignment' => 'center',
             'footerActions' => [
                 ['type' => 'close', 'label' => 'Cancel'],
                 ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
@@ -287,6 +294,7 @@ it('renders automatic layout chrome and declarative footer actions', function ()
         ->assertSee('Search and view users in your system.')
         ->assertSee('Cancel')
         ->assertSee('Save')
+        ->assertSee('justify-center')
         ->assertSee('callModalMethod(', false)
         ->assertSee('saveUsers', false);
 });

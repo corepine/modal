@@ -3,6 +3,7 @@
 use Corepine\Modal\Actions\Action;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Support\ModalConfig;
+use Corepine\Support\Enums\Alignment;
 
 it('normalizes drawer positions to left or right', function (): void {
     $config = app(ModalConfig::class);
@@ -11,6 +12,14 @@ it('normalizes drawer positions to left or right', function (): void {
     expect($config->modalPosition(['drawer' => true, 'position' => 'right']))->toBe('right');
     expect($config->modalPosition(['drawer' => true, 'position' => 'top']))->toBe('right');
     expect($config->modalPosition(['drawer' => true, 'position' => 'center']))->toBe('right');
+});
+
+it('forces sheet positions to bottom', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->modalPosition(['type' => 'sheet']))->toBe('bottom');
+    expect($config->modalPosition(['type' => 'sheet', 'position' => 'top']))->toBe('bottom');
+    expect($config->modalPosition(['bottomSheet' => true, 'position' => 'left']))->toBe('bottom');
 });
 
 it('normalizes standard modal positions', function (): void {
@@ -54,17 +63,38 @@ it('normalizes modal type using enum, explicit type, and legacy flags', function
 
     expect($config->modalType(['type' => ModalType::Drawer]))->toBe('drawer');
     expect($config->modalType(['type' => 'sheet']))->toBe('sheet');
+    expect($config->modalType(['type' => 'bottomSheet']))->toBe('sheet');
     expect($config->modalType(['type' => 'modal']))->toBe('modal');
     expect($config->modalType(['drawer' => true]))->toBe('drawer');
     expect($config->modalType(['sheet' => true]))->toBe('sheet');
+    expect($config->modalType(['bottomSheet' => true]))->toBe('sheet');
 
     $normalizedSheet = $config->mergedModalAttributes([], ['type' => 'sheet']);
+    $normalizedBottomSheet = $config->mergedModalAttributes([], [
+        'bottomSheet' => true,
+        'dismissible' => false,
+        'closeAllOnEscape' => true,
+        'enableDrag' => true,
+        'showDragHandle' => false,
+    ]);
     $normalizedDrawer = $config->mergedModalAttributes([], ['drawer' => true]);
 
     expect($normalizedSheet['type'])->toBe('sheet');
     expect($normalizedSheet['sheet'])->toBeTrue();
+    expect($normalizedSheet['bottomSheet'])->toBeTrue();
     expect($normalizedSheet['drawer'])->toBeFalse();
     expect($normalizedSheet['position'])->toBe('bottom');
+
+    expect($normalizedBottomSheet['type'])->toBe('sheet');
+    expect($normalizedBottomSheet['sheet'])->toBeTrue();
+    expect($normalizedBottomSheet['bottomSheet'])->toBeTrue();
+    expect($normalizedBottomSheet['dismissible'])->toBeFalse();
+    expect($normalizedBottomSheet['closeOnClickAway'])->toBeFalse();
+    expect($normalizedBottomSheet['closeAllOnEscape'])->toBeTrue();
+    expect($normalizedBottomSheet['closeOnEscapeIsForceful'])->toBeTrue();
+    expect($normalizedBottomSheet['draggable'])->toBeTrue();
+    expect($normalizedBottomSheet['enableDrag'])->toBeTrue();
+    expect($normalizedBottomSheet['showDragHandle'])->toBeFalse();
 
     expect($normalizedDrawer['type'])->toBe('drawer');
     expect($normalizedDrawer['drawer'])->toBeTrue();
@@ -81,6 +111,9 @@ it('supports auto layout attributes and plain override', function (): void {
     expect($config->layoutTitle(['title' => 'Users']))->toBe('Users');
     expect($config->layoutDescription(['description' => 'Search and view users']))->toBe('Search and view users');
     expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();
+    expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => 'center']))->toBe('center');
+    expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => Alignment::Right]))->toBe('end');
+    expect($config->layoutFooterActionsAlignmentClass(['footerActionsAlignment' => 'start']))->toBe('justify-start');
 });
 
 it('normalizes declarative footer actions for auto layout', function (): void {

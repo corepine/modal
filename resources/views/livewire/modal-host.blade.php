@@ -112,6 +112,18 @@
                     return this.activeModal()?.modalAttributes ?? {};
                 },
 
+                isDismissible() {
+                    const attrs = this.activeAttributes();
+
+                    return this.normalizedBoolean(attrs.dismissible ?? attrs.closeOnClickAway ?? true, true);
+                },
+
+                shouldCloseAllOnEscape() {
+                    const attrs = this.activeAttributes();
+
+                    return this.normalizedBoolean(attrs.closeAllOnEscape ?? attrs.closeOnEscapeIsForceful ?? false, false);
+                },
+
                 eventClientY(event) {
                     const point = event?.touches?.[0] ?? event?.changedTouches?.[0] ?? event;
 
@@ -442,12 +454,24 @@
                     }
 
                     const attrs = this.modalAttributesById(id);
+                    const draggable = attrs.draggable ?? attrs.enableDrag;
 
-                    if (attrs.draggable === undefined || attrs.draggable === null) {
+                    if (draggable === undefined || draggable === null) {
                         return true;
                     }
 
-                    return this.normalizedBoolean(attrs.draggable, true);
+                    return this.normalizedBoolean(draggable, true);
+                },
+
+                shouldShowSheetDragHandle(id) {
+                    if (!this.isSheetDraggable(id)) {
+                        return false;
+                    }
+
+                    const attrs = this.modalAttributesById(id);
+                    const showDragHandle = attrs.showDragHandle ?? attrs.draggable ?? attrs.enableDrag ?? true;
+
+                    return this.normalizedBoolean(showDragHandle, true);
                 },
 
                 sheetDragThreshold(id) {
@@ -870,7 +894,7 @@
                         return;
                     }
 
-                    if (attrs.closeOnEscapeIsForceful === true) {
+                    if (this.shouldCloseAllOnEscape()) {
                         this.requestClose({
                             force: true,
                             destroy: attrs.destroyOnClose ?? true,
@@ -887,11 +911,11 @@
                 },
 
                 closeOnClickAway() {
-                    const attrs = this.activeAttributes();
-
-                    if (attrs.closeOnClickAway !== true) {
+                    if (!this.isDismissible()) {
                         return;
                     }
+
+                    const attrs = this.activeAttributes();
 
                     if (!this.canClose('closingModalOnClickAway')) {
                         return;
@@ -987,6 +1011,7 @@
                     $layoutTitle = $modalConfig->layoutTitle($modal['modalAttributes']);
                     $layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']);
                     $layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']);
+                    $layoutFooterActionsAlignmentClass = $modalConfig->layoutFooterActionsAlignmentClass($modal['modalAttributes']);
                     $layoutFooterActions = $modalConfig->layoutFooterActions($modal['modalAttributes']);
                 @endphp
 
@@ -1032,6 +1057,7 @@
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
+                        'rounded-b-none' => $isSheet,
                     ])
                         x-ref="panel-{{ $id }}"
                         x-bind:style="panelStyle(@js($id))"
@@ -1042,6 +1068,7 @@
                     >
                         @if ($isSheet)
                             <div
+                                x-show="shouldShowSheetDragHandle(@js($id))"
                                 class="cp-modal-sheet-handle cursor-row-resize select-none px-4 pt-3 sm:pt-4"
                                 x-on:pointerdown.stop.prevent="startSheetResize(@js($id), $event)"
                                 x-on:touchstart.stop.prevent="startSheetResize(@js($id), $event)"
@@ -1058,7 +1085,7 @@
 
                                     @if ($layoutFooterActions !== [])
                                         <x-corepine.modal.footer>
-                                            <div class="flex w-full items-center justify-end gap-2">
+                                            <div class="flex w-full items-center gap-2 {{ $layoutFooterActionsAlignmentClass }}">
                                                 @foreach ($layoutFooterActions as $action)
                                                     @php
                                                         $actionClass = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';

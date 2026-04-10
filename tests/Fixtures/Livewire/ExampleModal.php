@@ -17,7 +17,7 @@ class ExampleModal extends Modal
     {
         return [
             'closeOnEscape' => true,
-            'closeOnEscapeIsForceful' => false,
+            'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'closeOnClickAway' => true,

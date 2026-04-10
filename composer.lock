@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ccd4b37600489d2778a563a40215af9d",
+    "content-hash": "85b550cb148b6df49fa685841985a564",
     "packages": [
         {
             "name": "brick/math",
@@ -137,17 +137,11 @@
         },
         {
             "name": "corepine/support",
-            "version": "v0.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/corepine/support.git",
-                "reference": "64b12aa2b6ffa7af770190db70eaba51dea7d7dc"
-            },
+            "version": "0.1.1",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/corepine/support/zipball/64b12aa2b6ffa7af770190db70eaba51dea7d7dc",
-                "reference": "64b12aa2b6ffa7af770190db70eaba51dea7d7dc",
-                "shasum": ""
+                "type": "path",
+                "url": "../support",
+                "reference": "64b12aa2b6ffa7af770190db70eaba51dea7d7dc"
             },
             "require": {
                 "laravel/framework": "^10.0|^11.0|^12.0|^13.0",
@@ -161,23 +155,32 @@
             "type": "library",
             "extra": {
                 "laravel": {
-                    "aliases": {
-                        "CorepineColor": "Corepine\\Support\\Facades\\CorepineColor"
-                    },
                     "providers": [
                         "Corepine\\Support\\SupportServiceProvider"
-                    ]
+                    ],
+                    "aliases": {
+                        "CorepineColor": "Corepine\\Support\\Facades\\CorepineColor"
+                    }
                 }
             },
             "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
                 "psr-4": {
                     "Corepine\\Support\\": "src/"
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Corepine\\Support\\Tests\\": "tests/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "test": [
+                    "@php vendor/bin/pest"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -194,11 +197,10 @@
                 "laravel",
                 "support"
             ],
-            "support": {
-                "issues": "https://github.com/corepine/support/issues",
-                "source": "https://github.com/corepine/support/tree/v0.1.1"
-            },
-            "time": "2026-03-20T17:05:05+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "dflydev/dot-access-data",

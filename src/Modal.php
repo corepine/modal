@@ -57,7 +57,7 @@ abstract class Modal extends Component
             $this->modalConfig()->listenEvent('open_sheet'),
             component: $component,
             arguments: $arguments,
-            modalAttributes: array_replace(['type' => 'sheet'], $modalAttributes)
+            modalAttributes: array_replace($modalAttributes, ['type' => 'sheet', 'bottomSheet' => true])
         );
     }
 
