@@ -102,13 +102,14 @@ it('normalizes modal type using enum, explicit type, and legacy flags', function
     expect($normalizedDrawer['position'])->toBe('right');
 });
 
-it('supports auto layout attributes and plain override', function (): void {
+it('supports shell attributes and layout alias', function (): void {
     $config = app(ModalConfig::class);
 
+    expect($config->usesLayout(['shell' => true]))->toBeTrue();
+    expect($config->usesLayout(['shell' => false]))->toBeFalse();
     expect($config->usesLayout(['layout' => true]))->toBeTrue();
     expect($config->usesLayout(['layout' => false]))->toBeFalse();
-    expect($config->usesLayout(['plain' => true]))->toBeFalse();
-    expect($config->layoutTitle(['title' => 'Users']))->toBe('Users');
+    expect($config->layoutHeading(['heading' => 'Users']))->toBe('Users');
     expect($config->layoutDescription(['description' => 'Search and view users']))->toBe('Search and view users');
     expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();
     expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => 'center']))->toBe('center');

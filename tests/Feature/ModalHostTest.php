@@ -17,8 +17,8 @@ beforeEach(function (): void {
 
 it('opens and stacks modals', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal')
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Second']);
+        ->dispatch('corepine-modal.open', component: 'test.example-modal')
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'Second']);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
@@ -30,13 +30,13 @@ it('opens and stacks modals', function (): void {
 
 it('closes top modal layers', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'One'])
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Two'])
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Three']);
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'One'])
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'Two'])
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'Three']);
 
     $initialStack = $test->get('stack');
 
-    $test->dispatch('closeTopModal', count: 2, destroy: true);
+    $test->dispatch('corepine-modal.close-top', count: 2, destroy: true);
 
     $stack = $test->get('stack');
 
@@ -47,9 +47,9 @@ it('closes top modal layers', function (): void {
 
 it('force closes all modals', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal')
-        ->dispatch('openModal', component: 'test.example-modal')
-        ->dispatch('closeTopModal', force: true);
+        ->dispatch('corepine-modal.open', component: 'test.example-modal')
+        ->dispatch('corepine-modal.open', component: 'test.example-modal')
+        ->dispatch('corepine-modal.close-top', force: true);
 
     expect($test->get('stack'))->toBe([]);
     expect($test->get('modals'))->toBe([]);
@@ -58,7 +58,7 @@ it('force closes all modals', function (): void {
 
 it('opens modal by class path', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: ExampleModal::class);
+        ->dispatch('corepine-modal.open', component: ExampleModal::class);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
@@ -69,7 +69,7 @@ it('opens modal by class path', function (): void {
 
 it('uses modalSize from component class', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal');
+        ->dispatch('corepine-modal.open', component: 'test.example-modal');
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
@@ -79,7 +79,7 @@ it('uses modalSize from component class', function (): void {
 
 it('allows runtime size override with raw classes', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'size' => 'max-w-[900px] sm:max-w-full',
         ]);
 
@@ -91,7 +91,7 @@ it('allows runtime size override with raw classes', function (): void {
 
 it('stores runtime class and blur attributes', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'class' => 'p-8 border border-zinc-200',
             'blur' => true,
         ]);
@@ -105,7 +105,7 @@ it('stores runtime class and blur attributes', function (): void {
 
 it('stores drawer and position attributes', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
             'position' => 'left',
         ]);
@@ -120,7 +120,7 @@ it('stores drawer and position attributes', function (): void {
 
 it('stores explicit sheet type and renders sheet classes', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'bottomSheet' => true,
             'dismissible' => false,
             'showDragHandle' => true,
@@ -143,7 +143,7 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
 
 it('renders sheet drag handlers and panel style binding', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'type' => 'sheet',
         ])
         ->assertSee('x-on:pointermove.window="moveSheetDrag($event)"', false)
@@ -161,7 +161,7 @@ it('renders sheet drag handlers and panel style binding', function (): void {
 
 it('applies explicit non-sheet height through panel style binding', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'type' => 'modal',
             'height' => '600px',
         ])
@@ -172,7 +172,7 @@ it('applies explicit non-sheet height through panel style binding', function ():
 
 it('stores shared height attribute and preserves sheetHeight alias', function (): void {
     $heightTest = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'height' => '65vh',
         ]);
 
@@ -182,7 +182,7 @@ it('stores shared height attribute and preserves sheetHeight alias', function ()
     expect($heightModals[$heightStack[0]]['modalAttributes']['height'])->toBe('65vh');
 
     $sheetHeightAliasTest = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'type' => 'sheet',
             'sheetHeight' => '74vh',
         ]);
@@ -193,9 +193,9 @@ it('stores shared height attribute and preserves sheetHeight alias', function ()
     expect($sheetModals[$sheetStack[0]]['modalAttributes']['sheetHeight'])->toBe('74vh');
 });
 
-it('opens a bottom sheet through the openBottomSheet event alias', function (): void {
+it('opens a bottom sheet through the prefixed open-sheet event', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openBottomSheet', component: 'test.example-modal');
+        ->dispatch('corepine-modal.open-sheet', component: 'test.example-modal');
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
@@ -204,9 +204,22 @@ it('opens a bottom sheet through the openBottomSheet event alias', function (): 
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
 });
 
+it('still accepts legacy open event aliases', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('openModal', component: 'test.example-modal')
+        ->dispatch('openBottomSheet', component: 'test.example-modal');
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($stack)->toHaveCount(2);
+    expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('modal');
+    expect($modals[$stack[1]]['modalAttributes']['type'])->toBe('sheet');
+});
+
 it('normalizes invalid drawer position to right', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
             'position' => 'top',
         ]);
@@ -219,7 +232,7 @@ it('normalizes invalid drawer position to right', function (): void {
 
 it('stores non-drawer position for centered modal layout overrides', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'position' => 'top',
         ]);
 
@@ -232,7 +245,7 @@ it('stores non-drawer position for centered modal layout overrides', function ()
 
 it('forces drawer edge side to remain square in rendered classes', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
             'position' => 'right',
             'class' => 'rounded-3xl',
@@ -243,7 +256,7 @@ it('forces drawer edge side to remain square in rendered classes', function (): 
 
 it('keeps modalAttributes size when defined explicitly', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.attribute-sized-modal');
+        ->dispatch('corepine-modal.open', component: 'test.attribute-sized-modal');
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
@@ -253,7 +266,7 @@ it('keeps modalAttributes size when defined explicitly', function (): void {
 
 it('handles click-away from overlay layer while preventing panel clicks from bubbling', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal')
+        ->dispatch('corepine-modal.open', component: 'test.example-modal')
         ->assertSee('cp-modal-livewire', false)
         ->assertSee('cp-modal-layer-backdrop', false)
         ->assertSee('x-on:click="if ($event.target === $event.currentTarget) closeOnClickAway()"', false)
@@ -262,8 +275,8 @@ it('handles click-away from overlay layer while preventing panel clicks from bub
 
 it('stores isolate modal attribute and renders isolate visibility hooks', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Base'])
-        ->dispatch('openModal', component: 'test.example-modal', arguments: ['title' => 'Overlay'], modalAttributes: [
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'Base'])
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', arguments: ['title' => 'Overlay'], modalAttributes: [
             'isolate' => true,
         ]);
 
@@ -280,8 +293,8 @@ it('stores isolate modal attribute and renders isolate visibility hooks', functi
 
 it('renders automatic layout chrome and declarative footer actions', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'title' => 'Manage Users',
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
             'description' => 'Search and view users in your system.',
             'footerActionsAlignment' => 'center',
             'footerActions' => [
@@ -301,8 +314,8 @@ it('renders automatic layout chrome and declarative footer actions', function ()
 
 it('supports fluent Action objects inside footerActions', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'title' => 'Manage Users',
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
             'footerActions' => [
                 Action::make('cancel')
                     ->label('Cancel')
@@ -333,8 +346,8 @@ it('resolves support colors and richer action options inside footerActions', fun
     ]);
 
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'title' => 'Manage Users',
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
             'footerActions' => [
                 Action::make('cancel')
                     ->label('Cancel')
@@ -370,8 +383,8 @@ it('resolves support colors and richer action options inside footerActions', fun
 
 it('supports raw footer action arrays with color and outline options', function (): void {
     $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'title' => 'Manage Users',
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
             'footerActions' => [
                 [
                     'type' => 'method',
@@ -396,23 +409,23 @@ it('supports raw footer action arrays with color and outline options', function 
     expect($action['attributes'])->toMatchArray(['data-testid' => 'review-action']);
 });
 
-it('supports disabling automatic layout with plain attribute', function (): void {
+it('supports disabling automatic shell with shell attribute', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal', modalAttributes: [
-            'plain' => true,
-            'title' => 'Should not render chrome',
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'shell' => false,
+            'heading' => 'Should not render chrome',
         ])
         ->assertDontSee('cp-modal-layout');
 });
 
-it('can keep manual layout footer visible while stacking when plain mode is enabled', function (): void {
+it('can keep manual layout footer visible while stacking when shell mode is disabled', function (): void {
     Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.manual-layout-modal', modalAttributes: [
-            'plain' => true,
+        ->dispatch('corepine-modal.open', component: 'test.manual-layout-modal', modalAttributes: [
+            'shell' => false,
         ])
         ->assertSee('Manual Footer')
-        ->dispatch('openModal', component: 'test.manual-layout-modal', modalAttributes: [
-            'plain' => true,
+        ->dispatch('corepine-modal.open', component: 'test.manual-layout-modal', modalAttributes: [
+            'shell' => false,
         ])
         ->assertSee('Manual Footer');
 });

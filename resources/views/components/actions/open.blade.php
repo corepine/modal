@@ -27,9 +27,9 @@
     'showDragHandle' => null,
     'dragCloseThreshold' => null,
     'sheetDragThreshold' => null,
+    'shell' => null,
     'layout' => null,
-    'plain' => null,
-    'title' => null,
+    'heading' => null,
     'description' => null,
     'showClose' => null,
     'footerActionsAlignment' => null,
@@ -181,31 +181,19 @@
 @elseif (is_string($maxHeight) && trim($maxHeight) !== '')
     @php($payloadModalAttributes['maxHeight'] = trim($maxHeight))
 @endif
-@php($normalizedLayout = null)
-@if (is_bool($layout))
-    @php($normalizedLayout = $layout)
-@elseif (is_string($layout))
-    @php($normalizedLayout = match (strtolower(trim($layout))) {
+@php($rawShell = ! is_null($shell) ? $shell : $layout)
+@php($normalizedShell = null)
+@if (is_bool($rawShell))
+    @php($normalizedShell = $rawShell)
+@elseif (is_string($rawShell))
+    @php($normalizedShell = match (strtolower(trim($rawShell))) {
         '1', 'true', 'yes', 'on' => true,
         '0', 'false', 'no', 'off' => false,
         default => null,
     })
 @endif
-@if (! is_null($normalizedLayout))
-    @php($payloadModalAttributes['layout'] = $normalizedLayout)
-@endif
-@php($normalizedPlain = null)
-@if (is_bool($plain))
-    @php($normalizedPlain = $plain)
-@elseif (is_string($plain))
-    @php($normalizedPlain = match (strtolower(trim($plain))) {
-        '1', 'true', 'yes', 'on' => true,
-        '0', 'false', 'no', 'off' => false,
-        default => null,
-    })
-@endif
-@if (! is_null($normalizedPlain))
-    @php($payloadModalAttributes['plain'] = $normalizedPlain)
+@if (! is_null($normalizedShell))
+    @php($payloadModalAttributes['shell'] = $normalizedShell)
 @endif
 @php($normalizedCloseOnEscape = $normalizeBoolean($closeOnEscape))
 @if (! is_null($normalizedCloseOnEscape))
@@ -241,8 +229,8 @@
 @elseif (is_string($sheetDragThreshold) && trim($sheetDragThreshold) !== '')
     @php($payloadModalAttributes['sheetDragThreshold'] = trim($sheetDragThreshold))
 @endif
-@if (is_string($title) && trim($title) !== '')
-    @php($payloadModalAttributes['title'] = trim($title))
+@if (is_string($heading) && trim($heading) !== '')
+    @php($payloadModalAttributes['heading'] = trim($heading))
 @endif
 @if (is_string($description) && trim($description) !== '')
     @php($payloadModalAttributes['description'] = trim($description))

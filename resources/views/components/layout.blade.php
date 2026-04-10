@@ -1,11 +1,11 @@
 @props([
-    'title' => null,
+    'heading' => null,
     'description' => null,
     'showClose' => true,
 ])
 
 @php
-    $resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null;
+    $resolvedHeading = is_string($heading) && trim($heading) !== '' ? $heading : null;
     $namedFooter = isset($footer) && $footer->isNotEmpty() ? $footer : null;
     $renderedBody = $slot;
     $inlineFooterBlocks = [];
@@ -36,13 +36,13 @@
 @endphp
 
 <section {{ $attributes->merge(['class' => 'cp-modal-layout overscroll-contain dark:bg-zinc-800 dark:text-white h-full max-h-full min-h-0 flex flex-col overflow-hidden bg-inherit']) }}>
-    @if ($resolvedTitle !== null || filled($description) || $showClose)
+    @if ($resolvedHeading !== null || filled($description) || $showClose)
         <header class="cp-modal-header flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
             <div class="min-w-0 flex flex-col gap-2">
 
-            @if ($resolvedTitle !== null)
-                <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
-                    {{ $resolvedTitle }}
+            @if ($resolvedHeading !== null)
+                <h2 class="cp-modal-heading text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                    {{ $resolvedHeading }}
                 </h2>
             @else
                 <div></div>
@@ -76,11 +76,11 @@
     </main>
 
     @if ($namedFooter !== null)
-        <footer {{ $namedFooter->attributes->class('cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
+        <footer {{ $namedFooter->attributes->class('cp-modal-footer flex shrink-0 items-center justify-end border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
             {{ $namedFooter }}
         </footer>
     @elseif ($hasInlineFooter)
-        <footer class="cp-modal-footer flex shrink-0 items-center border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
+        <footer class="cp-modal-footer flex shrink-0 items-center justify-end border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
             @foreach ($inlineFooterBlocks as $inlineFooterBlock)
                 {!! $inlineFooterBlock !!}
             @endforeach

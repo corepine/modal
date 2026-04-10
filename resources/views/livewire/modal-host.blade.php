@@ -1008,7 +1008,7 @@
                     $panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']);
                     $transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']);
                     $usesLayout = $modalConfig->usesLayout($modal['modalAttributes']);
-                    $layoutTitle = $modalConfig->layoutTitle($modal['modalAttributes']);
+                    $layoutHeading = $modalConfig->layoutHeading($modal['modalAttributes']);
                     $layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']);
                     $layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']);
                     $layoutFooterActionsAlignmentClass = $modalConfig->layoutFooterActionsAlignmentClass($modal['modalAttributes']);
@@ -1080,7 +1080,7 @@
                         @endif
                         <div class="cp-modal-livewire min-h-0 flex-1">
                             @if ($usesLayout)
-                                <x-corepine.modal.layout :title="$layoutTitle" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
+                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])

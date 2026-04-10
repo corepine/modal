@@ -1,7 +1,7 @@
 @props([
     'id' => null,
     'open' => false,
-    'title' => null,
+    'heading' => null,
     'description' => null,
     'showClose' => true,
     'modalAttributes' => [],
@@ -31,7 +31,7 @@
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
 @php($resolvedId = is_string($id) && trim($id) !== '' ? trim($id) : null)
-@php($resolvedTitle = is_string($title) && trim($title) !== '' ? $title : null)
+@php($resolvedHeading = is_string($heading) && trim($heading) !== '' ? $heading : null)
 @php($resolvedDescription = is_string($description) && trim($description) !== '' ? $description : null)
 @php($hasFooter = isset($footer) && $footer->isNotEmpty())
 @php($panelAttributes = $attributes->except('class'))
@@ -966,12 +966,12 @@
                                 </div>
                             @endif
 
-                            @if ($resolvedTitle !== null || $resolvedDescription !== null || $showClose)
+                            @if ($resolvedHeading !== null || $resolvedDescription !== null || $showClose)
                                 <header class="cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
                                     <div class="min-w-0">
-                                        @if ($resolvedTitle !== null)
-                                            <h2 class="cp-modal-title text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
-                                                {{ $resolvedTitle }}
+                                        @if ($resolvedHeading !== null)
+                                            <h2 class="cp-modal-heading text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                                                {{ $resolvedHeading }}
                                             </h2>
                                         @endif
 
@@ -1002,7 +1002,7 @@
                             </main>
 
                             @if ($hasFooter)
-                                <footer {{ $footer->attributes->class('cp-modal-footer flex items-center border-t border-zinc-200/70 px-5 py-3 dark:border-zinc-700/70') }}>
+                                <footer {{ $footer->attributes->class('cp-modal-footer flex items-center justify-end border-t border-zinc-200/70 px-5 py-3 dark:border-zinc-700/70') }}>
                                     {{ $footer }}
                                 </footer>
                             @endif

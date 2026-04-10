@@ -14,24 +14,24 @@ class ModalConfig
      * @var array<string, array<int, string>>
      */
     private const DEFAULT_LISTEN_EVENTS = [
-        'open' => ['openModal', 'corepine-modal.open'],
-        'open_sheet' => ['openBottomSheet', 'corepine-modal.open-sheet'],
-        'close' => ['closeModal', 'corepine-modal.close'],
-        'close_top' => ['closeTopModal', 'corepine-modal.close-top'],
-        'close_all' => ['closeAllModals', 'corepine-modal.close-all'],
-        'destroy' => ['destroyModal', 'corepine-modal.destroy'],
-        'reset' => ['resetModal', 'corepine-modal.reset'],
+        'open' => ['corepine-modal.open', 'openModal'],
+        'open_sheet' => ['corepine-modal.open-sheet', 'openBottomSheet'],
+        'close' => ['corepine-modal.close', 'closeModal'],
+        'close_top' => ['corepine-modal.close-top', 'closeTopModal'],
+        'close_all' => ['corepine-modal.close-all', 'closeAllModals'],
+        'destroy' => ['corepine-modal.destroy', 'destroyModal'],
+        'reset' => ['corepine-modal.reset', 'resetModal'],
     ];
 
     /**
      * @var array<string, string>
      */
     private const DEFAULT_DISPATCH_EVENTS = [
-        'opened' => 'modalOpened',
-        'closed' => 'modalClosed',
-        'changed' => 'activeModalChanged',
-        'all_closed' => 'allModalsClosed',
-        'component_closed' => 'modalComponentClosed',
+        'opened' => 'corepine-modal.opened',
+        'closed' => 'corepine-modal.closed',
+        'changed' => 'corepine-modal.changed',
+        'all_closed' => 'corepine-modal.all-closed',
+        'component_closed' => 'corepine-modal.component-closed',
     ];
 
     /**
@@ -381,28 +381,54 @@ class ModalConfig
      */
     public function usesLayout(array $attributes): bool
     {
-        if ($this->normalizeBoolean($attributes['plain'] ?? false, false)) {
-            return false;
+        $normalizedShell = array_key_exists('shell', $attributes)
+            ? $this->normalizeNullableBoolean($attributes['shell'])
+            : null;
+
+        if (! is_null($normalizedShell)) {
+            return $normalizedShell;
+        }
+
+        $normalizedLayout = array_key_exists('layout', $attributes)
+            ? $this->normalizeNullableBoolean($attributes['layout'])
+            : null;
+
+        if (! is_null($normalizedLayout)) {
+            return $normalizedLayout;
         }
 
         $defaults = $this->defaultModalAttributes();
-        $layout = $attributes['layout'] ?? ($defaults['layout'] ?? true);
+        $defaultShell = array_key_exists('shell', $defaults)
+            ? $this->normalizeNullableBoolean($defaults['shell'])
+            : null;
 
-        return $this->normalizeBoolean($layout, true);
+        if (! is_null($defaultShell)) {
+            return $defaultShell;
+        }
+
+        $defaultLayout = array_key_exists('layout', $defaults)
+            ? $this->normalizeNullableBoolean($defaults['layout'])
+            : null;
+
+        if (! is_null($defaultLayout)) {
+            return $defaultLayout;
+        }
+
+        return true;
     }
 
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function layoutTitle(array $attributes): ?string
+    public function layoutHeading(array $attributes): ?string
     {
-        $title = $attributes['title'] ?? null;
+        $heading = $attributes['heading'] ?? null;
 
-        if (! is_string($title) || trim($title) === '') {
+        if (! is_string($heading) || trim($heading) === '') {
             return null;
         }
 
-        return $title;
+        return $heading;
     }
 
     /**
@@ -835,12 +861,12 @@ class ModalConfig
             : $this->normalizeBoolean($attributes['showDragHandle'] ?? false, false);
         $attributes['isolate'] = $this->isIsolated($attributes);
         $attributes['layout'] = $this->usesLayout($attributes);
+        $attributes['shell'] = $attributes['layout'];
         $attributes['showClose'] = $this->layoutShowClose($attributes);
         $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
         $attributes['footerActions'] = $this->layoutFooterActions($attributes);
         unset($attributes['isolated']);
         unset($attributes['footerActionsAlign']);
-        unset($attributes['plain']);
         $attributes['position'] = $this->modalPosition($attributes);
 
         return $attributes;
@@ -888,8 +914,12 @@ class ModalConfig
             $attributes['bottomSheet'] = $attributes['sheet'];
         }
 
-        if (! array_key_exists('layout', $attributes) && array_key_exists('plain', $attributes)) {
-            $attributes['layout'] = ! $this->normalizeBoolean($attributes['plain'] ?? false, false);
+        if (! array_key_exists('shell', $attributes) && array_key_exists('layout', $attributes)) {
+            $attributes['shell'] = $attributes['layout'];
+        }
+
+        if (! array_key_exists('layout', $attributes) && array_key_exists('shell', $attributes)) {
+            $attributes['layout'] = $attributes['shell'];
         }
 
         if (! array_key_exists('footerActionsAlignment', $attributes) && array_key_exists('footerActionsAlign', $attributes)) {
@@ -981,5 +1011,32 @@ class ModalConfig
         }
 
         return $fallback;
+    }
+
+    private function normalizeNullableBoolean(mixed $value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return match (strtolower(trim($value))) {
+                '1', 'true', 'yes', 'on' => true,
+                '0', 'false', 'no', 'off' => false,
+                default => null,
+            };
+        }
+
+        if (is_int($value) || is_float($value)) {
+            if ((float) $value === 1.0) {
+                return true;
+            }
+
+            if ((float) $value === 0.0) {
+                return false;
+            }
+        }
+
+        return null;
     }
 }

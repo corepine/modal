@@ -16,7 +16,7 @@ it('renders modal host using dotted assets alias', function (): void {
 
 it('renders standalone dotted modal component without livewire host dependency', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine.modal id="standalone-user-modal" title="Standalone Modal" description="Simple Blade-only modal.">
+<x-corepine.modal id="standalone-user-modal" heading="Standalone Modal" description="Simple Blade-only modal.">
     <div>Standalone body</div>
     <x-slot:footer>
         <button type="button">Done</button>
@@ -78,7 +78,7 @@ BLADE);
 
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout title="Edit User">
+<x-corepine-modal-layout heading="Edit User">
     <div>Modal body content</div>
     <x-slot:footer>
         <button type="button">Save</button>
@@ -90,6 +90,7 @@ BLADE);
     expect($html)->toContain('cp-modal-header');
     expect($html)->toContain('cp-modal-body');
     expect($html)->toContain('cp-modal-footer');
+    expect($html)->toContain('justify-end');
     expect($html)->toContain('min-h-0 flex flex-1');
     expect($html)->toContain('Edit User');
     expect($html)->toContain('Modal body content');
@@ -98,7 +99,7 @@ BLADE);
 
 it('renders modal description when provided', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout title="Edit User" description="Review account details before saving.">
+<x-corepine-modal-layout heading="Edit User" description="Review account details before saving.">
     <div>Modal body content</div>
 </x-corepine-modal-layout>
 BLADE);
@@ -108,23 +109,23 @@ BLADE);
     expect($html)->toContain('text-zinc-500');
 });
 
-it('supports null title while keeping close action by default', function (): void {
+it('supports null heading while keeping close action by default', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout :title="null">
+<x-corepine-modal-layout :heading="null">
     <div>Body only</div>
 </x-corepine-modal-layout>
 BLADE);
 
     expect($html)->toContain('Body only');
     expect($html)->toContain('sr-only');
-    expect($html)->not->toContain('cp-modal-title');
+    expect($html)->not->toContain('cp-modal-heading');
     expect($html)->toContain('h-full');
     expect($html)->not->toContain('cp-modal-footer');
 });
 
 it('merges custom wrapper attributes on modal shell', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout title="Custom" id="users-modal" class="ring-1 ring-zinc-300">
+<x-corepine-modal-layout heading="Custom" id="users-modal" class="ring-1 ring-zinc-300">
     <div>Body</div>
 </x-corepine-modal-layout>
 BLADE);
@@ -136,7 +137,7 @@ BLADE);
 
 it('renders modal shell using template alias', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-template title="Template Alias">
+<x-corepine-modal-template heading="Template Alias">
     <div>Template content</div>
 </x-corepine-modal-template>
 BLADE);
@@ -148,7 +149,7 @@ BLADE);
 
 it('renders modal shell using dotted layout alias', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine.modal.layout title="Dot Layout">
+<x-corepine.modal.layout heading="Dot Layout">
     <div>Layout content</div>
 </x-corepine.modal.layout>
 BLADE);
@@ -160,7 +161,7 @@ BLADE);
 
 it('supports inline footer component inside modal layout body', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout title="Inline Footer">
+<x-corepine-modal-layout heading="Inline Footer">
     <div>Body content</div>
 
     <x-corepine.modal.footer id="users-footer-actions" class="w-full">
@@ -202,7 +203,7 @@ BLADE);
 
     expect($flat)->toContain('data-testid="open-trigger"');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('openModal');
+    expect($flat)->toContain('corepine-modal.open');
     expect($flat)->toContain('modals.edit-user');
     expect($flat)->toContain('arguments: JSON.parse');
     expect($flat)->toContain('\u0022user\u0022:5');
@@ -241,13 +242,12 @@ BLADE);
     expect($flat)->toContain('\u0022closeAllOnEscape\u0022:true');
 });
 
-it('supports layout chrome props on open helper', function (): void {
+it('supports shell chrome props on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open
     component="modals.edit-user"
-    layout="true"
-    plain="false"
-    title="Manage Users"
+    shell="true"
+    heading="Manage Users"
     description="Search and view users in your system."
     show-close="true"
     footer-actions-alignment="center"
@@ -262,9 +262,8 @@ BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
-    expect($flat)->toContain('\u0022layout\u0022:true');
-    expect($flat)->toContain('\u0022plain\u0022:false');
-    expect($flat)->toContain('\u0022title\u0022:\u0022Manage Users\u0022');
+    expect($flat)->toContain('\u0022shell\u0022:true');
+    expect($flat)->toContain('\u0022heading\u0022:\u0022Manage Users\u0022');
     expect($flat)->toContain('\u0022description\u0022:\u0022Search and view users in your system.\u0022');
     expect($flat)->toContain('\u0022showClose\u0022:true');
     expect($flat)->toContain('\u0022footerActionsAlignment\u0022:\u0022center\u0022');
@@ -315,7 +314,7 @@ BLADE);
 
     expect($flat)->toContain('data-testid="close-trigger"');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('closeModal');
+    expect($flat)->toContain('corepine-modal.close');
     expect($flat)->toMatch('/count:\s*1/');
     expect($flat)->toMatch('/destroy:\s*true/');
 });
@@ -331,7 +330,7 @@ BLADE);
 
     expect($flat)->toMatch('/if\s*\(\s*true\s*\)/');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('closeAllModals');
+    expect($flat)->toContain('corepine-modal.close-all');
     expect($flat)->toMatch('/destroy:\s*false/');
 });
 
@@ -351,9 +350,9 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('openModal');
+    expect($openDecoded)->toContain('corepine-modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('closeModal');
+    expect($closeDecoded)->toContain('corepine-modal.close');
 });
 
 it('supports dotted actions open and close helper aliases', function (): void {
@@ -372,9 +371,9 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('openModal');
+    expect($openDecoded)->toContain('corepine-modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('closeModal');
+    expect($closeDecoded)->toContain('corepine-modal.close');
 });
 
 it('supports dashed actions open and close aliases', function (): void {
@@ -393,7 +392,7 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('openModal');
+    expect($openDecoded)->toContain('corepine-modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('closeModal');
+    expect($closeDecoded)->toContain('corepine-modal.close');
 });

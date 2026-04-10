@@ -85,7 +85,7 @@ Use this once in your layout to mount the Livewire host.
 Use this when you want a modal without a Livewire modal component stack.
 
 ```blade
-<x-corepine.modal id="user-sheet" title="User Details" description="Blade-only modal">
+<x-corepine.modal id="user-sheet" heading="User Details" description="Blade-only modal">
     <p class="text-sm text-zinc-600">This modal does not require Livewire host registration.</p>
 
     <x-slot:footer>
@@ -106,7 +106,7 @@ Use this when you want a modal without a Livewire modal component stack.
 | --- | --- | --- | --- |
 | `id` | `string \| null` | `null` | Target key for `corepine-modal:*` browser events. |
 | `open` | `bool` | `false` | Initial open state. |
-| `title` | `string \| null` | `null` | Optional built-in header title. |
+| `heading` | `string \| null` | `null` | Optional built-in header heading. |
 | `description` | `string \| null` | `null` | Optional built-in header description. |
 | `showClose` | `bool` | `true` | Shows built-in close icon in header. |
 | `modalAttributes` | `array` | `[]` | Raw attribute payload merged with explicit props. |
@@ -184,9 +184,9 @@ class EditUser extends Modal
     public static function modalAttributes(): array
     {
         return [
-            'layout' => true,
+            'shell' => true,
             'type' => ModalType::Modal,
-            'title' => 'Edit User',
+            'heading' => 'Edit User',
             'description' => 'Update user details.',
             'showClose' => true,
             'position' => 'center',
@@ -205,13 +205,13 @@ class EditUser extends Modal
 ## Automatic Layout (Native Shell)
 
 Livewire modals now support built-in shell rendering from `modalAttributes`:
-- `layout` (`true` by default): use built-in shell.
-- `plain` (`false` by default): force raw modal view rendering (no shell).
-- `title`, `description`, `showClose`: header chrome options.
+- `shell` (`true` by default): use built-in shell rendering.
+- `layout`: legacy alias of `shell`.
+- `heading`, `description`, `showClose`: header chrome options.
 - `footerActionsAlignment`: align built-in footer actions (`start`, `center`, `end`).
 - `footerActions`: declarative footer actions.
 
-If you need fully custom slot/footer markup, set `plain => true` and render `<x-corepine.modal.layout>` manually inside your component view.
+If you need fully custom slot/footer markup, set `shell => false` and render `<x-corepine.modal.layout>` manually inside your component view.
 
 Example:
 
@@ -219,8 +219,8 @@ Example:
 public static function modalAttributes(): array
 {
     return [
-        'layout' => true,
-        'title' => 'Manage Users',
+        'shell' => true,
+        'heading' => 'Manage Users',
         'description' => 'Search and view users in your system.',
         'showClose' => true,
         'footerActions' => [
@@ -256,7 +256,7 @@ CorepineColor::register([
 public static function modalAttributes(): array
 {
     return [
-        'title' => 'Manage Users',
+        'heading' => 'Manage Users',
         'footerActions' => [
             Action::make('cancel')
                 ->label('Cancel')
@@ -284,13 +284,13 @@ Notes:
 
 ## Layout Shell (`x-corepine.modal.layout`)
 
-Use this inside your modal view so you do not repeat title/close/footer structure.
+Use this inside your modal view so you do not repeat heading/close/footer structure.
 
 Props:
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `title` | `string \| null` | `null` | Header title. |
+| `heading` | `string \| null` | `null` | Header heading. |
 | `description` | `string \| null` | `null` | Header description text. |
 | `showClose` | `bool` | `true` | Shows `x-corepine.modal.close` button. |
 | `class` | `string` | `''` | Merged onto root layout wrapper. |
@@ -307,7 +307,7 @@ Inline alternative:
 Example:
 
 ```blade
-<x-corepine.modal.layout title="Manage Users" description="Search and edit users">
+<x-corepine.modal.layout heading="Manage Users" description="Search and edit users">
     <div class="space-y-3">
         <!-- body content -->
     </div>
@@ -324,7 +324,7 @@ Example:
 Inline footer marker example:
 
 ```blade
-<x-corepine.modal.layout title="Manage Users">
+<x-corepine.modal.layout heading="Manage Users">
     <div class="space-y-3">
         <!-- body content -->
     </div>
@@ -343,7 +343,7 @@ Scrollable body tip:
 When your content includes a list/table that should scroll inside the modal body (while footer stays visible), make the first slot wrapper a flex column with `min-h-0` and put `overflow-y-auto` on the inner list container.
 
 ```blade
-<x-corepine.modal.layout title="Manage Users">
+<x-corepine.modal.layout heading="Manage Users">
     <div class="flex h-full min-h-0 flex-col gap-3">
         <input type="text" class="..." />
 
@@ -366,7 +366,7 @@ When your content includes a list/table that should scroll inside the modal body
 ### Outside Livewire (JavaScript)
 
 ```html
-<button onclick="Livewire.dispatch('openModal', { component: 'modals.edit-user', arguments: { user: 5 } })">
+<button onclick="Livewire.dispatch('corepine-modal.open', { component: 'modals.edit-user', arguments: { user: 5 } })">
     Edit
 </button>
 ```
@@ -374,7 +374,7 @@ When your content includes a list/table that should scroll inside the modal body
 ### Inside Livewire Blade
 
 ```blade
-<button wire:click="$dispatch('openModal', { component: 'modals.edit-user', arguments: { user: {{ $user->id }} } })">
+<button wire:click="$dispatch('corepine-modal.open', { component: 'modals.edit-user', arguments: { user: {{ $user->id }} } })">
     Edit
 </button>
 ```
@@ -382,7 +382,7 @@ When your content includes a list/table that should scroll inside the modal body
 ### Open By Class Path
 
 ```blade
-<button wire:click="$dispatch('openModal', { component: '{{ \App\Livewire\Modals\EditUser::class }}', arguments: { user: {{ $user->id }} } })">
+<button wire:click="$dispatch('corepine-modal.open', { component: '{{ \App\Livewire\Modals\EditUser::class }}', arguments: { user: {{ $user->id }} } })">
     Edit
 </button>
 ```
@@ -421,9 +421,9 @@ When your content includes a list/table that should scroll inside the modal body
 | `position` | `string \| null` | `null` | Position normalized by type rules. |
 | `isolate` | `bool \| string \| null` | `null` | Keep previous modal layers visible. |
 | `isolated` | `bool \| string \| null` | `null` | Legacy alias for `isolate`. |
-| `layout` | `bool \| string \| null` | `null` | Enable built-in shell rendering. |
-| `plain` | `bool \| string \| null` | `null` | Disable built-in shell rendering. |
-| `title` | `string \| null` | `null` | Shell header title when layout is enabled. |
+| `shell` | `bool \| string \| null` | `null` | Preferred flag for built-in shell rendering. |
+| `layout` | `bool \| string \| null` | `null` | Legacy alias of `shell`. |
+| `heading` | `string \| null` | `null` | Shell header heading when layout is enabled. |
 | `description` | `string \| null` | `null` | Shell header description when layout is enabled. |
 | `showClose` | `bool \| string \| null` | `null` | Toggle shell close button. |
 | `footerActions` | `array` | `[]` | Declarative shell footer actions. |
@@ -487,9 +487,9 @@ $this->closeModalWithEvents([
 From Blade:
 
 ```blade
-<button wire:click="$dispatch('closeModal')">Close</button>
-<button wire:click="$dispatch('closeTopModal', { count: 2 })">Close 2</button>
-<button wire:click="$dispatch('closeAllModals')">Close All</button>
+<button wire:click="$dispatch('corepine-modal.close')">Close</button>
+<button wire:click="$dispatch('corepine-modal.close-top', { count: 2 })">Close 2</button>
+<button wire:click="$dispatch('corepine-modal.close-all')">Close All</button>
 ```
 
 Close helper:
@@ -627,7 +627,7 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `dismissible` | bool | `true` | all | Backdrop/scrim click closes the active modal when true. |
 | `closeOnClickAway` | bool | alias | all | Legacy alias of `dismissible`. |
 | `destroyOnClose` | bool | `true` | all | Destroy component state when modal closes. |
-| `dispatchCloseEvent` | bool | `false` | all | Dispatches `modalComponentClosed` when closing this component. |
+| `dispatchCloseEvent` | bool | `false` | all | Dispatches `corepine-modal.component-closed` when closing this component. |
 | `blur` | bool | `false` | all | Adds blurred backdrop style. |
 | `type` | string/enum | `modal` | all | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
 | `drawer` | bool | `false` | all | Legacy alias for `type=drawer`. |
@@ -635,9 +635,9 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `bottomSheet` | bool | `false` | all | Alias for `type=sheet`. |
 | `isolate` | bool | `false` | all | Keeps previous layers visible behind active modal. |
 | `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
-| `layout` | bool | `true` | Livewire host | Enables built-in shell (`x-corepine.modal.layout`) wrapping. |
-| `plain` | bool | `false` | Livewire host | Disables built-in shell and renders raw modal view. |
-| `title` | string/null | `null` | layout | Shell header title. |
+| `shell` | bool | `true` | Livewire host | Preferred built-in shell toggle (`x-corepine.modal.layout`). |
+| `layout` | bool | alias | Livewire host | Legacy alias of `shell`. |
+| `heading` | string/null | `null` | layout | Shell header heading. |
 | `description` | string/null | `null` | layout | Shell header description. |
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
 | `footerActionsAlignment` | string/enum | `end` | layout | Aligns built-in footer actions. Accepts `start`, `center`, `end`, `right`, `left`, or `Corepine\Support\Enums\Alignment`. |
@@ -660,27 +660,27 @@ The table below covers all supported modal attributes (including legacy aliases 
 Attribute merge order:
 1. `config('corepine-modal.defaults.attributes')`
 2. modal component `modalAttributes()`
-3. runtime open payload (`openModal`, helper `modalAttributes`, etc.)
+3. runtime open payload (`corepine-modal.open`, helper `modalAttributes`, etc.)
 
 ## Events Reference
 
 Default listen events:
-- `openModal`, `corepine-modal.open`
-- `openBottomSheet`, `corepine-modal.open-sheet`
-- `closeModal`, `corepine-modal.close`
-- `closeTopModal`, `corepine-modal.close-top`
-- `closeAllModals`, `corepine-modal.close-all`
-- `destroyModal`, `corepine-modal.destroy`
-- `resetModal`, `corepine-modal.reset`
+- `corepine-modal.open`, legacy alias `openModal`
+- `corepine-modal.open-sheet`, legacy alias `openBottomSheet`
+- `corepine-modal.close`, legacy alias `closeModal`
+- `corepine-modal.close-top`, legacy alias `closeTopModal`
+- `corepine-modal.close-all`, legacy alias `closeAllModals`
+- `corepine-modal.destroy`, legacy alias `destroyModal`
+- `corepine-modal.reset`, legacy alias `resetModal`
 
 Default dispatch events:
-- `modalOpened`
-- `modalClosed`
-- `activeModalChanged`
-- `allModalsClosed`
-- `modalComponentClosed`
+- `corepine-modal.opened`
+- `corepine-modal.closed`
+- `corepine-modal.changed`
+- `corepine-modal.all-closed`
+- `corepine-modal.component-closed`
 
-All names are customizable in config.
+All names are customizable in config. Incoming legacy listen-event aliases remain supported by default.
 
 ## Config
 
@@ -732,8 +732,8 @@ Set `payload.closing = false` to cancel close.
 ```php
 $modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
 
-$openEvent = $modalConfig->listenEvent('open');      // openModal
-$closedEvent = $modalConfig->dispatchEvent('closed'); // modalClosed
+$openEvent = $modalConfig->listenEvent('open');       // corepine-modal.open
+$closedEvent = $modalConfig->dispatchEvent('closed'); // corepine-modal.closed
 ```
 
 ## Backward Compatibility

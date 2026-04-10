@@ -12,29 +12,29 @@ beforeEach(function (): void {
 it('dispatches open event from modal component helper', function (): void {
     Livewire::test('test.control-modal')
         ->call('openChild')
-        ->assertDispatched('openModal');
+        ->assertDispatched('corepine-modal.open');
 });
 
 it('dispatches open-bottom-sheet event from modal component helper', function (): void {
     Livewire::test('test.control-modal')
         ->call('openSheetChild')
-        ->assertDispatched('openBottomSheet');
+        ->assertDispatched('corepine-modal.open-sheet');
 });
 
 it('dispatches close event with stacked count when skipping previous modal', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeCurrentAndPrevious')
-        ->assertDispatched('closeModal');
+        ->assertDispatched('corepine-modal.close');
 });
 
 it('dispatches close-top event explicitly', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeTopTwo')
-        ->assertDispatched('closeTopModal');
+        ->assertDispatched('corepine-modal.close-top');
 });
 
 it('dispatches close-all when forcing close', function (): void {
     Livewire::test('test.control-modal')
         ->call('forceCloseEverything')
-        ->assertDispatched('closeAllModals');
+        ->assertDispatched('corepine-modal.close-all');
 });

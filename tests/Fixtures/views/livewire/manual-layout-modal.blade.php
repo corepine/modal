@@ -1,4 +1,4 @@
-<x-corepine.modal.layout title="Manual Layout">
+<x-corepine.modal.layout heading="Manual Layout">
     <div>Manual body</div>
 
     <x-corepine.modal.footer id="manual-layout-footer">
