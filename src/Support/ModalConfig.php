@@ -7,6 +7,7 @@ use Corepine\Modal\Enums\ModalType;
 use Corepine\Support\Colors\Color as SupportColor;
 use Corepine\Support\Colors\ColorManager as SupportColorManager;
 use Corepine\Support\Enums\Alignment;
+use Corepine\Support\Enums\Placement;
 
 class ModalConfig
 {
@@ -280,25 +281,23 @@ class ModalConfig
             return self::DEFAULT_SHEET_POSITION;
         }
 
-        $position = $attributes['position'] ?? null;
+        $position = Placement::fromValue($attributes['position'] ?? null);
 
-        if (! is_string($position) || $position === '') {
+        if ($position === null) {
             return match ($type) {
                 ModalType::Drawer->value => self::DEFAULT_DRAWER_POSITION,
                 default => self::DEFAULT_MODAL_POSITION,
             };
         }
 
-        $normalized = strtolower(trim($position));
-
         if ($type === ModalType::Drawer->value) {
-            return in_array($normalized, self::DRAWER_POSITIONS, true)
-                ? $normalized
+            return in_array($position->value, self::DRAWER_POSITIONS, true)
+                ? $position->value
                 : self::DEFAULT_DRAWER_POSITION;
         }
 
-        return in_array($normalized, self::MODAL_POSITIONS, true)
-            ? $normalized
+        return in_array($position->value, self::MODAL_POSITIONS, true)
+            ? $position->value
             : self::DEFAULT_MODAL_POSITION;
     }
 
@@ -317,14 +316,10 @@ class ModalConfig
             return $this->modalPosition($attributes);
         }
 
-        $origin = $attributes['origin'] ?? null;
+        $origin = Placement::fromValue($attributes['origin'] ?? null);
 
-        if (is_string($origin) && trim($origin) !== '') {
-            $normalized = strtolower(trim($origin));
-
-            if (in_array($normalized, self::MODAL_POSITIONS, true)) {
-                return $normalized;
-            }
+        if ($origin !== null) {
+            return $origin->value;
         }
 
         $position = $this->modalPosition($attributes);
@@ -339,13 +334,7 @@ class ModalConfig
      */
     public function modalOriginClass(array $attributes): string
     {
-        return match ($this->modalOrigin($attributes)) {
-            'top' => 'origin-top',
-            'bottom' => 'origin-bottom',
-            'left' => 'origin-left',
-            'right' => 'origin-right',
-            default => 'origin-center',
-        };
+        return Placement::normalize($this->modalOrigin($attributes))->originClass();
     }
 
     /**

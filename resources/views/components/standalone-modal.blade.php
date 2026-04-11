@@ -960,7 +960,7 @@
                         x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                         x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
                         x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"
-                        class="{{ $panelWrapClasses }}"
+                        class="{{ $panelWrapClasses }} {{ $originClass }}"
                     >
                         <section
                             x-ref="panel"
@@ -978,7 +978,6 @@
                                 'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                                 'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                                 'cp-modal-shape-sheet' => $isSheet,
-                                $originClass,
                                 $modalClasses,
                                 'rounded-l-none' => $isDrawer && $position === 'left',
                                 'rounded-r-none' => $isDrawer && $position === 'right',

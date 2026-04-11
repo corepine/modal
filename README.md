@@ -100,6 +100,8 @@ Use this when you want a modal without a Livewire modal component stack.
 </x-corepine.modal>
 ```
 
+`position` and `origin` use the same placement vocabulary. When you want to be explicit in PHP, use `Corepine\Support\Enums\Placement`.
+
 ### Standalone Props
 
 | Prop | Type | Default | Notes |
@@ -112,7 +114,8 @@ Use this when you want a modal without a Livewire modal component stack.
 | `modalAttributes` | `array` | `[]` | Raw attribute payload merged with explicit props. |
 | `size` | `string` | `default` | Width token or raw width utility classes. |
 | `type` | `string \| ModalType \| null` | config default (`modal`) | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
-| `position` | `string \| null` | type default | Normalized by type (`center/right/bottom`). Bottom sheets are always forced to `bottom`. |
+| `position` | `string \| Placement \| null` | type default | Placement for the panel itself. Shares the same values as `origin`. Normalized by type (`center/right/bottom`). Bottom sheets are always forced to `bottom`. |
+| `origin` | `string \| Placement \| null` | type default | Transform origin for the panel animation. Shares the same values as `position`. |
 | `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
 | `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for modal, drawer, and sheet panels. |
 | `draggable` | `bool \| null` | `null` | For sheet: drag down / resize behavior. |
@@ -161,6 +164,7 @@ namespace App\Livewire\Modals;
 use App\Models\User;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Modal;
+use Corepine\Support\Enums\Placement;
 
 class EditUser extends Modal
 {
@@ -179,7 +183,8 @@ class EditUser extends Modal
             'heading' => 'Edit User',
             'description' => 'Update user details.',
             'showClose' => true,
-            'position' => 'center',
+            'position' => Placement::Center,
+            'origin' => Placement::Center,
             'closeOnEscape' => true,
             'dismissible' => true,
             'closeAllOnEscape' => false,
@@ -384,6 +389,7 @@ When your content includes a list/table that should scroll inside the modal body
     :arguments="['user' => $user->id]"
     type="drawer"
     position="right"
+    origin="right"
     size="2xl"
     isolate="true"
     blur="true"
@@ -405,7 +411,8 @@ When your content includes a list/table that should scroll inside the modal body
 | `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for modal, drawer, and sheet panels. |
 | `blur` | `bool \| string \| null` | `null` | Backdrop blur toggle. |
 | `type` | `string \| ModalType \| null` | `null` | `modal`, `drawer`, `sheet`. |
-| `position` | `string \| null` | `null` | Position normalized by type rules. |
+| `position` | `string \| Placement \| null` | `null` | Placement normalized by type rules. |
+| `origin` | `string \| Placement \| null` | `null` | Transform origin for the panel animation. Shares the same values as `position`. |
 | `isolate` | `bool \| string \| null` | `null` | Keep previous modal layers visible. |
 | `shell` | `bool \| string \| null` | `null` | Preferred flag for built-in shell rendering. |
 | `heading` | `string \| null` | `null` | Shell header heading when layout is enabled. |
@@ -509,13 +516,15 @@ Legacy aliases still supported:
 - `drawer=true` resolves type to `drawer`
 - `sheet=true` resolves type to `sheet`
 
-## Position Rules
+## Placement Rules
+
+`position` and `origin` share the same placement values. Use `Corepine\Support\Enums\Placement` in PHP when you want a strongly-typed value.
 
 - `type=modal`: `center`, `top`, `bottom`, `left`, `right` (default `center`)
 - `type=drawer`: `left` or `right` only (default `right`)
 - `type=sheet`: `bottom` only (default `bottom`)
 
-Invalid positions are normalized to the safe default for that type.
+`position` controls where the panel sits. `origin` controls the transform origin used for the animation. Invalid values are normalized to the safe default for that type.
 
 ## Stack Isolation
 
@@ -618,7 +627,8 @@ Note: `height` is converted to inline style, so responsive strings like `h-full 
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
 | `footerActionsAlignment` | string/enum | `end` | layout | Aligns built-in footer actions. Accepts `start`, `center`, `end`, `right`, `left`, or `Corepine\Support\Enums\Alignment`. |
 | `footerActions` | array | `[]` | layout | Declarative footer actions (`close` / `method`). |
-| `position` | string | type-based | all | Normalized per type rules. Bottom sheets are always `bottom`. |
+| `position` | string/enum | type-based | all | Placement normalized per type rules. Shares the same values as `origin`. Bottom sheets are always `bottom`. |
+| `origin` | string/enum | type-based | all | Transform origin for panel animation. Shares the same values as `position`. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
 | `height` | string/number | `null` | all | Explicit panel height for modal/drawer and initial sheet height (`vh`, `dvh`, `%`, `px`, numeric ratios, or `h-[...]`/`h-full` style tokens). |
 | `maxHeight` | string/number | `null` | all | Shared max-height cap for modal, drawer, and sheet panels. |

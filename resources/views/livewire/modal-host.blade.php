@@ -1053,7 +1053,7 @@
                     x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"
                     x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
                     style="z-index: {{ 21 + ($loop->index * 2) }};"
-                    class="{{ $panelWrapClasses }}"
+                    class="{{ $panelWrapClasses }} {{ $originClass }}"
                     x-ref="{{ $id }}"
                     wire:key="corepine-modal-{{ $id }}"
                 >
@@ -1068,7 +1068,6 @@
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                         'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                         'cp-modal-shape-sheet' => $isSheet,
-                        $originClass,
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',

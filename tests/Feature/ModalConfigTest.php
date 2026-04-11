@@ -3,6 +3,7 @@
 use Corepine\Modal\Actions\Action;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Support\ModalConfig;
+use Corepine\Support\Enums\Placement;
 use Corepine\Support\Enums\Alignment;
 
 it('normalizes drawer positions to left or right', function (): void {
@@ -40,6 +41,8 @@ it('normalizes modal origins by modal type', function (): void {
     expect($config->modalOrigin(['type' => 'modal', 'position' => 'right']))->toBe('right');
     expect($config->modalOrigin(['type' => 'modal', 'position' => 'right', 'origin' => 'left']))->toBe('left');
     expect($config->modalOrigin(['type' => 'modal', 'origin' => 'invalid']))->toBe('center');
+    expect($config->modalPosition(['type' => 'modal', 'position' => Placement::Left]))->toBe('left');
+    expect($config->modalOrigin(['type' => 'modal', 'origin' => Placement::Bottom]))->toBe('bottom');
     expect($config->modalOriginClass(['type' => 'modal', 'origin' => 'top']))->toBe('origin-top');
 });
 
