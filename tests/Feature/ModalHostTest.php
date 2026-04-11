@@ -302,7 +302,7 @@ it('renders automatic layout chrome and declarative footer actions', function ()
             'heading' => 'Manage Users',
             'description' => 'Search and view users in your system.',
             'footerActionsAlignment' => 'center',
-            'footerActions' => [
+            'actions' => [
                 ['type' => 'close', 'label' => 'Cancel'],
                 ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
             ],
@@ -321,7 +321,7 @@ it('supports fluent Action objects inside footerActions', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'heading' => 'Manage Users',
-            'footerActions' => [
+            'actions' => [
                 Action::make('cancel')
                     ->label('Cancel')
                     ->class('rounded-md border px-3 py-2 text-sm')
@@ -337,7 +337,7 @@ it('supports fluent Action objects inside footerActions', function (): void {
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
-    $actions = $modals[$stack[0]]['modalAttributes']['footerActions'] ?? [];
+    $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
 
     expect($actions)->toHaveCount(2);
     expect($actions[0]['type'])->toBe('close');
@@ -353,7 +353,7 @@ it('resolves support colors and richer action options inside footerActions', fun
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'heading' => 'Manage Users',
-            'footerActions' => [
+            'actions' => [
                 Action::make('cancel')
                     ->label('Cancel')
                     ->color('purple')
@@ -374,7 +374,7 @@ it('resolves support colors and richer action options inside footerActions', fun
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
-    $actions = $modals[$stack[0]]['modalAttributes']['footerActions'] ?? [];
+    $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
 
     expect($actions)->toHaveCount(2);
     expect($actions[0]['class'])->toContain('cp-modal-action');
@@ -393,7 +393,7 @@ it('supports raw footer action arrays with color and outline options', function 
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'heading' => 'Manage Users',
-            'footerActions' => [
+            'actions' => [
                 [
                     'type' => 'method',
                     'method' => 'saveUsers',
@@ -410,7 +410,7 @@ it('supports raw footer action arrays with color and outline options', function 
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
-    $action = $modals[$stack[0]]['modalAttributes']['footerActions'][0] ?? [];
+    $action = $modals[$stack[0]]['modalAttributes']['actions'][0] ?? [];
 
     expect($action['class'])->toContain('cp-modal-action-outline');
     expect($action['style'])->toContain(SupportColor::Rose[700]);

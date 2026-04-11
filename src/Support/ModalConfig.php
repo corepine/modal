@@ -524,7 +524,7 @@ class ModalConfig
      */
     public function layoutFooterActions(array $attributes): array
     {
-        $actions = $attributes['footerActions'] ?? [];
+        $actions = $attributes['actions'] ?? ($attributes['footerActions'] ?? []);
 
         if ($actions instanceof \Traversable) {
             $actions = iterator_to_array($actions);
@@ -977,7 +977,8 @@ class ModalConfig
         $attributes['shell'] = $this->usesLayout($attributes);
         $attributes['showClose'] = $this->layoutShowClose($attributes);
         $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
-        $attributes['footerActions'] = $this->layoutFooterActions($attributes);
+        $attributes['actions'] = $this->layoutFooterActions($attributes);
+        $attributes['footerActions'] = $attributes['actions'];
         unset($attributes['isolated']);
         unset($attributes['bottomSheet']);
         unset($attributes['closeOnClickAway']);
@@ -1023,6 +1024,14 @@ class ModalConfig
 
         if (! array_key_exists('layout', $attributes) && array_key_exists('shell', $attributes)) {
             $attributes['layout'] = $attributes['shell'];
+        }
+
+        if (! array_key_exists('actions', $attributes) && array_key_exists('footerActions', $attributes)) {
+            $attributes['actions'] = $attributes['footerActions'];
+        }
+
+        if (! array_key_exists('footerActions', $attributes) && array_key_exists('actions', $attributes)) {
+            $attributes['footerActions'] = $attributes['actions'];
         }
 
         if (! array_key_exists('footerActionsAlignment', $attributes) && array_key_exists('footerActionsAlign', $attributes)) {

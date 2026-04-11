@@ -203,7 +203,7 @@ Livewire modals now support built-in shell rendering from `modalAttributes`:
 - `shell` (`true` by default): use built-in shell rendering.
 - `heading`, `description`, `showClose`: header chrome options.
 - `footerActionsAlignment`: align built-in footer actions (`start`, `center`, `end`).
-- `footerActions`: declarative footer actions.
+- `actions`: declarative footer actions. `footerActions` remains supported as an alias.
 
 If you need fully custom slot/footer markup, set `shell => false` and render `<x-corepine.modal.layout>` manually inside your component view.
 
@@ -217,7 +217,7 @@ public static function modalAttributes(): array
         'heading' => 'Manage Users',
         'description' => 'Search and view users in your system.',
         'showClose' => true,
-        'footerActions' => [
+        'actions' => [
             ['type' => 'close', 'label' => 'Cancel', 'class' => 'rounded-md border px-3 py-2 text-sm'],
             ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
         ],
@@ -225,7 +225,7 @@ public static function modalAttributes(): array
 }
 ```
 
-`footerActions` supports:
+`actions` supports:
 - `type=close`: uses modal close behavior (`count`, `destroy`, `closeAll` are optional).
 - `type=method`: calls the active modal Livewire method (`method`, optional `params`).
 - `class`: custom classes for the rendered button.
@@ -234,6 +234,7 @@ public static function modalAttributes(): array
 - `color`: built-in support color name, registered support color alias, or full palette array.
 - `outline`: toggles outline styling.
 - `attributes`: extra HTML attributes like `data-*`, `aria-*`, or `id`.
+- `footerActions`: accepted as a compatibility alias for `actions`.
 
 Fluent API (`Corepine\Modal\Actions\Action`) is also supported:
 
@@ -251,7 +252,7 @@ public static function modalAttributes(): array
 {
     return [
         'heading' => 'Manage Users',
-        'footerActions' => [
+        'actions' => [
             Action::make('cancel')
                 ->label('Cancel')
                 ->gray()
@@ -273,7 +274,7 @@ Notes:
 - `action()` and `method()` map to Livewire component methods.
 - Fluent actions also support `primary()`, `danger()`, `success()`, `warning()`, `info()`, `gray()`, and `dark()` as shortcuts for `color(...)`.
 - When you build actions in PHP with `Action::make(...)`, `disabled()`, `color()`, `outline()`, and `attributes()` can accept closures and will be evaluated server-side.
-- Raw array footer actions should stay serializable. Closures are not supported when `footerActions` are sent through the Blade open helper or browser payloads.
+- Raw array actions should stay serializable. Closures are not supported when `actions` are sent through the Blade open helper or browser payloads.
 - If no custom `class` is provided, modal applies default button styling. If you set `color()` or `outline()`, the preset action styles are used and your custom classes are merged in.
 
 ## Layout Shell (`x-corepine.modal.layout`)
@@ -418,7 +419,7 @@ When your content includes a list/table that should scroll inside the modal body
 | `heading` | `string \| null` | `null` | Shell header heading when layout is enabled. |
 | `description` | `string \| null` | `null` | Shell header description when layout is enabled. |
 | `showClose` | `bool \| string \| null` | `null` | Toggle shell close button. |
-| `footerActions` | `array` | `[]` | Declarative shell footer actions. |
+| `actions` | `array` | `[]` | Declarative shell actions. `footerActions` remains supported as an alias. |
 | `class` | `string` | `''` | Forwarded into modal panel classes, not wrapper class. |
 
 Wrapper behavior:
@@ -626,7 +627,7 @@ Note: `height` is converted to inline style, so responsive strings like `h-full 
 | `description` | string/null | `null` | layout | Shell header description. |
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
 | `footerActionsAlignment` | string/enum | `end` | layout | Aligns built-in footer actions. Accepts `start`, `center`, `end`, `right`, `left`, or `Corepine\Support\Enums\Alignment`. |
-| `footerActions` | array | `[]` | layout | Declarative footer actions (`close` / `method`). |
+| `actions` | array | `[]` | layout | Declarative actions (`close` / `method`). `footerActions` remains supported as an alias. |
 | `position` | string/enum | type-based | all | Placement normalized per type rules. Shares the same values as `origin`. Bottom sheets are always `bottom`. |
 | `origin` | string/enum | type-based | all | Transform origin for panel animation. Shares the same values as `position`. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |

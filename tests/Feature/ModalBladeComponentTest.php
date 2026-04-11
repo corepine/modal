@@ -257,7 +257,7 @@ it('supports shell chrome props on open helper', function (): void {
     description="Search and view users in your system."
     show-close="true"
     footer-actions-alignment="center"
-    :footer-actions="[
+    :actions="[
         ['type' => 'close', 'label' => 'Cancel'],
         ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
     ]"
@@ -273,7 +273,7 @@ BLADE);
     expect($flat)->toContain('\u0022description\u0022:\u0022Search and view users in your system.\u0022');
     expect($flat)->toContain('\u0022showClose\u0022:true');
     expect($flat)->toContain('\u0022footerActionsAlignment\u0022:\u0022center\u0022');
-    expect($flat)->toContain('\u0022footerActions\u0022');
+    expect($flat)->toContain('\u0022actions\u0022');
     expect($flat)->toContain('saveUsers');
 });
 

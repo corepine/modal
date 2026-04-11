@@ -142,7 +142,7 @@ it('normalizes declarative footer actions for auto layout', function (): void {
     $config = app(ModalConfig::class);
 
     $actions = $config->layoutFooterActions([
-        'footerActions' => [
+        'actions' => [
             ['type' => 'close', 'label' => 'Cancel', 'count' => 2, 'destroy' => false],
             ['type' => 'method', 'method' => 'saveUsers', 'params' => [5], 'label' => 'Save'],
             'refreshList',
@@ -169,7 +169,7 @@ it('normalizes fluent Action objects for auto layout footer actions', function (
     $config = app(ModalConfig::class);
 
     $actions = $config->layoutFooterActions([
-        'footerActions' => [
+        'actions' => [
             Action::make('cancel')
                 ->label('Cancel')
                 ->class('rounded-md border px-3 py-2 text-sm')
@@ -231,8 +231,9 @@ it('supports accent action colors as softer defaults', function (): void {
         ->toArray();
 
     expect($payload['accent'])->toBeTrue();
-    expect($payload['class'])->toContain('!bg-red-100');
-    expect($payload['class'])->toContain('hover:!bg-red-200');
+        expect($payload['class'])->toContain('!bg-red-50');
+        expect($payload['class'])->toContain('hover:!bg-red-100');
+        expect($payload['class'])->toContain('dark:!bg-red-950');
     expect($payload['class'])->toContain('!text-red-700');
     expect($payload['style'])->toBe('');
 });
@@ -241,7 +242,7 @@ it('resolves semantic action color aliases without explicit registration', funct
     $config = app(ModalConfig::class);
 
     $actions = $config->layoutFooterActions([
-        'footerActions' => [
+        'actions' => [
             Action::make('save')
                 ->label('Save')
                 ->primary()
@@ -267,4 +268,18 @@ it('resolves semantic action color aliases without explicit registration', funct
     expect($actions[2]['class'])->toContain('border-yellow-200');
     expect($actions[2]['class'])->toContain('hover:bg-yellow-50');
     expect($actions[2]['style'])->toBe('');
+});
+
+it('keeps footerActions as a compatibility alias for actions', function (): void {
+    $config = app(ModalConfig::class);
+
+    $actions = $config->layoutFooterActions([
+        'footerActions' => [
+            ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0]['type'])->toBe('method');
+    expect($actions[0]['method'])->toBe('saveUsers');
 });

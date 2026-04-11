@@ -23,6 +23,7 @@
     'heading' => null,
     'description' => null,
     'showClose' => null,
+    'actions' => null,
     'footerActionsAlignment' => null,
     'footerActions' => null,
 ])
@@ -215,6 +216,9 @@
     @php($payloadModalAttributes['footerActionsAlignment'] = $footerActionsAlignment->value)
 @elseif (is_string($footerActionsAlignment) && trim($footerActionsAlignment) !== '')
     @php($payloadModalAttributes['footerActionsAlignment'] = trim($footerActionsAlignment))
+@endif
+@if (is_array($actions) && $actions !== [])
+    @php($payloadModalAttributes['actions'] = $actions)
 @endif
 @if (is_array($footerActions) && $footerActions !== [])
     @php($payloadModalAttributes['footerActions'] = $footerActions)

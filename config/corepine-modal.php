@@ -35,7 +35,7 @@ return [
             'description' => null,
             'showClose' => true,
             'footerActionsAlignment' => 'end',
-            'footerActions' => [],
+            'actions' => [],
         ],
     ],
 
