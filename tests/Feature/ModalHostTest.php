@@ -158,6 +158,14 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ->assertSee('startSheetDrag(', false);
 });
 
+it('does not register duplicate browser open listeners on the host', function (): void {
+    Livewire::test(ModalHost::class)
+        ->assertDontSee('registerWindowListeners()', false)
+        ->assertDontSee('window.addEventListener(eventName, listener, true);', false)
+        ->assertDontSee('this.$wire.openModal(normalized.component, normalized.arguments, normalized.modalAttributes);', false)
+        ->assertDontSee('this.$wire.openBottomSheet(normalized.component, normalized.arguments, normalized.modalAttributes);', false);
+});
+
 it('applies explicit non-sheet height through panel style binding', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [

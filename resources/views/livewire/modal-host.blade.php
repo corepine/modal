@@ -9,7 +9,6 @@
                 show: false,
                 activeModalId: null,
                 listeners: [],
-                windowListeners: [],
                 localClosingIds: [],
                 closeTimeout: null,
                 requestCloseHandler: null,
@@ -30,7 +29,6 @@
 
                 init() {
                     this.syncFromServer();
-                    this.registerWindowListeners();
                     this.requestCloseHandler = (payload = {}) => this.requestClose(payload);
                     window.corepineModalRequestClose = this.requestCloseHandler;
 
@@ -53,10 +51,6 @@
                 destroy() {
                     this.listeners.forEach((listener) => listener());
                     this.listeners = [];
-                    this.windowListeners.forEach(([eventName, listener]) => {
-                        window.removeEventListener(eventName, listener, true);
-                    });
-                    this.windowListeners = [];
                     this.resetLocalClosing();
 
                     if (window.corepineModalRequestClose === this.requestCloseHandler) {
@@ -64,73 +58,6 @@
                     }
 
                     this.setShow(false);
-                },
-
-                registerWindowListeners() {
-                    this.registerWindowListener(events.open, (payload = {}, event) => {
-                        const normalized = this.normalizeOpenPayload(payload);
-
-                        if (!normalized) {
-                            return;
-                        }
-
-                        event?.stopImmediatePropagation?.();
-                        this.$wire.openModal(normalized.component, normalized.arguments, normalized.modalAttributes);
-                    });
-
-                    this.registerWindowListener(events.openSheet, (payload = {}, event) => {
-                        const normalized = this.normalizeOpenPayload(payload);
-
-                        if (!normalized) {
-                            return;
-                        }
-
-                        event?.stopImmediatePropagation?.();
-                        this.$wire.openBottomSheet(normalized.component, normalized.arguments, normalized.modalAttributes);
-                    });
-                },
-
-                registerWindowListener(eventName, callback) {
-                    if (typeof eventName !== 'string' || eventName.trim() === '') {
-                        return;
-                    }
-
-                    const listener = (event) => callback(event?.detail ?? {}, event);
-
-                    window.addEventListener(eventName, listener, true);
-                    this.windowListeners.push([eventName, listener]);
-                },
-
-                normalizeOpenPayload(payload = {}) {
-                    if (typeof payload === 'string' && payload.trim() !== '') {
-                        return {
-                            component: payload.trim(),
-                            arguments: {},
-                            modalAttributes: {},
-                        };
-                    }
-
-                    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-                        return null;
-                    }
-
-                    const component = typeof payload.component === 'string'
-                        ? payload.component.trim()
-                        : '';
-
-                    if (component === '') {
-                        return null;
-                    }
-
-                    return {
-                        component,
-                        arguments: payload.arguments && typeof payload.arguments === 'object' && !Array.isArray(payload.arguments)
-                            ? payload.arguments
-                            : {},
-                        modalAttributes: payload.modalAttributes && typeof payload.modalAttributes === 'object' && !Array.isArray(payload.modalAttributes)
-                            ? payload.modalAttributes
-                            : {},
-                    };
                 },
 
                 syncFromServer() {
