@@ -10,6 +10,15 @@ It is built around:
 - multiple presentation types: `modal`, `drawer`, `sheet`
 - mobile-friendly sheet interactions (drag down to close + resize handle)
 
+## Recent Updates
+
+The action API has been refined for shell footers and fluent actions:
+- `actions` is the canonical shell action key.
+- `Action::visible()` hides an action before it is rendered.
+- `Action::disabled()` keeps the action visible but non-interactive, with `cp-modal-action-disabled` and `cursor-not-allowed`.
+- `Action::accent()` uses the softer fill treatment for a less dominant action style.
+- Fluent actions now resolve colors, outline state, disabled state, and visibility server-side before rendering.
+
 ## Requirements
 
 - PHP `^8.2|^8.3|^8.4`
