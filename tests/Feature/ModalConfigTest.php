@@ -231,9 +231,9 @@ it('supports accent action colors as softer defaults', function (): void {
         ->toArray();
 
     expect($payload['accent'])->toBeTrue();
-    expect($payload['class'])->toContain('bg-red-100');
-    expect($payload['class'])->toContain('hover:bg-red-200');
-    expect($payload['class'])->toContain('text-red-700');
+    expect($payload['class'])->toContain('!bg-red-100');
+    expect($payload['class'])->toContain('hover:!bg-red-200');
+    expect($payload['class'])->toContain('!text-red-700');
     expect($payload['style'])->toBe('');
 });
 
