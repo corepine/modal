@@ -394,7 +394,7 @@ class ModalConfig
             ];
         }
 
-        return match ($this->modalPosition($attributes)) {
+        return match ($this->modalOrigin($attributes)) {
             'top' => [
                 'enter' => 'duration-200 ease-out',
                 'enterStart' => 'opacity-0 -translate-y-6 sm:scale-95',
@@ -672,6 +672,33 @@ class ModalConfig
         $attributeStyle = is_string($attributes['style'] ?? null) ? trim((string) $attributes['style']) : '';
         unset($attributes['class'], $attributes['style'], $attributes['disabled']);
 
+        if (($action['resolved'] ?? false) === true) {
+            if ($attributeClass !== '') {
+                $class = trim(implode(' ', array_filter([$class, $attributeClass])));
+            }
+
+            if ($disabled) {
+                $class = trim(implode(' ', array_filter([
+                    $class,
+                    'cp-modal-action-disabled',
+                ])));
+            }
+
+            $style = is_string($action['style'] ?? null) ? trim((string) $action['style']) : '';
+
+            if ($attributeStyle !== '') {
+                $style = trim(implode('; ', array_filter([$style, $attributeStyle])));
+            }
+
+            return [
+                'class' => $class,
+                'style' => $style,
+                'disabled' => $disabled,
+                'outline' => $this->normalizeBoolean($action['outline'] ?? false, false),
+                'attributes' => $attributes,
+            ];
+        }
+
         if ($attributeClass !== '') {
             $class = trim(implode(' ', array_filter([$class, $attributeClass])));
         }
@@ -682,20 +709,21 @@ class ModalConfig
                 || is_array($action['color'])
             );
         $hasOutline = array_key_exists('outline', $action) && ! is_null($action['outline']);
-        $outlineDefault = $type === 'close';
+        $outlineDefault = $type === 'close' || ! $hasColor;
         $outline = $hasOutline
             ? $this->normalizeBoolean($action['outline'], $outlineDefault)
             : $outlineDefault;
         $usesPresetStyling = $class === '' || $hasColor || $hasOutline;
         $style = '';
 
+        $class = trim(implode(' ', array_filter([
+            'cp-modal-action',
+            $outline ? 'cp-modal-action-outline' : 'cp-modal-action-solid',
+            $class,
+        ])));
+
         if ($usesPresetStyling) {
-            $palette = $this->resolveFooterActionPalette($action['color'] ?? ($type === 'close' ? 'gray' : 'primary'));
-            $class = trim(implode(' ', array_filter([
-                'cp-modal-action',
-                $outline ? 'cp-modal-action-outline' : 'cp-modal-action-solid',
-                $class,
-            ])));
+            $palette = $this->resolveFooterActionPalette($action['color'] ?? ($outlineDefault ? 'gray' : 'primary'));
             $style = $this->footerActionStyle($palette, $outline);
         }
 
@@ -773,7 +801,17 @@ class ModalConfig
                 ? app(SupportColorManager::class)->palette($color)
                 : null;
 
-            return is_array($palette) ? $palette : SupportColor::palette($color);
+            if (is_array($palette)) {
+                return $palette;
+            }
+
+            $builtin = SupportColor::palette($color);
+
+            if (is_array($builtin)) {
+                return $builtin;
+            }
+
+            return $this->semanticFooterActionPalette($color);
         }
 
         if (! is_array($color)) {
@@ -803,6 +841,24 @@ class ModalConfig
         ksort($normalized);
 
         return $normalized;
+    }
+
+    /**
+     * Resolve semantic aliases for common action intent names.
+     *
+     * @return array<int|string, string>|null
+     */
+    private function semanticFooterActionPalette(string $name): ?array
+    {
+        return match (strtolower(trim($name))) {
+            'primary' => SupportColor::Blue,
+            'danger' => SupportColor::Red,
+            'success' => SupportColor::Green,
+            'warning' => SupportColor::Amber,
+            'info' => SupportColor::Sky,
+            'secondary' => SupportColor::Zinc,
+            default => null,
+        };
     }
 
     /**
@@ -836,10 +892,10 @@ class ModalConfig
                 '--cp-action-border-hover: ' . ($this->paletteShade($palette, 600) ?? '#27272a'),
                 '--cp-action-text: ' . $this->footerActionSolidTextColor($palette),
                 '--cp-action-text-hover: ' . $this->footerActionSolidTextColor($palette),
-                '--cp-action-dark-bg: ' . ($this->paletteShade($palette, 500) ?? '#27272a'),
-                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 400) ?? '#3f3f46'),
-                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 500) ?? '#27272a'),
-                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 400) ?? '#3f3f46'),
+                '--cp-action-dark-bg: ' . ($this->paletteShade($palette, 600) ?? '#52525b'),
+                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 700) ?? '#3f3f46'),
+                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 600) ?? '#52525b'),
+                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 700) ?? '#3f3f46'),
                 '--cp-action-dark-text: ' . $this->footerActionSolidTextColor($palette),
                 '--cp-action-dark-text-hover: ' . $this->footerActionSolidTextColor($palette),
             ];

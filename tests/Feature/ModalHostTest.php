@@ -377,12 +377,15 @@ it('resolves support colors and richer action options inside footerActions', fun
     $actions = $modals[$stack[0]]['modalAttributes']['footerActions'] ?? [];
 
     expect($actions)->toHaveCount(2);
-    expect($actions[0]['class'])->toContain('cp-modal-action-outline');
-    expect($actions[0]['style'])->toContain(SupportColor::Purple[700]);
+    expect($actions[0]['class'])->toContain('cp-modal-action');
+    expect($actions[0]['class'])->toContain('border-purple-200');
+    expect($actions[0]['class'])->toContain('hover:bg-purple-50');
+    expect($actions[0]['style'])->toBe('');
     expect($actions[0]['attributes'])->toMatchArray(['data-testid' => 'cancel-action']);
     expect($actions[1]['disabled'])->toBeTrue();
-    expect($actions[1]['class'])->toContain('cp-modal-action-solid');
-    expect($actions[1]['style'])->toContain(SupportColor::Fuchsia[500]);
+    expect($actions[1]['class'])->toContain('bg-fuchsia-600');
+    expect($actions[1]['class'])->toContain('hover:bg-fuchsia-500');
+    expect($actions[1]['style'])->toBe('');
     expect($actions[1]['attributes'])->toMatchArray(['data-testid' => 'save-action']);
 });
 

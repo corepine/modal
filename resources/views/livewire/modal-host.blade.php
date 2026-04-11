@@ -1092,14 +1092,14 @@
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif
-                        <div class="cp-modal-livewire min-h-0 flex-1">
+                        <div class="cp-modal-livewire dark:text-white min-h-0 flex-1">
                             @if ($usesLayout)
                                 <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])
                                         <x-corepine.modal.footer>
-                                            <div class="flex w-full items-center gap-2 {{ $layoutFooterActionsAlignmentClass }}">
+                                            <div class="flex min-w-full w-full border items-center gap-2 {{ $layoutFooterActionsAlignmentClass }}">
                                                 @foreach ($layoutFooterActions as $action)
                                                     @php
                                                         $actionClass = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';

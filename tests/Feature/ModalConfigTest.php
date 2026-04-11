@@ -3,6 +3,8 @@
 use Corepine\Modal\Actions\Action;
 use Corepine\Modal\Enums\ModalType;
 use Corepine\Modal\Support\ModalConfig;
+use Corepine\Support\Colors\Color as SupportColor;
+use Corepine\Support\Facades\CorepineColor;
 use Corepine\Support\Enums\Placement;
 use Corepine\Support\Enums\Alignment;
 
@@ -53,6 +55,11 @@ it('uses position-aware transitions for standard modals', function (): void {
     expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'right'])['enterStart'])->toContain('translate-x-6');
     expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'top'])['enterStart'])->toContain('-translate-y-6');
     expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'bottom'])['enterStart'])->toContain('translate-y-6');
+    expect($config->modalTransitionClasses([
+        'type' => 'modal',
+        'position' => 'bottom',
+        'origin' => 'right',
+    ])['enterStart'])->toContain('translate-x-6');
 });
 
 it('keeps built-in size tokens while allowing config overrides', function (): void {
@@ -151,6 +158,8 @@ it('normalizes declarative footer actions for auto layout', function (): void {
     expect($actions[1]['type'])->toBe('method');
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([5]);
+    expect($actions[1]['class'])->toContain('cp-modal-action-outline');
+    expect($actions[1]['style'])->toContain(SupportColor::Gray[700]);
 
     expect($actions[2]['type'])->toBe('method');
     expect($actions[2]['method'])->toBe('refreshList');
@@ -176,13 +185,20 @@ it('normalizes fluent Action objects for auto layout footer actions', function (
     expect($actions[0]['type'])->toBe('close');
     expect($actions[0]['label'])->toBe('Cancel');
     expect($actions[0]['destroy'])->toBeTrue();
+    expect($actions[0]['class'])->toContain('cp-modal-action');
 
     expect($actions[1]['type'])->toBe('method');
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([42]);
+    expect($actions[1]['class'])->toContain('cp-modal-action');
 });
 
 it('supports fluent action helpers for colors, outlines, disabled state, and attributes', function (): void {
+    CorepineColor::flush();
+    CorepineColor::register([
+        'primary' => SupportColor::Amber,
+    ]);
+
     $action = Action::make('saveUsers')
         ->label('Save')
         ->primary()
@@ -193,10 +209,47 @@ it('supports fluent action helpers for colors, outlines, disabled state, and att
 
     $payload = $action->toArray();
 
-    expect($payload['color'])->toBe('primary');
+    expect($payload['resolved'])->toBeTrue();
+    expect($payload['color'])->toMatchArray(SupportColor::Amber);
+    expect($payload['class'])->toContain('bg-transparent');
+    expect($payload['class'])->toContain('border-amber-200');
+    expect($payload['class'])->toContain('hover:bg-amber-50');
+    expect($payload['style'])->toBe('');
     expect($payload['outline'])->toBeTrue();
     expect($payload['disabled'])->toBeTrue();
     expect($payload['attributes'])->toMatchArray([
         'data-testid' => 'save-users',
     ]);
+});
+
+it('resolves semantic action color aliases without explicit registration', function (): void {
+    $config = app(ModalConfig::class);
+
+    $actions = $config->layoutFooterActions([
+        'footerActions' => [
+            Action::make('save')
+                ->label('Save')
+                ->primary()
+                ->action('saveUsers'),
+            Action::make('delete')
+                ->label('Delete')
+                ->danger()
+                ->action('deleteUsers'),
+            Action::make('warn')
+                ->label('Warn')
+                ->warning()
+                ->outline()
+                ->action('warnUsers'),
+        ],
+    ]);
+
+    expect($actions[0]['class'])->toContain('bg-blue-600');
+    expect($actions[0]['class'])->toContain('hover:bg-blue-500');
+    expect($actions[0]['style'])->toBe('');
+    expect($actions[1]['class'])->toContain('bg-red-600');
+    expect($actions[1]['class'])->toContain('hover:bg-red-500');
+    expect($actions[1]['style'])->toBe('');
+    expect($actions[2]['class'])->toContain('border-yellow-200');
+    expect($actions[2]['class'])->toContain('hover:bg-yellow-50');
+    expect($actions[2]['style'])->toBe('');
 });
