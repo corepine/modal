@@ -270,16 +270,3 @@ it('resolves semantic action color aliases without explicit registration', funct
     expect($actions[2]['style'])->toBe('');
 });
 
-it('keeps footerActions as a compatibility alias for actions', function (): void {
-    $config = app(ModalConfig::class);
-
-    $actions = $config->layoutFooterActions([
-        'footerActions' => [
-            ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
-        ],
-    ]);
-
-    expect($actions)->toHaveCount(1);
-    expect($actions[0]['type'])->toBe('method');
-    expect($actions[0]['method'])->toBe('saveUsers');
-});

@@ -203,7 +203,7 @@ Livewire modals now support built-in shell rendering from `modalAttributes`:
 - `shell` (`true` by default): use built-in shell rendering.
 - `heading`, `description`, `showClose`: header chrome options.
 - `footerActionsAlignment`: align built-in footer actions (`start`, `center`, `end`).
-- `actions`: declarative footer actions. `footerActions` remains supported as an alias.
+- `actions`: declarative footer actions.
 
 If you need fully custom slot/footer markup, set `shell => false` and render `<x-corepine.modal.layout>` manually inside your component view.
 
@@ -234,7 +234,6 @@ public static function modalAttributes(): array
 - `color`: built-in support color name, registered support color alias, or full palette array.
 - `outline`: toggles outline styling.
 - `attributes`: extra HTML attributes like `data-*`, `aria-*`, or `id`.
-- `footerActions`: accepted as a compatibility alias for `actions`.
 
 Fluent API (`Corepine\Modal\Actions\Action`) is also supported:
 
@@ -419,7 +418,7 @@ When your content includes a list/table that should scroll inside the modal body
 | `heading` | `string \| null` | `null` | Shell header heading when layout is enabled. |
 | `description` | `string \| null` | `null` | Shell header description when layout is enabled. |
 | `showClose` | `bool \| string \| null` | `null` | Toggle shell close button. |
-| `actions` | `array` | `[]` | Declarative shell actions. `footerActions` remains supported as an alias. |
+| `actions` | `array` | `[]` | Declarative shell actions. |
 | `class` | `string` | `''` | Forwarded into modal panel classes, not wrapper class. |
 
 Wrapper behavior:
@@ -627,7 +626,7 @@ Note: `height` is converted to inline style, so responsive strings like `h-full 
 | `description` | string/null | `null` | layout | Shell header description. |
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
 | `footerActionsAlignment` | string/enum | `end` | layout | Aligns built-in footer actions. Accepts `start`, `center`, `end`, `right`, `left`, or `Corepine\Support\Enums\Alignment`. |
-| `actions` | array | `[]` | layout | Declarative actions (`close` / `method`). `footerActions` remains supported as an alias. |
+| `actions` | array | `[]` | layout | Declarative actions (`close` / `method`). |
 | `position` | string/enum | type-based | all | Placement normalized per type rules. Shares the same values as `origin`. Bottom sheets are always `bottom`. |
 | `origin` | string/enum | type-based | all | Transform origin for panel animation. Shares the same values as `position`. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |

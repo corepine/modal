@@ -25,7 +25,6 @@
     'showClose' => null,
     'actions' => null,
     'footerActionsAlignment' => null,
-    'footerActions' => null,
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
@@ -219,9 +218,6 @@
 @endif
 @if (is_array($actions) && $actions !== [])
     @php($payloadModalAttributes['actions'] = $actions)
-@endif
-@if (is_array($footerActions) && $footerActions !== [])
-    @php($payloadModalAttributes['footerActions'] = $footerActions)
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')
