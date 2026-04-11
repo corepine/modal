@@ -28,18 +28,6 @@
         "pestphp/pest-plugin-laravel": "^2.4|^3.0",
         "christophrumpel/missing-livewire-assertions": "^2.8|^3.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../support",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "corepine/support": "0.1.1"
-                }
-            }
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Corepine\\Modal\\": "src/"
