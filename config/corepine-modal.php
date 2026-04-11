@@ -25,6 +25,7 @@ return [
             'sheet' => false,
             'isolate' => false,
             'position' => 'center',
+            'origin' => 'center',
             'size' => 'default',
             'height' => null,
             'maxHeight' => null,

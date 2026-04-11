@@ -228,6 +228,26 @@ it('stores non-drawer position for centered modal layout overrides', function ()
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('top');
 });
 
+it('renders standard modal origin and edge alignment classes', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
+            'type' => 'modal',
+            'position' => 'right',
+            'origin' => 'left',
+        ]);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('right');
+    expect($modals[$stack[0]]['modalAttributes']['origin'])->toBe('left');
+
+    $test->assertSee('justify-end')
+        ->assertSee('origin-left')
+        ->assertSee('translate-x-6')
+        ->assertDontSee('mx-auto max-w');
+});
+
 it('forces drawer edge side to remain square in rendered classes', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [

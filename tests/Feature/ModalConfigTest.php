@@ -32,6 +32,26 @@ it('normalizes standard modal positions', function (): void {
     expect($config->modalPosition(['drawer' => false, 'position' => 'invalid']))->toBe('center');
 });
 
+it('normalizes modal origins by modal type', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->modalOrigin(['type' => 'sheet', 'origin' => 'left']))->toBe('bottom');
+    expect($config->modalOrigin(['drawer' => true, 'position' => 'left', 'origin' => 'top']))->toBe('left');
+    expect($config->modalOrigin(['type' => 'modal', 'position' => 'right']))->toBe('right');
+    expect($config->modalOrigin(['type' => 'modal', 'position' => 'right', 'origin' => 'left']))->toBe('left');
+    expect($config->modalOrigin(['type' => 'modal', 'origin' => 'invalid']))->toBe('center');
+    expect($config->modalOriginClass(['type' => 'modal', 'origin' => 'top']))->toBe('origin-top');
+});
+
+it('uses position-aware transitions for standard modals', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'left'])['enterStart'])->toContain('-translate-x-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'right'])['enterStart'])->toContain('translate-x-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'top'])['enterStart'])->toContain('-translate-y-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'bottom'])['enterStart'])->toContain('translate-y-6');
+});
+
 it('keeps built-in size tokens while allowing config overrides', function (): void {
     config()->set('corepine-modal.sizes', [
         'default' => 'max-w-md sm:max-w-full',

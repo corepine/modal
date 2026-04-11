@@ -45,6 +45,7 @@ it('supports standalone modal presentation and sheet options', function (): void
     id="settings-sheet"
     type="bottomSheet"
     position="bottom"
+    origin="left"
     size="2xl"
     height="72vh"
     max-height="95vh"
@@ -62,6 +63,7 @@ BLADE);
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($flat)->toContain('cp-modal-shape-sheet');
+    expect($flat)->toContain('origin-bottom');
     expect($flat)->toContain('max-w-2xl');
     expect($flat)->toContain('border border-zinc-200');
     expect($flat)->toContain('backdrop-blur-sm');
@@ -195,6 +197,7 @@ it('renders open helper with new alias and forwards class to modal attributes', 
     drawer="true"
     isolate="true"
     position="left"
+    origin="left"
     data-testid="open-trigger"
 >
     <button type="button">Edit</button>
@@ -218,6 +221,7 @@ BLADE);
     expect($flat)->toContain('\u0022type\u0022:\u0022drawer\u0022');
     expect($flat)->toContain('\u0022isolate\u0022:true');
     expect($flat)->toContain('\u0022position\u0022:\u0022left\u0022');
+    expect($flat)->toContain('\u0022origin\u0022:\u0022left\u0022');
     expect($flat)->not->toContain('class="p-8 rounded-2xl"');
 });
 

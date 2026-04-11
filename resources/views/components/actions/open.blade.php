@@ -10,6 +10,7 @@
     'bottomSheet' => null,
     'isolate' => null,
     'position' => null,
+    'origin' => null,
     'height' => null,
     'maxHeight' => null,
     'closeOnEscape' => null,
@@ -138,6 +139,9 @@
 @endif
 @if (is_string($position) && trim($position) !== '')
     @php($payloadModalAttributes['position'] = strtolower(trim($position)))
+@endif
+@if (is_string($origin) && trim($origin) !== '')
+    @php($payloadModalAttributes['origin'] = strtolower(trim($origin)))
 @endif
 @if (is_int($height) || is_float($height))
     @php($payloadModalAttributes['height'] = $height)

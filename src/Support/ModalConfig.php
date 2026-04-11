@@ -60,6 +60,8 @@ class ModalConfig
 
     private const DEFAULT_MODAL_POSITION = 'center';
 
+    private const DEFAULT_MODAL_ORIGIN = 'center';
+
     private const DEFAULT_DRAWER_POSITION = 'right';
 
     private const DEFAULT_SHEET_POSITION = 'bottom';
@@ -303,6 +305,52 @@ class ModalConfig
     /**
      * @param  array<string, mixed>  $attributes
      */
+    public function modalOrigin(array $attributes): string
+    {
+        $type = $this->modalType($attributes);
+
+        if ($type === ModalType::Sheet->value) {
+            return self::DEFAULT_SHEET_POSITION;
+        }
+
+        if ($type === ModalType::Drawer->value) {
+            return $this->modalPosition($attributes);
+        }
+
+        $origin = $attributes['origin'] ?? null;
+
+        if (is_string($origin) && trim($origin) !== '') {
+            $normalized = strtolower(trim($origin));
+
+            if (in_array($normalized, self::MODAL_POSITIONS, true)) {
+                return $normalized;
+            }
+        }
+
+        $position = $this->modalPosition($attributes);
+
+        return in_array($position, self::MODAL_POSITIONS, true)
+            ? $position
+            : self::DEFAULT_MODAL_ORIGIN;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function modalOriginClass(array $attributes): string
+    {
+        return match ($this->modalOrigin($attributes)) {
+            'top' => 'origin-top',
+            'bottom' => 'origin-bottom',
+            'left' => 'origin-left',
+            'right' => 'origin-right',
+            default => 'origin-center',
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function modalPanelWrapClasses(array $attributes): string
     {
         $position = $this->modalPosition($attributes);
@@ -357,14 +405,48 @@ class ModalConfig
             ];
         }
 
-        return [
-            'enter' => 'duration-200 ease-out',
-            'enterStart' => 'opacity-0 translate-y-6 sm:scale-95',
-            'enterEnd' => 'opacity-100 translate-y-0 sm:scale-100',
-            'leave' => 'duration-150 ease-in',
-            'leaveStart' => 'opacity-100 translate-y-0 sm:scale-100',
-            'leaveEnd' => 'opacity-0 translate-y-4 sm:scale-95',
-        ];
+        return match ($this->modalPosition($attributes)) {
+            'top' => [
+                'enter' => 'duration-200 ease-out',
+                'enterStart' => 'opacity-0 -translate-y-6 sm:scale-95',
+                'enterEnd' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leave' => 'duration-150 ease-in',
+                'leaveStart' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leaveEnd' => 'opacity-0 -translate-y-4 sm:scale-95',
+            ],
+            'bottom' => [
+                'enter' => 'duration-200 ease-out',
+                'enterStart' => 'opacity-0 translate-y-6 sm:scale-95',
+                'enterEnd' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leave' => 'duration-150 ease-in',
+                'leaveStart' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leaveEnd' => 'opacity-0 translate-y-4 sm:scale-95',
+            ],
+            'left' => [
+                'enter' => 'duration-200 ease-out',
+                'enterStart' => 'opacity-0 -translate-x-6 sm:scale-95',
+                'enterEnd' => 'opacity-100 translate-x-0 sm:scale-100',
+                'leave' => 'duration-150 ease-in',
+                'leaveStart' => 'opacity-100 translate-x-0 sm:scale-100',
+                'leaveEnd' => 'opacity-0 -translate-x-4 sm:scale-95',
+            ],
+            'right' => [
+                'enter' => 'duration-200 ease-out',
+                'enterStart' => 'opacity-0 translate-x-6 sm:scale-95',
+                'enterEnd' => 'opacity-100 translate-x-0 sm:scale-100',
+                'leave' => 'duration-150 ease-in',
+                'leaveStart' => 'opacity-100 translate-x-0 sm:scale-100',
+                'leaveEnd' => 'opacity-0 translate-x-4 sm:scale-95',
+            ],
+            default => [
+                'enter' => 'duration-200 ease-out',
+                'enterStart' => 'opacity-0 translate-y-6 sm:scale-95',
+                'enterEnd' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leave' => 'duration-150 ease-in',
+                'leaveStart' => 'opacity-100 translate-y-0 sm:scale-100',
+                'leaveEnd' => 'opacity-0 translate-y-4 sm:scale-95',
+            ],
+        };
     }
 
     /**
@@ -859,6 +941,7 @@ class ModalConfig
         unset($attributes['footerActionsAlign']);
         unset($attributes['layout']);
         $attributes['position'] = $this->modalPosition($attributes);
+        $attributes['origin'] = $this->modalOrigin($attributes);
 
         return $attributes;
     }

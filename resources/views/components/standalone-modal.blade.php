@@ -11,6 +11,7 @@
     'sheet' => null,
     'bottomSheet' => null,
     'position' => null,
+    'origin' => null,
     'height' => null,
     'maxHeight' => null,
     'draggable' => null,
@@ -91,6 +92,9 @@
 @if (is_string($position) && trim($position) !== '')
     @php($payloadModalAttributes['position'] = strtolower(trim($position)))
 @endif
+@if (is_string($origin) && trim($origin) !== '')
+    @php($payloadModalAttributes['origin'] = strtolower(trim($origin)))
+@endif
 @if (is_string($size) && trim($size) !== '')
     @php($payloadModalAttributes['size'] = trim($size))
 @endif
@@ -137,6 +141,7 @@
 @php($isDrawer = $modalConfig->isDrawer($resolvedModalAttributes))
 @php($isSheet = $modalConfig->isSheet($resolvedModalAttributes))
 @php($position = $modalConfig->modalPosition($resolvedModalAttributes))
+@php($originClass = $modalConfig->modalOriginClass($resolvedModalAttributes))
 @php($hasBlur = (bool) ($resolvedModalAttributes['blur'] ?? false))
 @php($modalClasses = $modalConfig->mergedModalClasses($resolvedModalAttributes))
 @php($panelWrapClasses = $modalConfig->modalPanelWrapClasses($resolvedModalAttributes))
@@ -973,6 +978,7 @@
                                 'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                                 'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                                 'cp-modal-shape-sheet' => $isSheet,
+                                $originClass,
                                 $modalClasses,
                                 'rounded-l-none' => $isDrawer && $position === 'left',
                                 'rounded-r-none' => $isDrawer && $position === 'right',

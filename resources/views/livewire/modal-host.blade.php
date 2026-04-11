@@ -1017,6 +1017,7 @@
                     $isDrawer = $modalConfig->isDrawer($modal['modalAttributes']);
                     $isSheet = $modalConfig->isSheet($modal['modalAttributes']);
                     $position = $modalConfig->modalPosition($modal['modalAttributes']);
+                    $originClass = $modalConfig->modalOriginClass($modal['modalAttributes']);
                     $hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false);
                     $panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']);
                     $transitionClasses = $modalConfig->modalTransitionClasses($modal['modalAttributes']);
@@ -1062,11 +1063,12 @@
                         'flex min-h-0 flex-col',
                         'cp-modal-panel-default-height' => ! $isDrawer && ! $isSheet,
                         'cp-modal-panel-drawer-height' => $isDrawer,
-                        'mx-auto' => ! $isDrawer,
+                        'mx-auto' => ! $isDrawer && ! in_array($position, ['left', 'right'], true),
                         'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
                         'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
                         'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
                         'cp-modal-shape-sheet' => $isSheet,
+                        $originClass,
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
