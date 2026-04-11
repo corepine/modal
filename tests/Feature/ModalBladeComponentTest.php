@@ -45,11 +45,10 @@ it('supports standalone modal presentation and sheet options', function (): void
     position="bottom"
     size="2xl"
     height="72vh"
-    sheet-min-height="40vh"
-    sheet-max-height="95vh"
+    max-height="95vh"
     drag-close-threshold="0.35"
     dismissible="false"
-    enable-drag="true"
+    draggable="true"
     show-drag-handle="true"
     blur="true"
     class="border border-zinc-200"
@@ -67,12 +66,13 @@ BLADE);
     expect($flat)->toContain('x-bind:style="panelStyle()"');
     expect($flat)->toContain('startSheetResize($event)');
     expect($flat)->toContain('classHeightHint(value)');
-    expect($flat)->toContain('const preferredSource = this.heightValue ?? this.sheetHeightValue ?? null;');
+    expect($flat)->toContain('const preferredSource = this.heightValue ?? null;');
     expect($flat)->toContain('normalizedPreferredSource ?? classPreferred');
     expect($flat)->toContain('normalizePanelHeightValue(value, fallback = null)');
     expect($flat)->toContain('\u0022dragCloseThreshold\u0022:\u00220.35\u0022');
     expect($flat)->toContain('\u0022dismissible\u0022:false');
     expect($flat)->toContain('\u0022draggable\u0022:true');
+    expect($flat)->toContain('\u0022maxHeight\u0022:\u002295vh\u0022');
     expect($flat)->toContain('\u0022showDragHandle\u0022:true');
 });
 
@@ -225,7 +225,7 @@ it('supports explicit bottom sheet aliases and presentation props on open helper
     component="modals.edit-user"
     type="bottomSheet"
     dismissible="false"
-    enable-drag="true"
+    draggable="true"
     show-drag-handle="true"
     close-all-on-escape="true"
 >
@@ -237,7 +237,7 @@ BLADE);
 
     expect($flat)->toContain('\u0022type\u0022:\u0022sheet\u0022');
     expect($flat)->toContain('\u0022dismissible\u0022:false');
-    expect($flat)->toContain('\u0022enableDrag\u0022:true');
+    expect($flat)->toContain('\u0022draggable\u0022:true');
     expect($flat)->toContain('\u0022showDragHandle\u0022:true');
     expect($flat)->toContain('\u0022closeAllOnEscape\u0022:true');
 });
@@ -271,11 +271,11 @@ BLADE);
     expect($flat)->toContain('saveUsers');
 });
 
-it('supports legacy isolated prop but emits isolate attribute', function (): void {
+it('emits isolate attribute on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open
     component="modals.edit-user"
-    isolated="true"
+    isolate="true"
 >
     <button type="button">Edit</button>
 </x-corepine-modal-open>
@@ -284,7 +284,19 @@ BLADE);
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($flat)->toContain('\u0022isolate\u0022:true');
-    expect($flat)->not->toContain('\u0022isolated\u0022:true');
+});
+
+it('supports Livewire component classes through the component prop on open helper', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-open :component="\Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal::class">
+    <button type="button">Open</button>
+</x-corepine-modal-open>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('ExampleModal');
+    expect($flat)->toContain('corepine-modal.open');
 });
 
 it('merges modalAttributes class with incoming class on open helper', function (): void {
@@ -319,9 +331,9 @@ BLADE);
     expect($flat)->toMatch('/destroy:\s*true/');
 });
 
-it('renders close helper force path and dispatches close-all event', function (): void {
+it('renders close helper close-all path and dispatches close-all event', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-close :force="true" :destroy="false">
+<x-corepine-modal-close :close-all="true" :destroy="false">
     <button type="button">Close All</button>
 </x-corepine-modal-close>
 BLADE);

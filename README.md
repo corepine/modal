@@ -112,25 +112,15 @@ Use this when you want a modal without a Livewire modal component stack.
 | `modalAttributes` | `array` | `[]` | Raw attribute payload merged with explicit props. |
 | `size` | `string` | `default` | Width token or raw width utility classes. |
 | `type` | `string \| ModalType \| null` | config default (`modal`) | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
-| `drawer` | `bool \| null` | `null` | Legacy alias for `type=drawer`. |
-| `sheet` | `bool \| null` | `null` | Legacy alias for `type=sheet`. |
-| `bottomSheet` | `bool \| null` | `null` | Friendly alias for `type=sheet`. |
 | `position` | `string \| null` | type default | Normalized by type (`center/right/bottom`). Bottom sheets are always forced to `bottom`. |
 | `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
-| `sheetHeight` | `string \| number \| null` | `null` | Alias of `height` for sheets. |
-| `sheetMinHeight` | `string \| number \| null` | `null` | Sheet minimum height. |
-| `minHeight` | `string \| number \| null` | `null` | Alias of `sheetMinHeight`. |
-| `sheetMaxHeight` | `string \| number \| null` | `null` | Sheet maximum height. |
-| `maxHeight` | `string \| number \| null` | `null` | Alias of `sheetMaxHeight`. |
+| `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for modal, drawer, and sheet panels. |
 | `draggable` | `bool \| null` | `null` | For sheet: drag down / resize behavior. |
-| `enableDrag` | `bool \| null` | `null` | Alias of `draggable`. |
 | `showDragHandle` | `bool \| null` | `null` | For sheet: toggles the visible top drag handle independently of drag behavior. |
 | `dragCloseThreshold` | `float \| string \| null` | `null` | For sheet: close threshold ratio (`0.3`). |
-| `sheetDragThreshold` | `float \| string \| null` | `null` | Alias of `dragCloseThreshold`. |
 | `closeOnEscape` | `bool` | `true` | Escape key closes modal. |
-| `closeAllOnEscape` | `bool` | `false` | In stack mode, Escape closes the full stack. Legacy `closeOnEscapeIsForceful` is still supported. |
+| `closeAllOnEscape` | `bool` | `false` | In stack mode, Escape closes the full stack. |
 | `dismissible` | `bool \| null` | `null` | Backdrop/scrim click closes modal when true. |
-| `closeOnClickAway` | `bool` | `true` | Legacy alias of `dismissible`. |
 | `blur` | `bool` | `false` | Enables backdrop blur style. |
 | `class` | `string` | `''` | Merged into modal panel classes. |
 
@@ -138,7 +128,7 @@ Additional non-class attributes are merged onto the panel element.
 
 For bottom sheets:
 - The `dismissible` parameter specifies whether the bottom sheet will be dismissed when user taps on the scrim.
-- The `enableDrag` parameter specifies whether the bottom sheet can be dragged up and down and dismissed by swiping downwards.
+- The `draggable` parameter specifies whether the bottom sheet can be dragged up and down and dismissed by swiping downwards.
 
 Stack-only behavior is intentionally not included for standalone mode:
 - no modal stack tracking
@@ -206,7 +196,6 @@ class EditUser extends Modal
 
 Livewire modals now support built-in shell rendering from `modalAttributes`:
 - `shell` (`true` by default): use built-in shell rendering.
-- `layout`: legacy alias of `shell`.
 - `heading`, `description`, `showClose`: header chrome options.
 - `footerActionsAlignment`: align built-in footer actions (`start`, `center`, `end`).
 - `footerActions`: declarative footer actions.
@@ -232,7 +221,7 @@ public static function modalAttributes(): array
 ```
 
 `footerActions` supports:
-- `type=close`: uses modal close behavior (`count`, `destroy`, `force` are optional).
+- `type=close`: uses modal close behavior (`count`, `destroy`, `closeAll` are optional).
 - `type=method`: calls the active modal Livewire method (`method`, optional `params`).
 - `class`: custom classes for the rendered button.
 - `buttonType`: HTML button type for method actions (`button`, `submit`, `reset`).
@@ -391,7 +380,7 @@ When your content includes a list/table that should scroll inside the modal body
 
 ```blade
 <x-corepine.modal.actions.open
-    :component-class="\App\Livewire\Modals\EditUser::class"
+    :component="\App\Livewire\Modals\EditUser::class"
     :arguments="['user' => $user->id]"
     type="drawer"
     position="right"
@@ -408,21 +397,17 @@ When your content includes a list/table that should scroll inside the modal body
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `component` | `string \| null` | `null` | Livewire component name (`modals.edit-user`). |
-| `componentClass` | `class-string \| null` | `null` | Livewire component class path. Takes priority over `component`. |
+| `component` | `string \| class-string \| null` | `null` | Livewire component name (`modals.edit-user`) or component class path. |
 | `arguments` | `array` | `[]` | Payload passed to modal component mount/properties. |
 | `modalAttributes` | `array` | `[]` | Raw modal attribute payload. |
 | `size` | `string \| null` | `null` | Width token/raw classes. |
 | `height` | `string \| number \| null` | `null` | Explicit panel height for modal/drawer and initial height for sheet. |
+| `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for modal, drawer, and sheet panels. |
 | `blur` | `bool \| string \| null` | `null` | Backdrop blur toggle. |
 | `type` | `string \| ModalType \| null` | `null` | `modal`, `drawer`, `sheet`. |
-| `drawer` | `bool \| string \| null` | `null` | Legacy alias to set drawer type. |
-| `sheet` | `bool \| string \| null` | `null` | Legacy alias to set sheet type. |
 | `position` | `string \| null` | `null` | Position normalized by type rules. |
 | `isolate` | `bool \| string \| null` | `null` | Keep previous modal layers visible. |
-| `isolated` | `bool \| string \| null` | `null` | Legacy alias for `isolate`. |
 | `shell` | `bool \| string \| null` | `null` | Preferred flag for built-in shell rendering. |
-| `layout` | `bool \| string \| null` | `null` | Legacy alias of `shell`. |
 | `heading` | `string \| null` | `null` | Shell header heading when layout is enabled. |
 | `description` | `string \| null` | `null` | Shell header description when layout is enabled. |
 | `showClose` | `bool \| string \| null` | `null` | Toggle shell close button. |
@@ -475,8 +460,8 @@ $this->skipPreviousModal()->closeModal();
 // close current + N previous modals
 $this->skipPreviousModals(2)->closeModal();
 
-// force close all
-$this->forceClose()->closeModal();
+// close all open layers immediately
+$this->closeAll();
 
 // close + dispatch other component events
 $this->closeModalWithEvents([
@@ -495,7 +480,7 @@ From Blade:
 Close helper:
 
 ```blade
-<x-corepine.modal.actions.close count="1" destroy="true" force="false">
+<x-corepine.modal.actions.close count="1" destroy="true" close-all="false">
     Close
 </x-corepine.modal.actions.close>
 ```
@@ -506,7 +491,7 @@ Close helper:
 | --- | --- | --- | --- |
 | `count` | `int` | `1` | How many layers to close (min `1`). |
 | `destroy` | `bool` | `true` | Remove closed modal instances from stack storage. |
-| `force` | `bool` | `false` | Close all layers instead of top `count`. |
+| `closeAll` | `bool` | `false` | Close all layers instead of top `count`. |
 | `disabled` | `bool` | `false` | Renders the close action as disabled and suppresses click handling. |
 
 ## Presentation Types
@@ -577,12 +562,12 @@ Height defaults by type:
 - `sheet`: runtime default `70dvh`
 
 Use `height` when you want explicit height precedence on all types (`modal`, `drawer`, `sheet`).
+Use `maxHeight` when you want to cap the panel height on any type.
 For responsive behavior, use panel classes (`class` / `modalAttributes.class`) like `h-full md:h-[600px]`.
 
 For sheets, precedence order is:
 1. `height`
-2. `sheetHeight` (legacy alias)
-3. class height hints (`h-[...]`, `h-full`, `h-screen`, fractions)
+2. class height hints (`h-[...]`, `h-full`, `h-screen`, fractions)
 
 Recommended sheet config:
 
@@ -590,13 +575,12 @@ Recommended sheet config:
 public static function modalAttributes(): array
 {
     return [
-        'bottomSheet' => true,
+        'type' => 'sheet',
         'dismissible' => true,
         'draggable' => true,
         'showDragHandle' => true,
         'height' => '70vh',
-        'sheetMinHeight' => '40vh',
-        'sheetMaxHeight' => '95vh',
+        'maxHeight' => '95vh',
         'dragCloseThreshold' => 0.3,
     ];
 }
@@ -618,25 +602,17 @@ Note: `height` is converted to inline style, so responsive strings like `h-full 
 
 ## Complete Modal Attributes Reference
 
-The table below covers all supported modal attributes (including legacy aliases and sheet-specific runtime options).
-
 | Attribute | Type | Default | Applies To | Notes |
 | --- | --- | --- | --- | --- |
 | `closeOnEscape` | bool | `true` | all | Escape key closes active modal when true. |
 | `closeAllOnEscape` | bool | `false` | all | Escape closes the full modal stack when true. |
 | `dismissible` | bool | `true` | all | Backdrop/scrim click closes the active modal when true. |
-| `closeOnClickAway` | bool | alias | all | Legacy alias of `dismissible`. |
 | `destroyOnClose` | bool | `true` | all | Destroy component state when modal closes. |
 | `dispatchCloseEvent` | bool | `false` | all | Dispatches `corepine-modal.component-closed` when closing this component. |
 | `blur` | bool | `false` | all | Adds blurred backdrop style. |
 | `type` | string/enum | `modal` | all | `modal`, `drawer`, `sheet`. `bottomSheet` / `bottom-sheet` normalize to `sheet`. |
-| `drawer` | bool | `false` | all | Legacy alias for `type=drawer`. |
-| `sheet` | bool | `false` | all | Legacy alias for `type=sheet`. |
-| `bottomSheet` | bool | `false` | all | Alias for `type=sheet`. |
 | `isolate` | bool | `false` | all | Keeps previous layers visible behind active modal. |
-| `isolated` | bool | n/a | all | Legacy alias of `isolate`. |
 | `shell` | bool | `true` | Livewire host | Preferred built-in shell toggle (`x-corepine.modal.layout`). |
-| `layout` | bool | alias | Livewire host | Legacy alias of `shell`. |
 | `heading` | string/null | `null` | layout | Shell header heading. |
 | `description` | string/null | `null` | layout | Shell header description. |
 | `showClose` | bool | `true` | layout | Shell close button visibility. |
@@ -645,17 +621,11 @@ The table below covers all supported modal attributes (including legacy aliases 
 | `position` | string | type-based | all | Normalized per type rules. Bottom sheets are always `bottom`. |
 | `size` | string | `default` | all | Token from config sizes or raw width classes. |
 | `height` | string/number | `null` | all | Explicit panel height for modal/drawer and initial sheet height (`vh`, `dvh`, `%`, `px`, numeric ratios, or `h-[...]`/`h-full` style tokens). |
+| `maxHeight` | string/number | `null` | all | Shared max-height cap for modal, drawer, and sheet panels. |
 | `class` | string | `''` | all | Extra classes merged on modal surface (`cp-modal-component`). |
 | `draggable` | bool | `true` for sheet | sheet | Enables sheet drag/resize behavior. |
-| `enableDrag` | bool | alias | sheet | Alias of `draggable`. |
 | `showDragHandle` | bool | `true` for draggable sheets | sheet | Shows or hides the top drag handle without disabling drag itself. |
 | `dragCloseThreshold` | float | `0.3` | sheet | Close when drag-down reaches threshold ratio. |
-| `sheetDragThreshold` | float | alias | sheet | Alias of `dragCloseThreshold`. |
-| `sheetHeight` | string/number | alias | sheet | Legacy alias for `height` on sheets. |
-| `sheetMinHeight` | string/number | `260px` runtime default | sheet | Minimum sheet height. |
-| `minHeight` | string/number | alias | sheet | Alias for `sheetMinHeight`. |
-| `sheetMaxHeight` | string/number | `calc(100dvh - 16px)` runtime default | sheet | Maximum sheet height. |
-| `maxHeight` | string/number | alias | sheet | Alias for `sheetMaxHeight`. |
 
 Attribute merge order:
 1. `config('corepine-modal.defaults.attributes')`
@@ -664,14 +634,17 @@ Attribute merge order:
 
 ## Events Reference
 
-Default listen events:
-- `corepine-modal.open`, legacy alias `openModal`
-- `corepine-modal.open-sheet`, legacy alias `openBottomSheet`
-- `corepine-modal.close`, legacy alias `closeModal`
-- `corepine-modal.close-top`, legacy alias `closeTopModal`
-- `corepine-modal.close-all`, legacy alias `closeAllModals`
-- `corepine-modal.destroy`, legacy alias `destroyModal`
-- `corepine-modal.reset`, legacy alias `resetModal`
+Corepine always dispatches and listens to these internal namespaced events:
+- `corepine-modal.open`
+- `corepine-modal.open-sheet`
+- `corepine-modal.close`
+- `corepine-modal.close-top`
+- `corepine-modal.close-all`
+- `corepine-modal.destroy`
+- `corepine-modal.reset`
+
+By default, the host also listens to convenience aliases from config like `openModal` and `closeModal`.
+You can change or clear those aliases in `config/corepine-modal.php` without changing the internal `corepine-modal.*` events.
 
 Default dispatch events:
 - `corepine-modal.opened`
@@ -679,8 +652,6 @@ Default dispatch events:
 - `corepine-modal.changed`
 - `corepine-modal.all-closed`
 - `corepine-modal.component-closed`
-
-All names are customizable in config. Incoming legacy listen-event aliases remain supported by default.
 
 ## Config
 
@@ -694,7 +665,6 @@ Config file:
 - `config/corepine-modal.php`
 
 Main config areas:
-- `host_component`
 - `events.listen`
 - `events.dispatch`
 - `defaults.attributes`
@@ -733,14 +703,9 @@ Set `payload.closing = false` to cancel close.
 $modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
 
 $openEvent = $modalConfig->listenEvent('open');       // corepine-modal.open
+$openListeners = $modalConfig->listenEvents('open');  // ['corepine-modal.open', 'openModal']
 $closedEvent = $modalConfig->dispatchEvent('closed'); // corepine-modal.closed
 ```
-
-## Backward Compatibility
-
-- `Corepine\Modal\Livewire\ModalComponent` still exists for legacy usage.
-- Recommended base class is `Corepine\Modal\Modal`.
-- Legacy aliases normalized automatically: `drawer`, `sheet`, `isolated`.
 
 ## Testing
 

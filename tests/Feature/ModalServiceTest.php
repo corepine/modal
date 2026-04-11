@@ -26,12 +26,20 @@ it('resolves listen events through modal service', function (): void {
     ]);
 });
 
-it('reads customized event names through modal facade', function (): void {
-    config()->set('corepine-modal.events.listen.open_sheet', ['corepine-modal.custom.open-sheet', 'fallback-sheet']);
-    config()->set('corepine-modal.events.listen.close', 'corepine-modal.custom.close');
+it('keeps internal event namespaced while adding configured listen aliases', function (): void {
+    config()->set('corepine-modal.events.listen.open_sheet', 'app-modal.open-sheet');
+    config()->set('corepine-modal.events.listen.close', 'app-modal.close');
 
-    expect(ModalFacade::event()->openBottomSheet())->toBe('corepine-modal.custom.open-sheet');
-    expect(ModalFacade::event()->closeModal())->toBe('corepine-modal.custom.close');
+    expect(ModalFacade::event()->openBottomSheet())->toBe('corepine-modal.open-sheet');
+    expect(ModalFacade::event()->closeModal())->toBe('corepine-modal.close');
+    expect(app(ModalConfig::class)->listenEvents('open_sheet'))->toBe([
+        'corepine-modal.open-sheet',
+        'app-modal.open-sheet',
+    ]);
+    expect(app(ModalConfig::class)->listenEvents('close'))->toBe([
+        'corepine-modal.close',
+        'app-modal.close',
+    ]);
 });
 
 it('defaults outgoing modal events to prefixed names and respects overrides', function (): void {

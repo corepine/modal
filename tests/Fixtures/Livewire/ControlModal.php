@@ -26,9 +26,9 @@ class ControlModal extends Modal
         $this->closeTopModal(2);
     }
 
-    public function forceCloseEverything(): void
+    public function closeAllModalLayers(): void
     {
-        $this->forceClose()->closeModal();
+        $this->closeAll();
     }
 
     public function render()

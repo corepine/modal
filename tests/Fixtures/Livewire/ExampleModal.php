@@ -20,7 +20,7 @@ class ExampleModal extends Modal
             'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
-            'closeOnClickAway' => true,
+            'dismissible' => true,
             'class' => 'p-4',
         ];
     }

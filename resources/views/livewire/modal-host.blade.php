@@ -115,13 +115,13 @@
                 isDismissible() {
                     const attrs = this.activeAttributes();
 
-                    return this.normalizedBoolean(attrs.dismissible ?? attrs.closeOnClickAway ?? true, true);
+                    return this.normalizedBoolean(attrs.dismissible ?? true, true);
                 },
 
                 shouldCloseAllOnEscape() {
                     const attrs = this.activeAttributes();
 
-                    return this.normalizedBoolean(attrs.closeAllOnEscape ?? attrs.closeOnEscapeIsForceful ?? false, false);
+                    return this.normalizedBoolean(attrs.closeAllOnEscape ?? false, false);
                 },
 
                 eventClientY(event) {
@@ -368,17 +368,14 @@
                 },
 
                 sheetMinHeight(id) {
-                    const attrs = this.modalAttributesById(id);
-                    const configured = this.normalizeHeightValue(attrs.sheetMinHeight ?? attrs.minHeight, this.defaultSheetMinHeight);
-
-                    return Math.max(120, Math.round(configured ?? this.defaultSheetMinHeight));
+                    return Math.max(120, Math.round(this.defaultSheetMinHeight));
                 },
 
                 sheetMaxHeight(id) {
                     const attrs = this.modalAttributesById(id);
                     const viewport = this.viewportHeight();
                     const fallback = viewport - this.defaultSheetTopGap;
-                    const configured = this.normalizeHeightValue(attrs.sheetMaxHeight ?? attrs.maxHeight, fallback);
+                    const configured = this.normalizeHeightValue(attrs.maxHeight ?? null, fallback);
                     const max = Math.min(viewport, Math.round(configured ?? fallback));
 
                     return Math.max(this.sheetMinHeight(id), max);
@@ -395,7 +392,7 @@
                     const attrs = this.modalAttributesById(id);
                     const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
                     const classPreferred = this.classHeightHint(attrs.class ?? '');
-                    const preferredSource = attrs.height ?? attrs.sheetHeight ?? null;
+                    const preferredSource = attrs.height ?? null;
                     const normalizedPreferredSource = this.classHeightHint(
                         typeof preferredSource === 'string' ? preferredSource : ''
                     ) ?? preferredSource;
@@ -454,7 +451,7 @@
                     }
 
                     const attrs = this.modalAttributesById(id);
-                    const draggable = attrs.draggable ?? attrs.enableDrag;
+                    const draggable = attrs.draggable;
 
                     if (draggable === undefined || draggable === null) {
                         return true;
@@ -469,14 +466,14 @@
                     }
 
                     const attrs = this.modalAttributesById(id);
-                    const showDragHandle = attrs.showDragHandle ?? attrs.draggable ?? attrs.enableDrag ?? true;
+                    const showDragHandle = attrs.showDragHandle ?? attrs.draggable ?? true;
 
                     return this.normalizedBoolean(showDragHandle, true);
                 },
 
                 sheetDragThreshold(id) {
                     const attrs = this.modalAttributesById(id);
-                    const raw = Number.parseFloat(attrs.dragCloseThreshold ?? attrs.sheetDragThreshold ?? this.defaultSheetDragThreshold);
+                    const raw = Number.parseFloat(attrs.dragCloseThreshold ?? this.defaultSheetDragThreshold);
 
                     if (Number.isNaN(raw)) {
                         return this.defaultSheetDragThreshold;
@@ -697,8 +694,9 @@
                         ? 'none'
                         : 'transform 180ms ease-out, height 140ms ease-out';
                     const height = this.sheetHeights[id] ?? this.resolveInitialSheetHeight(id);
+                    const maxHeight = this.sheetMaxHeight(id);
 
-                    return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
+                    return `height: ${height}px; max-height: ${maxHeight}px; transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
                 },
 
                 nonSheetPanelStyle(id) {
@@ -708,16 +706,25 @@
 
                     const attrs = this.modalAttributesById(id);
                     const explicitHeight = this.normalizePanelHeightValue(attrs.height ?? null, null);
+                    const explicitMaxHeight = this.normalizePanelHeightValue(attrs.maxHeight ?? null, null);
 
-                    if (!explicitHeight) {
+                    if (!explicitHeight && !explicitMaxHeight) {
                         return '';
                     }
 
-                    if (this.modalType(id) === 'drawer') {
-                        return `height: ${explicitHeight}; max-height: 100dvh;`;
+                    const styles = [];
+
+                    if (explicitHeight) {
+                        styles.push(`height: ${explicitHeight}`);
                     }
 
-                    return `height: ${explicitHeight};`;
+                    if (explicitMaxHeight) {
+                        styles.push(`max-height: ${explicitMaxHeight}`);
+                    } elseif (this.modalType(id) === 'drawer' && explicitHeight) {
+                        styles.push('max-height: 100dvh');
+                    }
+
+                    return `${styles.join('; ')};`;
                 },
 
                 panelStyle(id) {
@@ -734,7 +741,7 @@
                 activeIsolate() {
                     const attrs = this.activeAttributes();
 
-                    return attrs.isolate === true || attrs.isolated === true;
+                    return attrs.isolate === true;
                 },
 
                 shouldShowModal(id) {
@@ -787,7 +794,7 @@
                         return [];
                     }
 
-                    if (payload.force === true) {
+                    if (payload.closeAll === true) {
                         return [...stack];
                     }
 
@@ -821,17 +828,17 @@
                         return;
                     }
 
-                    const force = this.normalizedBoolean(payload.force ?? false, false);
+                    const closeAll = this.normalizedBoolean(payload.closeAll ?? false, false);
                     const destroy = this.normalizedBoolean(payload.destroy ?? true, true);
                     const id = typeof payload.id === 'string' && payload.id !== '' ? payload.id : null;
                     const closingIds = this.planClosingIds({
                         id,
                         count: payload.count ?? 1,
-                        force,
+                        closeAll,
                     });
 
                     if (closingIds.length === 0) {
-                        if (force) {
+                        if (closeAll) {
                             Livewire.dispatch(events.closeAll, { destroy });
                         } else {
                             Livewire.dispatch(events.close, {
@@ -850,7 +857,7 @@
                     this.closeTimeout = setTimeout(() => {
                         this.closeTimeout = null;
 
-                        if (force) {
+                        if (closeAll) {
                             Livewire.dispatch(events.closeAll, { destroy });
                         } else {
                             Livewire.dispatch(events.close, {
@@ -896,7 +903,7 @@
 
                     if (this.shouldCloseAllOnEscape()) {
                         this.requestClose({
-                            force: true,
+                            closeAll: true,
                             destroy: attrs.destroyOnClose ?? true,
                         });
 
@@ -910,7 +917,7 @@
                     });
                 },
 
-                closeOnClickAway() {
+                handleClickAway() {
                     if (!this.isDismissible()) {
                         return;
                     }
@@ -1018,7 +1025,7 @@
                 <div
                     x-show="shouldShowModal(@js($id))"
                     x-transition.opacity.duration.200ms
-                    x-on:click="if (isTopModal(@js($id))) closeOnClickAway()"
+                    x-on:click="if (isTopModal(@js($id))) handleClickAway()"
                     x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
                     @class([
                         'cp-modal-layer-backdrop absolute inset-0 bg-zinc-950/50',
@@ -1036,7 +1043,7 @@
                     x-transition:leave="{{ $transitionClasses['leave'] }}"
                     x-transition:leave-start="{{ $transitionClasses['leaveStart'] }}"
                     x-transition:leave-end="{{ $transitionClasses['leaveEnd'] }}"
-                    x-on:click="if ($event.target === $event.currentTarget) closeOnClickAway()"
+                    x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"
                     x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
                     style="z-index: {{ 21 + ($loop->index * 2) }};"
                     class="{{ $panelWrapClasses }}"
@@ -1111,7 +1118,7 @@
                                                                 x-on:click.stop="requestClose({
                                                                     count: @js($action['count'] ?? 1),
                                                                     destroy: @js($action['destroy'] ?? true),
-                                                                    force: @js($action['force'] ?? false),
+                                                                    closeAll: @js($action['closeAll'] ?? false),
                                                                 })"
                                                             @endif
                                                         >

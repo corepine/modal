@@ -7,8 +7,6 @@ use Livewire\Component;
 
 abstract class Modal extends Component
 {
-    protected bool $shouldForceClose = false;
-
     protected int $closeLayers = 1;
 
     protected bool $destroySkipped = true;
@@ -33,12 +31,10 @@ abstract class Modal extends Component
         return $this;
     }
 
-    public function forceClose(bool $destroy = true): self
+    public function closeAll(bool $destroy = true): void
     {
-        $this->shouldForceClose = true;
-        $this->destroySkipped = $destroy;
-
-        return $this;
+        $this->closeAllModals($destroy);
+        $this->resetCloseState();
     }
 
     public function openModal(string $component, array $arguments = [], array $modalAttributes = []): void
@@ -57,7 +53,7 @@ abstract class Modal extends Component
             $this->modalConfig()->listenEvent('open_sheet'),
             component: $component,
             arguments: $arguments,
-            modalAttributes: array_replace($modalAttributes, ['type' => 'sheet', 'bottomSheet' => true])
+            modalAttributes: array_replace($modalAttributes, ['type' => 'sheet', 'sheet' => true])
         );
     }
 
@@ -80,13 +76,6 @@ abstract class Modal extends Component
 
     public function closeModal(): void
     {
-        if ($this->shouldForceClose) {
-            $this->closeAllModals($this->destroySkipped);
-            $this->resetCloseState();
-
-            return;
-        }
-
         $this->dispatch(
             $this->modalConfig()->listenEvent('close'),
             count: max(1, $this->closeLayers),
@@ -119,7 +108,6 @@ abstract class Modal extends Component
 
     protected function resetCloseState(): void
     {
-        $this->shouldForceClose = false;
         $this->closeLayers = 1;
         $this->destroySkipped = true;
     }

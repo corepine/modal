@@ -1,7 +1,7 @@
 @props([
     'count' => 1,
     'destroy' => true,
-    'force' => false,
+    'closeAll' => false,
     'disabled' => false,
 ])
 
@@ -16,15 +16,15 @@
             default => true,
         }
         : (bool) $destroy))
-@php($resolvedForce = is_bool($force)
-    ? $force
-    : (is_string($force)
-        ? match (strtolower(trim($force))) {
+@php($resolvedCloseAll = is_bool($closeAll)
+    ? $closeAll
+    : (is_string($closeAll)
+        ? match (strtolower(trim($closeAll))) {
             '1', 'true', 'yes', 'on' => true,
             '0', 'false', 'no', 'off' => false,
             default => false,
         }
-        : (bool) $force))
+        : (bool) $closeAll))
 @php($resolvedDisabled = is_bool($disabled)
     ? $disabled
     : (is_string($disabled)
@@ -45,9 +45,9 @@
         window.corepineModalRequestClose({
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),
-            force: @js($resolvedForce),
+            closeAll: @js($resolvedCloseAll),
         });
-    } else if (@js($resolvedForce)) {
+    } else if (@js($resolvedCloseAll)) {
         Livewire.dispatch(@js($modalEvents->closeAllModals()), {
             destroy: @js($resolvedDestroy),
         });

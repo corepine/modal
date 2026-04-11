@@ -33,8 +33,8 @@ it('dispatches close-top event explicitly', function (): void {
         ->assertDispatched('corepine-modal.close-top');
 });
 
-it('dispatches close-all when forcing close', function (): void {
+it('dispatches close-all from the closeAll helper', function (): void {
     Livewire::test('test.control-modal')
-        ->call('forceCloseEverything')
+        ->call('closeAllModalLayers')
         ->assertDispatched('corepine-modal.close-all');
 });

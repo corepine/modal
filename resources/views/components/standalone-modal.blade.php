@@ -12,19 +12,12 @@
     'bottomSheet' => null,
     'position' => null,
     'height' => null,
-    'sheetHeight' => null,
-    'sheetMinHeight' => null,
-    'minHeight' => null,
-    'sheetMaxHeight' => null,
     'maxHeight' => null,
     'draggable' => null,
-    'enableDrag' => null,
     'showDragHandle' => null,
     'dragCloseThreshold' => null,
-    'sheetDragThreshold' => null,
     'closeOnEscape' => true,
     'closeAllOnEscape' => false,
-    'closeOnClickAway' => true,
     'dismissible' => null,
     'blur' => false,
 ])
@@ -104,26 +97,11 @@
 @if (is_int($height) || is_float($height) || (is_string($height) && trim($height) !== ''))
     @php($payloadModalAttributes['height'] = $height)
 @endif
-@if (is_int($sheetHeight) || is_float($sheetHeight) || (is_string($sheetHeight) && trim($sheetHeight) !== ''))
-    @php($payloadModalAttributes['sheetHeight'] = $sheetHeight)
-@endif
-@if (is_int($sheetMinHeight) || is_float($sheetMinHeight) || (is_string($sheetMinHeight) && trim($sheetMinHeight) !== ''))
-    @php($payloadModalAttributes['sheetMinHeight'] = $sheetMinHeight)
-@endif
-@if (is_int($minHeight) || is_float($minHeight) || (is_string($minHeight) && trim($minHeight) !== ''))
-    @php($payloadModalAttributes['minHeight'] = $minHeight)
-@endif
-@if (is_int($sheetMaxHeight) || is_float($sheetMaxHeight) || (is_string($sheetMaxHeight) && trim($sheetMaxHeight) !== ''))
-    @php($payloadModalAttributes['sheetMaxHeight'] = $sheetMaxHeight)
-@endif
 @if (is_int($maxHeight) || is_float($maxHeight) || (is_string($maxHeight) && trim($maxHeight) !== ''))
     @php($payloadModalAttributes['maxHeight'] = $maxHeight)
 @endif
 @if (is_int($dragCloseThreshold) || is_float($dragCloseThreshold) || (is_string($dragCloseThreshold) && trim($dragCloseThreshold) !== ''))
     @php($payloadModalAttributes['dragCloseThreshold'] = $dragCloseThreshold)
-@endif
-@if (is_int($sheetDragThreshold) || is_float($sheetDragThreshold) || (is_string($sheetDragThreshold) && trim($sheetDragThreshold) !== ''))
-    @php($payloadModalAttributes['sheetDragThreshold'] = $sheetDragThreshold)
 @endif
 @php($normalizedBlur = $normalizeBoolean($blur, null))
 @if (! is_null($normalizedBlur))
@@ -137,17 +115,13 @@
 @if (! is_null($normalizedCloseAllOnEscape))
     @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
 @endif
-@php($rawDismissible = ! is_null($dismissible) ? $dismissible : $closeOnClickAway)
-@php($normalizedDismissible = $normalizeBoolean($rawDismissible, null))
+@php($normalizedDismissible = $normalizeBoolean($dismissible, null))
 @if (! is_null($normalizedDismissible))
     @php($payloadModalAttributes['dismissible'] = $normalizedDismissible)
-    @php($payloadModalAttributes['closeOnClickAway'] = $normalizedDismissible)
 @endif
-@php($rawDraggable = ! is_null($draggable) ? $draggable : $enableDrag)
-@php($normalizedDraggable = ! is_null($rawDraggable) ? $normalizeBoolean($rawDraggable, true) : null)
+@php($normalizedDraggable = ! is_null($draggable) ? $normalizeBoolean($draggable, true) : null)
 @if (! is_null($normalizedDraggable))
     @php($payloadModalAttributes['draggable'] = $normalizedDraggable)
-    @php($payloadModalAttributes['enableDrag'] = $normalizedDraggable)
 @endif
 @php($normalizedShowDragHandle = ! is_null($showDragHandle) ? $normalizeBoolean($showDragHandle, true) : null)
 @if (! is_null($normalizedShowDragHandle))
@@ -173,14 +147,12 @@
     'type' => $modalConfig->modalType($resolvedModalAttributes),
     'closeOnEscape' => (bool) ($resolvedModalAttributes['closeOnEscape'] ?? true),
     'closeAllOnEscape' => (bool) ($resolvedModalAttributes['closeAllOnEscape'] ?? false),
-    'dismissible' => (bool) ($resolvedModalAttributes['dismissible'] ?? ($resolvedModalAttributes['closeOnClickAway'] ?? true)),
-    'draggable' => (bool) ($resolvedModalAttributes['draggable'] ?? ($resolvedModalAttributes['enableDrag'] ?? $isSheet)),
-    'showDragHandle' => (bool) ($resolvedModalAttributes['showDragHandle'] ?? ($resolvedModalAttributes['draggable'] ?? ($resolvedModalAttributes['enableDrag'] ?? $isSheet))),
-    'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? ($resolvedModalAttributes['sheetDragThreshold'] ?? 0.3),
+    'dismissible' => (bool) ($resolvedModalAttributes['dismissible'] ?? true),
+    'draggable' => (bool) ($resolvedModalAttributes['draggable'] ?? $isSheet),
+    'showDragHandle' => (bool) ($resolvedModalAttributes['showDragHandle'] ?? ($resolvedModalAttributes['draggable'] ?? $isSheet)),
+    'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? 0.3,
     'height' => $resolvedModalAttributes['height'] ?? null,
-    'sheetHeight' => $resolvedModalAttributes['sheetHeight'] ?? null,
-    'sheetMinHeight' => $resolvedModalAttributes['sheetMinHeight'] ?? ($resolvedModalAttributes['minHeight'] ?? null),
-    'sheetMaxHeight' => $resolvedModalAttributes['sheetMaxHeight'] ?? ($resolvedModalAttributes['maxHeight'] ?? null),
+    'maxHeight' => $resolvedModalAttributes['maxHeight'] ?? null,
     'panelClass' => is_string($resolvedModalAttributes['class'] ?? null) ? $resolvedModalAttributes['class'] : '',
 ])
 
@@ -200,9 +172,7 @@
             showDragHandle: options.showDragHandle !== false,
             dragCloseThresholdValue: options.dragCloseThreshold ?? 0.3,
             heightValue: options.height ?? null,
-            sheetHeightValue: options.sheetHeight ?? null,
-            sheetMinHeightValue: options.sheetMinHeight ?? null,
-            sheetMaxHeightValue: options.sheetMaxHeight ?? null,
+            maxHeightValue: options.maxHeight ?? null,
             panelClassValue: options.panelClass ?? '',
             defaultSheetHeightRatio: 0.7,
             defaultSheetTopGap: 16,
@@ -587,15 +557,13 @@
             },
 
             sheetMinHeight() {
-                const configured = this.normalizeHeightValue(this.sheetMinHeightValue, this.defaultSheetMinHeight);
-
-                return Math.max(120, Math.round(configured ?? this.defaultSheetMinHeight));
+                return Math.max(120, Math.round(this.defaultSheetMinHeight));
             },
 
             sheetMaxHeight() {
                 const viewport = this.viewportHeight();
                 const fallback = viewport - this.defaultSheetTopGap;
-                const configured = this.normalizeHeightValue(this.sheetMaxHeightValue, fallback);
+                const configured = this.normalizeHeightValue(this.maxHeightValue, fallback);
                 const max = Math.min(viewport, Math.round(configured ?? fallback));
 
                 return Math.max(this.sheetMinHeight(), max);
@@ -611,7 +579,7 @@
             resolveInitialSheetHeight() {
                 const fallback = this.viewportHeight() * this.defaultSheetHeightRatio;
                 const classPreferred = this.classHeightHint(this.panelClassValue);
-                const preferredSource = this.heightValue ?? this.sheetHeightValue ?? null;
+                const preferredSource = this.heightValue ?? null;
                 const normalizedPreferredSource = this.classHeightHint(
                     typeof preferredSource === 'string' ? preferredSource : ''
                 ) ?? preferredSource;
@@ -654,21 +622,31 @@
                         ? 'none'
                         : 'transform 180ms ease-out, height 140ms ease-out';
                     const height = this.sheetHeight ?? this.resolveInitialSheetHeight();
+                    const maxHeight = this.sheetMaxHeight();
 
-                    return `height: ${height}px; max-height: calc(100dvh - ${this.defaultSheetTopGap}px); transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
+                    return `height: ${height}px; max-height: ${maxHeight}px; transform: translate3d(0, ${offset}px, 0); transition: ${transition};`;
                 }
 
                 const explicitHeight = this.normalizePanelHeightValue(this.heightValue, null);
+                const explicitMaxHeight = this.normalizePanelHeightValue(this.maxHeightValue, null);
 
-                if (!explicitHeight) {
+                if (!explicitHeight && !explicitMaxHeight) {
                     return '';
                 }
 
-                if (this.isDrawer()) {
-                    return `height: ${explicitHeight}; max-height: 100dvh;`;
+                const styles = [];
+
+                if (explicitHeight) {
+                    styles.push(`height: ${explicitHeight}`);
                 }
 
-                return `height: ${explicitHeight};`;
+                if (explicitMaxHeight) {
+                    styles.push(`max-height: ${explicitMaxHeight}`);
+                } else if (this.isDrawer() && explicitHeight) {
+                    styles.push('max-height: 100dvh');
+                }
+
+                return `${styles.join('; ')};`;
             },
 
             startSheetDrag(event) {

@@ -38,7 +38,7 @@ class ModalHost extends Component
         $this->openModal(
             $component,
             $arguments,
-            array_replace($modalAttributes, ['type' => 'sheet', 'bottomSheet' => true])
+            array_replace($modalAttributes, ['type' => 'sheet', 'sheet' => true])
         );
     }
 
@@ -92,9 +92,9 @@ class ModalHost extends Component
         );
     }
 
-    public function closeModal(?string $id = null, int $count = 1, bool $destroy = true, bool $force = false): void
+    public function closeModal(?string $id = null, int $count = 1, bool $destroy = true, bool $closeAll = false): void
     {
-        if ($force) {
+        if ($closeAll) {
             $this->closeAllModals($destroy);
 
             return;
@@ -116,9 +116,9 @@ class ModalHost extends Component
         $this->closeTopModal($layersToClose, $destroy);
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true, bool $force = false): void
+    public function closeTopModal(int $count = 1, bool $destroy = true, bool $closeAll = false): void
     {
-        if ($force) {
+        if ($closeAll) {
             $this->closeAllModals($destroy);
 
             return;

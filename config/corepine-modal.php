@@ -1,19 +1,21 @@
 <?php
 
 return [
-    'host_component' => 'corepine-modal',
-
     'events' => [
         'listen' => [
-            'open' => ['corepine-modal.open', 'openModal'],
-            'open_sheet' => ['corepine-modal.open-sheet', 'openBottomSheet'],
-            'close' => ['corepine-modal.close', 'closeModal'],
-            'close_top' => ['corepine-modal.close-top', 'closeTopModal'],
-            'close_all' => ['corepine-modal.close-all', 'closeAllModals'],
-            'destroy' => ['corepine-modal.destroy', 'destroyModal'],
-            'reset' => ['corepine-modal.reset', 'resetModal'],
+            // Optional extra aliases your app can dispatch alongside the built-in
+            // namespaced corepine-modal.* events. Change these or set them to null
+            // if they clash with your own event names.
+            'open' => 'openModal',
+            'open_sheet' => 'openBottomSheet',
+            'close' => 'closeModal',
+            'close_top' => 'closeTopModal',
+            'close_all' => 'closeAllModals',
+            'destroy' => 'destroyModal',
+            'reset' => 'resetModal',
         ],
         'dispatch' => [
+            // Outgoing events emitted by the package after host state changes.
             'opened' => 'corepine-modal.opened',
             'closed' => 'corepine-modal.closed',
             'changed' => 'corepine-modal.changed',
@@ -28,7 +30,6 @@ return [
             'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
-            'closeOnClickAway' => true,
             'dismissible' => true,
             'blur' => false,
             'type' => 'modal',
@@ -38,6 +39,7 @@ return [
             'position' => 'center',
             'size' => 'default',
             'height' => null,
+            'maxHeight' => null,
             'class' => '',
             'shell' => true,
             'heading' => null,

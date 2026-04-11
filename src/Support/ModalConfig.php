@@ -11,16 +11,18 @@ use Corepine\Support\Enums\Alignment;
 class ModalConfig
 {
     /**
-     * @var array<string, array<int, string>>
+     * Built-in internal event names. Corepine always dispatches these.
+     *
+     * @var array<string, string>
      */
     private const DEFAULT_LISTEN_EVENTS = [
-        'open' => ['corepine-modal.open', 'openModal'],
-        'open_sheet' => ['corepine-modal.open-sheet', 'openBottomSheet'],
-        'close' => ['corepine-modal.close', 'closeModal'],
-        'close_top' => ['corepine-modal.close-top', 'closeTopModal'],
-        'close_all' => ['corepine-modal.close-all', 'closeAllModals'],
-        'destroy' => ['corepine-modal.destroy', 'destroyModal'],
-        'reset' => ['corepine-modal.reset', 'resetModal'],
+        'open' => 'corepine-modal.open',
+        'open_sheet' => 'corepine-modal.open-sheet',
+        'close' => 'corepine-modal.close',
+        'close_top' => 'corepine-modal.close-top',
+        'close_all' => 'corepine-modal.close-all',
+        'destroy' => 'corepine-modal.destroy',
+        'reset' => 'corepine-modal.reset',
     ];
 
     /**
@@ -79,33 +81,38 @@ class ModalConfig
      */
     private const SHEET_POSITIONS = ['bottom'];
 
-    public function hostComponent(): string
-    {
-        return (string) config('corepine-modal.host_component', 'corepine-modal');
-    }
-
     /**
      * @param  string  $key
      * @return array<int, string>
      */
     public function listenEvents(string $key): array
     {
+        $events = [];
+        $defaultEvent = self::DEFAULT_LISTEN_EVENTS[$key] ?? null;
+
+        if (is_string($defaultEvent) && $defaultEvent !== '') {
+            $events[] = $defaultEvent;
+        }
+
         $configured = config("corepine-modal.events.listen.$key");
 
         if (is_string($configured) && $configured !== '') {
-            return [$configured];
+            $events[] = $configured;
         }
 
         if (is_array($configured) && $configured !== []) {
-            return array_values(array_filter($configured, static fn (mixed $value): bool => is_string($value) && $value !== ''));
+            $events = [
+                ...$events,
+                ...array_values(array_filter($configured, static fn (mixed $value): bool => is_string($value) && $value !== '')),
+            ];
         }
 
-        return self::DEFAULT_LISTEN_EVENTS[$key] ?? [];
+        return array_values(array_unique($events));
     }
 
     public function listenEvent(string $key): string
     {
-        return $this->listenEvents($key)[0] ?? '';
+        return self::DEFAULT_LISTEN_EVENTS[$key] ?? '';
     }
 
     public function dispatchEvent(string $key): string
@@ -528,7 +535,7 @@ class ModalConfig
                     'attributes' => $presentation['attributes'],
                     'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
                     'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
-                    'force' => $this->normalizeBoolean($action['force'] ?? false, false),
+                    'closeAll' => $this->normalizeBoolean($action['closeAll'] ?? false, false),
                 ];
 
                 continue;
@@ -841,32 +848,32 @@ class ModalConfig
         $attributes['type'] = $this->modalType($attributes);
         $attributes['drawer'] = $attributes['type'] === ModalType::Drawer->value;
         $attributes['sheet'] = $attributes['type'] === ModalType::Sheet->value;
-        $attributes['bottomSheet'] = $attributes['sheet'];
         $attributes['dismissible'] = $this->normalizeBoolean(
-            $attributes['dismissible'] ?? ($attributes['closeOnClickAway'] ?? true),
+            $attributes['dismissible'] ?? true,
             true
         );
-        $attributes['closeOnClickAway'] = $attributes['dismissible'];
         $attributes['closeAllOnEscape'] = $this->normalizeBoolean(
-            $attributes['closeAllOnEscape'] ?? ($attributes['closeOnEscapeIsForceful'] ?? false),
+            $attributes['closeAllOnEscape'] ?? false,
             false
         );
-        $attributes['closeOnEscapeIsForceful'] = $attributes['closeAllOnEscape'];
         $attributes['draggable'] = $attributes['type'] === ModalType::Sheet->value
             ? $this->normalizeBoolean($attributes['draggable'] ?? ($attributes['enableDrag'] ?? true), true)
             : $this->normalizeBoolean($attributes['draggable'] ?? ($attributes['enableDrag'] ?? false), false);
-        $attributes['enableDrag'] = $attributes['draggable'];
         $attributes['showDragHandle'] = $attributes['type'] === ModalType::Sheet->value
             ? $this->normalizeBoolean($attributes['showDragHandle'] ?? $attributes['draggable'], $attributes['draggable'])
             : $this->normalizeBoolean($attributes['showDragHandle'] ?? false, false);
         $attributes['isolate'] = $this->isIsolated($attributes);
-        $attributes['layout'] = $this->usesLayout($attributes);
-        $attributes['shell'] = $attributes['layout'];
+        $attributes['shell'] = $this->usesLayout($attributes);
         $attributes['showClose'] = $this->layoutShowClose($attributes);
         $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
         $attributes['footerActions'] = $this->layoutFooterActions($attributes);
         unset($attributes['isolated']);
+        unset($attributes['bottomSheet']);
+        unset($attributes['closeOnClickAway']);
+        unset($attributes['closeOnEscapeIsForceful']);
+        unset($attributes['enableDrag']);
         unset($attributes['footerActionsAlign']);
+        unset($attributes['layout']);
         $attributes['position'] = $this->modalPosition($attributes);
 
         return $attributes;
@@ -880,22 +887,6 @@ class ModalConfig
     {
         if (! array_key_exists('isolate', $attributes) && array_key_exists('isolated', $attributes)) {
             $attributes['isolate'] = $attributes['isolated'];
-        }
-
-        if (! array_key_exists('closeOnClickAway', $attributes) && array_key_exists('dismissible', $attributes)) {
-            $attributes['closeOnClickAway'] = $attributes['dismissible'];
-        }
-
-        if (! array_key_exists('dismissible', $attributes) && array_key_exists('closeOnClickAway', $attributes)) {
-            $attributes['dismissible'] = $attributes['closeOnClickAway'];
-        }
-
-        if (! array_key_exists('closeOnEscapeIsForceful', $attributes) && array_key_exists('closeAllOnEscape', $attributes)) {
-            $attributes['closeOnEscapeIsForceful'] = $attributes['closeAllOnEscape'];
-        }
-
-        if (! array_key_exists('closeAllOnEscape', $attributes) && array_key_exists('closeOnEscapeIsForceful', $attributes)) {
-            $attributes['closeAllOnEscape'] = $attributes['closeOnEscapeIsForceful'];
         }
 
         if (! array_key_exists('draggable', $attributes) && array_key_exists('enableDrag', $attributes)) {

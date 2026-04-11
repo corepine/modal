@@ -48,17 +48,15 @@ it('keeps built-in size tokens while allowing config overrides', function (): vo
     expect($config->modalSizeClasses(['size' => '3xl']))->toBe('max-w-3xl');
 });
 
-it('normalizes isolate attribute to boolean and supports legacy isolated alias', function (): void {
+it('normalizes isolate attribute to boolean', function (): void {
     $config = app(ModalConfig::class);
 
     expect($config->mergedModalAttributes([], ['isolate' => 'true'])['isolate'])->toBeTrue();
     expect($config->mergedModalAttributes([], ['isolate' => '1'])['isolate'])->toBeTrue();
     expect($config->mergedModalAttributes([], ['isolate' => false])['isolate'])->toBeFalse();
-
-    expect($config->mergedModalAttributes([], ['isolated' => true])['isolate'])->toBeTrue();
 });
 
-it('normalizes modal type using enum, explicit type, and legacy flags', function (): void {
+it('normalizes modal type using enum, explicit type, and helper flags', function (): void {
     $config = app(ModalConfig::class);
 
     expect($config->modalType(['type' => ModalType::Drawer]))->toBe('drawer');
@@ -81,19 +79,14 @@ it('normalizes modal type using enum, explicit type, and legacy flags', function
 
     expect($normalizedSheet['type'])->toBe('sheet');
     expect($normalizedSheet['sheet'])->toBeTrue();
-    expect($normalizedSheet['bottomSheet'])->toBeTrue();
     expect($normalizedSheet['drawer'])->toBeFalse();
     expect($normalizedSheet['position'])->toBe('bottom');
 
     expect($normalizedBottomSheet['type'])->toBe('sheet');
     expect($normalizedBottomSheet['sheet'])->toBeTrue();
-    expect($normalizedBottomSheet['bottomSheet'])->toBeTrue();
     expect($normalizedBottomSheet['dismissible'])->toBeFalse();
-    expect($normalizedBottomSheet['closeOnClickAway'])->toBeFalse();
     expect($normalizedBottomSheet['closeAllOnEscape'])->toBeTrue();
-    expect($normalizedBottomSheet['closeOnEscapeIsForceful'])->toBeTrue();
     expect($normalizedBottomSheet['draggable'])->toBeTrue();
-    expect($normalizedBottomSheet['enableDrag'])->toBeTrue();
     expect($normalizedBottomSheet['showDragHandle'])->toBeFalse();
 
     expect($normalizedDrawer['type'])->toBe('drawer');
@@ -102,13 +95,11 @@ it('normalizes modal type using enum, explicit type, and legacy flags', function
     expect($normalizedDrawer['position'])->toBe('right');
 });
 
-it('supports shell attributes and layout alias', function (): void {
+it('supports shell attributes', function (): void {
     $config = app(ModalConfig::class);
 
     expect($config->usesLayout(['shell' => true]))->toBeTrue();
     expect($config->usesLayout(['shell' => false]))->toBeFalse();
-    expect($config->usesLayout(['layout' => true]))->toBeTrue();
-    expect($config->usesLayout(['layout' => false]))->toBeFalse();
     expect($config->layoutHeading(['heading' => 'Users']))->toBe('Users');
     expect($config->layoutDescription(['description' => 'Search and view users']))->toBe('Search and view users');
     expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();

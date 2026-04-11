@@ -27,7 +27,7 @@ class ModalServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'corepine-modal');
 
         if (class_exists(Livewire::class)) {
-            Livewire::component(app(ModalConfig::class)->hostComponent(), ModalHost::class);
+            Livewire::component('corepine-modal', ModalHost::class);
         }
 
         Blade::component('corepine-modal::components.modal', 'corepine-modal');

@@ -45,11 +45,11 @@ it('closes top modal layers', function (): void {
     expect($stack[0])->toBe($initialStack[0]);
 });
 
-it('force closes all modals', function (): void {
+it('closes all modals when close-all is requested', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal')
         ->dispatch('corepine-modal.open', component: 'test.example-modal')
-        ->dispatch('corepine-modal.close-top', force: true);
+        ->dispatch('corepine-modal.close-top', closeAll: true);
 
     expect($test->get('stack'))->toBe([]);
     expect($test->get('modals'))->toBe([]);
@@ -121,7 +121,7 @@ it('stores drawer and position attributes', function (): void {
 it('stores explicit sheet type and renders sheet classes', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
-            'bottomSheet' => true,
+            'type' => 'sheet',
             'dismissible' => false,
             'showDragHandle' => true,
         ]);
@@ -131,7 +131,6 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
 
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
     expect($modals[$stack[0]]['modalAttributes']['sheet'])->toBeTrue();
-    expect($modals[$stack[0]]['modalAttributes']['bottomSheet'])->toBeTrue();
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
     expect($modals[$stack[0]]['modalAttributes']['dismissible'])->toBeFalse();
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('bottom');
@@ -153,7 +152,7 @@ it('renders sheet drag handlers and panel style binding', function (): void {
         ->assertSee('const releaseY = this.eventClientY(event);', false)
         ->assertSee('classHeightHint(value)', false)
         ->assertSee('const classPreferred = this.classHeightHint(attrs.class ?? \'\');', false)
-        ->assertSee('const preferredSource = attrs.height ?? attrs.sheetHeight ?? null;', false)
+        ->assertSee('const preferredSource = attrs.height ?? null;', false)
         ->assertSee('shouldShowSheetDragHandle(', false)
         ->assertSee('startSheetResize(', false)
         ->assertSee('startSheetDrag(', false);
@@ -170,27 +169,18 @@ it('applies explicit non-sheet height through panel style binding', function ():
         ->assertSee('const explicitHeight = this.normalizePanelHeightValue(attrs.height ?? null, null);', false);
 });
 
-it('stores shared height attribute and preserves sheetHeight alias', function (): void {
-    $heightTest = Livewire::test(ModalHost::class)
+it('stores shared height and max-height attributes', function (): void {
+    $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
             'height' => '65vh',
+            'maxHeight' => '90vh',
         ]);
 
-    $heightStack = $heightTest->get('stack');
-    $heightModals = $heightTest->get('modals');
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
 
-    expect($heightModals[$heightStack[0]]['modalAttributes']['height'])->toBe('65vh');
-
-    $sheetHeightAliasTest = Livewire::test(ModalHost::class)
-        ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
-            'type' => 'sheet',
-            'sheetHeight' => '74vh',
-        ]);
-
-    $sheetStack = $sheetHeightAliasTest->get('stack');
-    $sheetModals = $sheetHeightAliasTest->get('modals');
-
-    expect($sheetModals[$sheetStack[0]]['modalAttributes']['sheetHeight'])->toBe('74vh');
+    expect($modals[$stack[0]]['modalAttributes']['height'])->toBe('65vh');
+    expect($modals[$stack[0]]['modalAttributes']['maxHeight'])->toBe('90vh');
 });
 
 it('opens a bottom sheet through the prefixed open-sheet event', function (): void {
@@ -204,7 +194,7 @@ it('opens a bottom sheet through the prefixed open-sheet event', function (): vo
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
 });
 
-it('still accepts legacy open event aliases', function (): void {
+it('listens to configured open event aliases', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('openModal', component: 'test.example-modal')
         ->dispatch('openBottomSheet', component: 'test.example-modal');
@@ -269,7 +259,7 @@ it('handles click-away from overlay layer while preventing panel clicks from bub
         ->dispatch('corepine-modal.open', component: 'test.example-modal')
         ->assertSee('cp-modal-livewire', false)
         ->assertSee('cp-modal-layer-backdrop', false)
-        ->assertSee('x-on:click="if ($event.target === $event.currentTarget) closeOnClickAway()"', false)
+        ->assertSee('x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"', false)
         ->assertSee('x-on:click.stop', false);
 });
 

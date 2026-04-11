@@ -38,7 +38,7 @@ class Action
 
     private bool $destroy = true;
 
-    private bool $force = false;
+    private bool $closeAll = false;
 
     private function __construct(string $name)
     {
@@ -208,12 +208,12 @@ class Action
         return $this;
     }
 
-    public function close(int $count = 1, bool $destroy = true, bool $force = false): self
+    public function close(int $count = 1, bool $destroy = true, bool $closeAll = false): self
     {
         $this->type = 'close';
         $this->count = max(1, $count);
         $this->destroy = $destroy;
-        $this->force = $force;
+        $this->closeAll = $closeAll;
 
         return $this;
     }
@@ -245,7 +245,7 @@ class Action
                 'attributes' => $attributes,
                 'count' => $this->count,
                 'destroy' => $this->destroy,
-                'force' => $this->force,
+                'closeAll' => $this->closeAll,
             ];
         }
 
