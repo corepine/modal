@@ -27,6 +27,8 @@ class Action
 
     private bool | Closure $disabled = false;
 
+    private bool | Closure $visible = true;
+
     private array | string | Closure | null $color = null;
 
     private bool | Closure | null $accent = null;
@@ -116,6 +118,13 @@ class Action
     public function disabled(bool | Closure $condition = true): self
     {
         $this->disabled = $condition;
+
+        return $this;
+    }
+
+    public function visible(bool | Closure $condition = true): self
+    {
+        $this->visible = $condition;
 
         return $this;
     }
@@ -240,6 +249,7 @@ class Action
     public function toArray(): array
     {
         $disabled = (bool) $this->evaluate($this->disabled);
+        $visible = (bool) $this->evaluate($this->visible);
         $rawColor = $this->evaluate($this->color);
         $color = $this->resolveColor($rawColor);
         $paletteName = $this->resolveColorName($rawColor, $color);
@@ -260,9 +270,10 @@ class Action
             return [
                 'type' => 'close',
                 'label' => $this->label ?? 'Close',
-                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
                 'style' => $this->resolveStyle($color, $paletteName, $outline),
                 'disabled' => $disabled,
+                'visible' => $visible,
                 'color' => $color,
                 'outline' => $outline,
                 'accent' => $accent,
@@ -285,8 +296,9 @@ class Action
             'label' => $this->label ?? ucwords(str_replace(['-', '_'], ' ', $this->name)),
             'method' => $method,
             'params' => $this->params,
-            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent),
+            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
             'disabled' => $disabled,
+            'visible' => $visible,
             'style' => $this->resolveStyle($color, $paletteName, $outline),
             'color' => $color,
             'outline' => $outline,
@@ -448,21 +460,45 @@ class Action
         return null;
     }
 
-    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent): string
+    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled): string
     {
-        $paletteClass = $this->resolvePaletteClasses($paletteName, $outline, $accent);
+        $paletteClass = $this->resolvePaletteClasses($paletteName, $outline, $accent, $disabled);
 
         return trim(implode(' ', array_filter([
             'cp-modal-action',
             $paletteClass,
+            $disabled ? 'cp-modal-action-disabled' : '',
+            $disabled ? 'cursor-not-allowed' : '',
             trim($class),
         ])));
     }
 
-    private function resolvePaletteClasses(?string $paletteName, bool $outline, bool $accent): string
+    private function resolvePaletteClasses(?string $paletteName, bool $outline, bool $accent, bool $disabled): string
     {
         if (! is_string($paletteName) || trim($paletteName) === '') {
             return '';
+        }
+
+        if ($disabled) {
+            return match (strtolower(trim($paletteName))) {
+                'red' => $outline ? 'bg-transparent border-red-200 text-red-700 dark:bg-transparent dark:border-red-700 dark:text-red-200' : ($accent ? '!bg-red-50 !border-red-200 !text-red-700 dark:!bg-red-950 dark:!border-red-800 dark:!text-red-100' : 'bg-red-600 border-red-600 text-white dark:bg-red-500 dark:border-red-500 dark:text-white'),
+                'green' => $outline ? 'bg-transparent border-green-200 text-green-700 dark:bg-transparent dark:border-green-700 dark:text-green-200' : ($accent ? '!bg-green-50 !border-green-200 !text-green-700 dark:!bg-green-950 dark:!border-green-800 dark:!text-green-100' : 'bg-green-600 border-green-600 text-white dark:bg-green-500 dark:border-green-500 dark:text-white'),
+                'yellow' => $outline ? 'bg-transparent border-yellow-200 text-yellow-700 dark:bg-transparent dark:border-yellow-700 dark:text-yellow-200' : ($accent ? '!bg-yellow-50 !border-yellow-200 !text-yellow-700 dark:!bg-yellow-950 dark:!border-yellow-800 dark:!text-yellow-100' : 'bg-yellow-600 border-yellow-600 text-white dark:bg-yellow-500 dark:border-yellow-500 dark:text-white'),
+                'sky' => $outline ? 'bg-transparent border-sky-200 text-sky-700 dark:bg-transparent dark:border-sky-700 dark:text-sky-200' : ($accent ? '!bg-sky-50 !border-sky-200 !text-sky-700 dark:!bg-sky-950 dark:!border-sky-800 dark:!text-sky-100' : 'bg-sky-600 border-sky-600 text-white dark:bg-sky-500 dark:border-sky-500 dark:text-white'),
+                'gray' => $outline ? 'bg-transparent border-gray-200 text-gray-700 dark:bg-transparent dark:border-gray-700 dark:text-gray-200' : ($accent ? '!bg-gray-50 !border-gray-200 !text-gray-700 dark:!bg-gray-950 dark:!border-gray-800 dark:!text-gray-100' : 'bg-gray-600 border-gray-600 text-white dark:bg-gray-500 dark:border-gray-500 dark:text-white'),
+                'zinc' => $outline ? 'bg-transparent border-zinc-200 text-zinc-700 dark:bg-transparent dark:border-zinc-700 dark:text-zinc-200' : ($accent ? '!bg-zinc-50 !border-zinc-200 !text-zinc-700 dark:!bg-zinc-950 dark:!border-zinc-800 dark:!text-zinc-100' : 'bg-zinc-600 border-zinc-600 text-white dark:bg-zinc-500 dark:border-zinc-500 dark:text-white'),
+                'blue' => $outline ? 'bg-transparent border-blue-200 text-blue-700 dark:bg-transparent dark:border-blue-700 dark:text-blue-200' : ($accent ? '!bg-blue-50 !border-blue-200 !text-blue-700 dark:!bg-blue-950 dark:!border-blue-800 dark:!text-blue-100' : 'bg-blue-600 border-blue-600 text-white dark:bg-blue-500 dark:border-blue-500 dark:text-white'),
+                'amber' => $outline ? 'bg-transparent border-amber-200 text-amber-700 dark:bg-transparent dark:border-amber-700 dark:text-amber-200' : ($accent ? '!bg-amber-50 !border-amber-200 !text-amber-700 dark:!bg-amber-950 dark:!border-amber-800 dark:!text-amber-100' : 'bg-amber-600 border-amber-600 text-white dark:bg-amber-500 dark:border-amber-500 dark:text-white'),
+                'fuchsia' => $outline ? 'bg-transparent border-fuchsia-200 text-fuchsia-700 dark:bg-transparent dark:border-fuchsia-700 dark:text-fuchsia-200' : ($accent ? '!bg-fuchsia-50 !border-fuchsia-200 !text-fuchsia-700 dark:!bg-fuchsia-950 dark:!border-fuchsia-800 dark:!text-fuchsia-100' : 'bg-fuchsia-600 border-fuchsia-600 text-white dark:bg-fuchsia-500 dark:border-fuchsia-500 dark:text-white'),
+                'purple' => $outline ? 'bg-transparent border-purple-200 text-purple-700 dark:bg-transparent dark:border-purple-700 dark:text-purple-200' : ($accent ? '!bg-purple-50 !border-purple-200 !text-purple-700 dark:!bg-purple-950 dark:!border-purple-800 dark:!text-purple-100' : 'bg-purple-600 border-purple-600 text-white dark:bg-purple-500 dark:border-purple-500 dark:text-white'),
+                'pink' => $outline ? 'bg-transparent border-pink-200 text-pink-700 dark:bg-transparent dark:border-pink-700 dark:text-pink-200' : ($accent ? '!bg-pink-50 !border-pink-200 !text-pink-700 dark:!bg-pink-950 dark:!border-pink-800 dark:!text-pink-100' : 'bg-pink-600 border-pink-600 text-white dark:bg-pink-500 dark:border-pink-500 dark:text-white'),
+                'rose' => $outline ? 'bg-transparent border-rose-200 text-rose-700 dark:bg-transparent dark:border-rose-700 dark:text-rose-200' : ($accent ? '!bg-rose-50 !border-rose-200 !text-rose-700 dark:!bg-rose-950 dark:!border-rose-800 dark:!text-rose-100' : 'bg-rose-600 border-rose-600 text-white dark:bg-rose-500 dark:border-rose-500 dark:text-white'),
+                'indigo' => $outline ? 'bg-transparent border-indigo-200 text-indigo-700 dark:bg-transparent dark:border-indigo-700 dark:text-indigo-200' : ($accent ? '!bg-indigo-50 !border-indigo-200 !text-indigo-700 dark:!bg-indigo-950 dark:!border-indigo-800 dark:!text-indigo-100' : 'bg-indigo-600 border-indigo-600 text-white dark:bg-indigo-500 dark:border-indigo-500 dark:text-white'),
+                'teal' => $outline ? 'bg-transparent border-teal-200 text-teal-700 dark:bg-transparent dark:border-teal-700 dark:text-teal-200' : ($accent ? '!bg-teal-50 !border-teal-200 !text-teal-700 dark:!bg-teal-950 dark:!border-teal-800 dark:!text-teal-100' : 'bg-teal-600 border-teal-600 text-white dark:bg-teal-500 dark:border-teal-500 dark:text-white'),
+                'cyan' => $outline ? 'bg-transparent border-cyan-200 text-cyan-700 dark:bg-transparent dark:border-cyan-700 dark:text-cyan-200' : ($accent ? '!bg-cyan-50 !border-cyan-200 !text-cyan-700 dark:!bg-cyan-950 dark:!border-cyan-800 dark:!text-cyan-100' : 'bg-cyan-600 border-cyan-600 text-white dark:bg-cyan-500 dark:border-cyan-500 dark:text-white'),
+                'emerald' => $outline ? 'bg-transparent border-emerald-200 text-emerald-700 dark:bg-transparent dark:border-emerald-700 dark:text-emerald-200' : ($accent ? '!bg-emerald-50 !border-emerald-200 !text-emerald-700 dark:!bg-emerald-950 dark:!border-emerald-800 dark:!text-emerald-100' : 'bg-emerald-600 border-emerald-600 text-white dark:bg-emerald-500 dark:border-emerald-500 dark:text-white'),
+                default => '',
+            };
         }
 
         return match (strtolower(trim($paletteName))) {

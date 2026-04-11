@@ -384,7 +384,8 @@ it('resolves support colors and richer action options inside footerActions', fun
     expect($actions[0]['attributes'])->toMatchArray(['data-testid' => 'cancel-action']);
     expect($actions[1]['disabled'])->toBeTrue();
     expect($actions[1]['class'])->toContain('bg-fuchsia-600');
-    expect($actions[1]['class'])->toContain('hover:bg-fuchsia-500');
+    expect($actions[1]['class'])->toContain('cp-modal-action-disabled');
+    expect($actions[1]['class'])->toContain('cursor-not-allowed');
     expect($actions[1]['style'])->toBe('');
     expect($actions[1]['attributes'])->toMatchArray(['data-testid' => 'save-action']);
 });

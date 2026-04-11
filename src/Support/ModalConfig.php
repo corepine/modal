@@ -541,6 +541,10 @@ class ModalConfig
                 $action = $action->toArray();
             }
 
+            if (is_array($action) && ($action['visible'] ?? true) === false) {
+                continue;
+            }
+
             if (is_string($action) && trim($action) !== '') {
                 $method = trim($action);
                 $presentation = $this->normalizeFooterActionPresentation([
@@ -556,6 +560,7 @@ class ModalConfig
                     'class' => $presentation['class'],
                     'style' => $presentation['style'],
                     'disabled' => $presentation['disabled'],
+                    'visible' => $presentation['visible'],
                     'outline' => $presentation['outline'],
                     'attributes' => $presentation['attributes'],
                     'buttonType' => 'button',
@@ -586,6 +591,7 @@ class ModalConfig
                     'class' => $presentation['class'],
                     'style' => $presentation['style'],
                     'disabled' => $presentation['disabled'],
+                    'visible' => $presentation['visible'],
                     'outline' => $presentation['outline'],
                     'attributes' => $presentation['attributes'],
                     'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
@@ -626,6 +632,7 @@ class ModalConfig
                 'class' => $presentation['class'],
                 'style' => $presentation['style'],
                 'disabled' => $presentation['disabled'],
+                'visible' => $presentation['visible'],
                 'outline' => $presentation['outline'],
                 'attributes' => $presentation['attributes'],
                 'buttonType' => $buttonType,
@@ -661,12 +668,13 @@ class ModalConfig
 
     /**
      * @param  array<string, mixed>  $action
-     * @return array{class: string, style: string, disabled: bool, outline: bool, attributes: array<string, mixed>}
+     * @return array{class: string, style: string, disabled: bool, visible: bool, outline: bool, attributes: array<string, mixed>}
      */
     private function normalizeFooterActionPresentation(array $action, string $type): array
     {
         $class = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
         $disabled = $this->normalizeBoolean($action['disabled'] ?? false, false);
+        $visible = $this->normalizeBoolean($action['visible'] ?? true, true);
         $attributes = $this->normalizeFooterActionAttributes($action['attributes'] ?? []);
         $attributeClass = is_string($attributes['class'] ?? null) ? trim((string) $attributes['class']) : '';
         $attributeStyle = is_string($attributes['style'] ?? null) ? trim((string) $attributes['style']) : '';
@@ -681,6 +689,7 @@ class ModalConfig
                 $class = trim(implode(' ', array_filter([
                     $class,
                     'cp-modal-action-disabled',
+                    'cursor-not-allowed',
                 ])));
             }
 
@@ -694,6 +703,7 @@ class ModalConfig
                 'class' => $class,
                 'style' => $style,
                 'disabled' => $disabled,
+                'visible' => $visible,
                 'outline' => $this->normalizeBoolean($action['outline'] ?? false, false),
                 'attributes' => $attributes,
             ];
@@ -731,6 +741,7 @@ class ModalConfig
             $class = trim(implode(' ', array_filter([
                 $class,
                 'cp-modal-action-disabled',
+                'cursor-not-allowed',
             ])));
         }
 
@@ -742,6 +753,7 @@ class ModalConfig
             'class' => $class,
             'style' => $style,
             'disabled' => $disabled,
+            'visible' => $visible,
             'outline' => $outline,
             'attributes' => $attributes,
         ];

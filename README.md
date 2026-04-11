@@ -231,6 +231,7 @@ public static function modalAttributes(): array
 - `class`: custom classes for the rendered button.
 - `buttonType`: HTML button type for method actions (`button`, `submit`, `reset`).
 - `disabled`: disables the action.
+- `visible`: hides the action when set to `false`.
 - `color`: built-in support color name, registered support color alias, or full palette array.
 - `outline`: toggles outline styling.
 - `attributes`: extra HTML attributes like `data-*`, `aria-*`, or `id`.
@@ -272,7 +273,8 @@ public static function modalAttributes(): array
 Notes:
 - `action()` and `method()` map to Livewire component methods.
 - Fluent actions also support `primary()`, `danger()`, `success()`, `warning()`, `info()`, `gray()`, and `dark()` as shortcuts for `color(...)`.
-- When you build actions in PHP with `Action::make(...)`, `disabled()`, `color()`, `outline()`, and `attributes()` can accept closures and will be evaluated server-side.
+- When you build actions in PHP with `Action::make(...)`, `disabled()`, `visible()`, `color()`, `outline()`, and `attributes()` can accept closures and will be evaluated server-side.
+- Disabled actions render with `cursor-not-allowed` and the package disabled state class.
 - Raw array actions should stay serializable. Closures are not supported when `actions` are sent through the Blade open helper or browser payloads.
 - If no custom `class` is provided, modal applies default button styling. If you set `color()` or `outline()`, the preset action styles are used and your custom classes are merged in.
 

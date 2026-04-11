@@ -213,7 +213,8 @@ it('supports fluent action helpers for colors, outlines, disabled state, and att
     expect($payload['color'])->toMatchArray(SupportColor::Amber);
     expect($payload['class'])->toContain('bg-transparent');
     expect($payload['class'])->toContain('border-amber-200');
-    expect($payload['class'])->toContain('hover:bg-amber-50');
+    expect($payload['class'])->toContain('cp-modal-action-disabled');
+    expect($payload['class'])->toContain('cursor-not-allowed');
     expect($payload['style'])->toBe('');
     expect($payload['outline'])->toBeTrue();
     expect($payload['disabled'])->toBeTrue();
@@ -236,6 +237,38 @@ it('supports accent action colors as softer defaults', function (): void {
         expect($payload['class'])->toContain('dark:!bg-red-950');
     expect($payload['class'])->toContain('!text-red-700');
     expect($payload['style'])->toBe('');
+});
+
+it('marks disabled fluent actions as non-interactive', function (): void {
+    $payload = Action::make('saveUsers')
+        ->label('Save')
+        ->danger()
+        ->disabled()
+        ->action('saveUsers')
+        ->toArray();
+
+    expect($payload['disabled'])->toBeTrue();
+    expect($payload['class'])->toContain('cp-modal-action-disabled');
+    expect($payload['class'])->toContain('cursor-not-allowed');
+});
+
+it('omits invisible actions from auto layout output', function (): void {
+    $config = app(ModalConfig::class);
+
+    $actions = $config->layoutFooterActions([
+        'actions' => [
+            Action::make('hidden')
+                ->label('Hidden')
+                ->visible(false)
+                ->action('hiddenAction'),
+            Action::make('save')
+                ->label('Save')
+                ->action('saveAction'),
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0]['method'])->toBe('saveAction');
 });
 
 it('resolves semantic action color aliases without explicit registration', function (): void {

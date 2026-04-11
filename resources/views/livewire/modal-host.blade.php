@@ -1105,7 +1105,12 @@
                                                         $actionClass = is_string($action['class'] ?? null) ? trim((string) $action['class']) : '';
                                                         $actionStyle = is_string($action['style'] ?? null) ? trim((string) $action['style']) : '';
                                                         $actionDisabled = (bool) ($action['disabled'] ?? false);
+                                                        $actionVisible = (bool) ($action['visible'] ?? true);
                                                         $actionAttributes = new \Illuminate\View\ComponentAttributeBag(is_array($action['attributes'] ?? null) ? $action['attributes'] : []);
+
+                                                        if (! $actionVisible) {
+                                                            continue;
+                                                        }
 
                                                         if ($actionClass !== '') {
                                                             $actionAttributes = $actionAttributes->class($actionClass);
