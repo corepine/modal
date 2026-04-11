@@ -26,20 +26,14 @@ it('resolves listen events through modal service', function (): void {
     ]);
 });
 
-it('keeps internal event namespaced while adding configured listen aliases', function (): void {
-    config()->set('corepine-modal.events.listen.open_sheet', 'app-modal.open-sheet');
-    config()->set('corepine-modal.events.listen.close', 'app-modal.close');
+it('exposes only the fixed namespaced listen events', function (): void {
+    $config = app(ModalConfig::class);
 
-    expect(ModalFacade::event()->openBottomSheet())->toBe('corepine-modal.open-sheet');
-    expect(ModalFacade::event()->closeModal())->toBe('corepine-modal.close');
-    expect(app(ModalConfig::class)->listenEvents('open_sheet'))->toBe([
-        'corepine-modal.open-sheet',
-        'app-modal.open-sheet',
-    ]);
-    expect(app(ModalConfig::class)->listenEvents('close'))->toBe([
-        'corepine-modal.close',
-        'app-modal.close',
-    ]);
+    expect($config->listenEvents('open'))->toBe(['corepine-modal.open']);
+    expect($config->listenEvents('open_sheet'))->toBe(['corepine-modal.open-sheet']);
+    expect($config->listenEvents('close'))->toBe(['corepine-modal.close']);
+    expect($config->listenEvents('close_top'))->toBe(['corepine-modal.close-top']);
+    expect($config->listenEvents('close_all'))->toBe(['corepine-modal.close-all']);
 });
 
 it('defaults outgoing modal events to prefixed names and respects overrides', function (): void {

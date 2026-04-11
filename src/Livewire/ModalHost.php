@@ -33,8 +33,18 @@ class ModalHost extends Component
         ]);
     }
 
-    public function openBottomSheet(string $component, array $arguments = [], array $modalAttributes = []): void
+    public function openBottomSheet(string|array|null $component = null, array $arguments = [], array $modalAttributes = []): void
     {
+        [$component, $arguments, $modalAttributes] = $this->normalizeOpenRequest(
+            $component,
+            $arguments,
+            $modalAttributes
+        );
+
+        if ($component === null) {
+            return;
+        }
+
         $this->openModal(
             $component,
             $arguments,
@@ -42,8 +52,18 @@ class ModalHost extends Component
         );
     }
 
-    public function openModal(string $component, array $arguments = [], array $modalAttributes = []): void
+    public function openModal(string|array|null $component = null, array $arguments = [], array $modalAttributes = []): void
     {
+        [$component, $arguments, $modalAttributes] = $this->normalizeOpenRequest(
+            $component,
+            $arguments,
+            $modalAttributes
+        );
+
+        if ($component === null) {
+            return;
+        }
+
         $componentClass = $this->resolveComponentClass($component);
         $componentName = $this->resolveOpenedComponentName($component, $componentClass);
         $id = (string) Str::ulid();
@@ -205,6 +225,26 @@ class ModalHost extends Component
         return $this->getPublicPropertyTypes($component)
             ->intersectByKeys($attributes)
             ->map(fn (string $className, string $propName) => $this->resolveParameter($attributes, $propName, $className));
+    }
+
+    /**
+     * @return array{0: string|null, 1: array<string, mixed>, 2: array<string, mixed>}
+     */
+    protected function normalizeOpenRequest(string|array|null $component = null, array $arguments = [], array $modalAttributes = []): array
+    {
+        if (is_array($component)) {
+            $arguments = is_array($component['arguments'] ?? null) ? $component['arguments'] : [];
+            $modalAttributes = is_array($component['modalAttributes'] ?? null) ? $component['modalAttributes'] : [];
+            $component = is_string($component['component'] ?? null) ? trim($component['component']) : null;
+        } elseif (is_string($component)) {
+            $component = trim($component);
+        }
+
+        if (! is_string($component) || $component === '') {
+            return [null, [], []];
+        }
+
+        return [$component, $arguments, $modalAttributes];
     }
 
     public function getPublicPropertyTypes(Component $component): Collection

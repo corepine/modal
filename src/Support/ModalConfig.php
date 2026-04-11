@@ -87,27 +87,11 @@ class ModalConfig
      */
     public function listenEvents(string $key): array
     {
-        $events = [];
         $defaultEvent = self::DEFAULT_LISTEN_EVENTS[$key] ?? null;
 
-        if (is_string($defaultEvent) && $defaultEvent !== '') {
-            $events[] = $defaultEvent;
-        }
-
-        $configured = config("corepine-modal.events.listen.$key");
-
-        if (is_string($configured) && $configured !== '') {
-            $events[] = $configured;
-        }
-
-        if (is_array($configured) && $configured !== []) {
-            $events = [
-                ...$events,
-                ...array_values(array_filter($configured, static fn (mixed $value): bool => is_string($value) && $value !== '')),
-            ];
-        }
-
-        return array_values(array_unique($events));
+        return is_string($defaultEvent) && $defaultEvent !== ''
+            ? [$defaultEvent]
+            : [];
     }
 
     public function listenEvent(string $key): string

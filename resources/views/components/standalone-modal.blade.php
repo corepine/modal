@@ -164,6 +164,13 @@
             window.corepineStandaloneModal = (options = {}) => ({
             open: Boolean(options.open ?? false),
             modalId: options.id ?? null,
+            eventNames: {
+                open: 'corepine-modal.open',
+                close: 'corepine-modal.close',
+                toggle: 'corepine-modal.toggle',
+            },
+            windowListeners: [],
+            livewireListeners: [],
             type: options.type ?? 'modal',
             closeOnEscape: options.closeOnEscape !== false,
             closeAllOnEscape: options.closeAllOnEscape === true,
@@ -191,6 +198,7 @@
 
             init() {
                 this.syncBodyClass();
+                this.registerEventListeners();
 
                 if (this.open && this.isSheet()) {
                     this.ensureSheetHeight();
@@ -209,6 +217,50 @@
 
                     this.syncBodyClass();
                 });
+            },
+
+            destroy() {
+                this.windowListeners.forEach(([eventName, listener]) => {
+                    window.removeEventListener(eventName, listener);
+                });
+                this.windowListeners = [];
+
+                this.livewireListeners.forEach((listener) => {
+                    if (typeof listener === 'function') {
+                        listener();
+                    }
+                });
+                this.livewireListeners = [];
+
+                this.resetSheetCloseState();
+                this.clearSheetDrag();
+                this.clearSheetResize();
+                this.syncBodyClass();
+            },
+
+            registerEventListeners() {
+                this.registerWindowListener(this.eventNames.open, (payload = {}) => this.openFromEvent(payload));
+                this.registerWindowListener(this.eventNames.close, (payload = {}) => this.closeFromEvent(payload));
+                this.registerWindowListener(this.eventNames.toggle, (payload = {}) => this.toggleFromEvent(payload));
+
+                if (typeof Livewire?.on === 'function') {
+                    this.livewireListeners.push(
+                        Livewire.on(this.eventNames.open, (payload = {}) => this.openFromEvent(payload))
+                    );
+                    this.livewireListeners.push(
+                        Livewire.on(this.eventNames.close, (payload = {}) => this.closeFromEvent(payload))
+                    );
+                    this.livewireListeners.push(
+                        Livewire.on(this.eventNames.toggle, (payload = {}) => this.toggleFromEvent(payload))
+                    );
+                }
+            },
+
+            registerWindowListener(eventName, callback) {
+                const listener = (event) => callback(event?.detail ?? {});
+
+                window.addEventListener(eventName, listener);
+                this.windowListeners.push([eventName, listener]);
             },
 
             isSheet() {
@@ -859,9 +911,6 @@
 <div
     x-data="window.corepineStandaloneModal(@js($standaloneOptions))"
     x-init="init()"
-    x-on:corepine-modal:open.window="openFromEvent($event.detail ?? {})"
-    x-on:corepine-modal:close.window="closeFromEvent($event.detail ?? {})"
-    x-on:corepine-modal:toggle.window="toggleFromEvent($event.detail ?? {})"
     x-on:keydown.escape.window.stop="handleEscape()"
     x-on:pointermove.window="moveSheetDrag($event)"
     x-on:pointerup.window="endSheetDrag($event)"

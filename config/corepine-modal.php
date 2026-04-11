@@ -2,18 +2,6 @@
 
 return [
     'events' => [
-        'listen' => [
-            // Optional extra aliases your app can dispatch alongside the built-in
-            // namespaced corepine-modal.* events. Change these or set them to null
-            // if they clash with your own event names.
-            'open' => 'openModal',
-            'open_sheet' => 'openBottomSheet',
-            'close' => 'closeModal',
-            'close_top' => 'closeTopModal',
-            'close_all' => 'closeAllModals',
-            'destroy' => 'destroyModal',
-            'reset' => 'resetModal',
-        ],
         'dispatch' => [
             // Outgoing events emitted by the package after host state changes.
             'opened' => 'corepine-modal.opened',

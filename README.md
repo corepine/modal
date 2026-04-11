@@ -92,7 +92,7 @@ Use this when you want a modal without a Livewire modal component stack.
         <button
             type="button"
             class="rounded-md border px-3 py-2 text-sm"
-            x-on:click="$dispatch('corepine-modal:close', { id: 'user-sheet' })"
+            onclick="window.dispatchEvent(new CustomEvent('corepine-modal.close', { detail: { id: 'user-sheet' } }))"
         >
             Close
         </button>
@@ -104,7 +104,7 @@ Use this when you want a modal without a Livewire modal component stack.
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `id` | `string \| null` | `null` | Target key for `corepine-modal:*` browser events. |
+| `id` | `string \| null` | `null` | Target key for `corepine-modal.*` events. |
 | `open` | `bool` | `false` | Initial open state. |
 | `heading` | `string \| null` | `null` | Optional built-in header heading. |
 | `description` | `string \| null` | `null` | Optional built-in header description. |
@@ -138,16 +138,16 @@ Stack-only behavior is intentionally not included for standalone mode:
 Examples:
 
 ```html
-<button type="button" onclick="window.dispatchEvent(new CustomEvent('corepine-modal:open', { detail: { id: 'user-sheet' } }))">
+<button type="button" onclick="window.dispatchEvent(new CustomEvent('corepine-modal.open', { detail: { id: 'user-sheet' } }))">
     Open
 </button>
 ```
 
 ### Standalone Browser Events
 
-- `corepine-modal:open`
-- `corepine-modal:close`
-- `corepine-modal:toggle`
+- `corepine-modal.open`
+- `corepine-modal.close`
+- `corepine-modal.toggle`
 
 Each event accepts `{ id?: string }` in `detail`. If `id` is omitted, it targets standalone modals with `id=null`.
 
@@ -634,7 +634,7 @@ Attribute merge order:
 
 ## Events Reference
 
-Corepine always dispatches and listens to these internal namespaced events:
+Corepine listens to these namespaced incoming events:
 - `corepine-modal.open`
 - `corepine-modal.open-sheet`
 - `corepine-modal.close`
@@ -643,8 +643,7 @@ Corepine always dispatches and listens to these internal namespaced events:
 - `corepine-modal.destroy`
 - `corepine-modal.reset`
 
-By default, the host also listens to convenience aliases from config like `openModal` and `closeModal`.
-You can change or clear those aliases in `config/corepine-modal.php` without changing the internal `corepine-modal.*` events.
+These incoming event names are fixed. If you do not want to hardcode them in Blade or PHP, use `Modal::event()` or `app(ModalConfig::class)->listenEvent(...)`.
 
 Default dispatch events:
 - `corepine-modal.opened`
@@ -665,7 +664,6 @@ Config file:
 - `config/corepine-modal.php`
 
 Main config areas:
-- `events.listen`
 - `events.dispatch`
 - `defaults.attributes`
 - `sizes`
@@ -703,7 +701,7 @@ Set `payload.closing = false` to cancel close.
 $modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
 
 $openEvent = $modalConfig->listenEvent('open');       // corepine-modal.open
-$openListeners = $modalConfig->listenEvents('open');  // ['corepine-modal.open', 'openModal']
+$openListeners = $modalConfig->listenEvents('open');  // ['corepine-modal.open']
 $closedEvent = $modalConfig->dispatchEvent('closed'); // corepine-modal.closed
 ```
 

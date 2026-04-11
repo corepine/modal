@@ -194,19 +194,6 @@ it('opens a bottom sheet through the prefixed open-sheet event', function (): vo
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
 });
 
-it('listens to configured open event aliases', function (): void {
-    $test = Livewire::test(ModalHost::class)
-        ->dispatch('openModal', component: 'test.example-modal')
-        ->dispatch('openBottomSheet', component: 'test.example-modal');
-
-    $stack = $test->get('stack');
-    $modals = $test->get('modals');
-
-    expect($stack)->toHaveCount(2);
-    expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('modal');
-    expect($modals[$stack[1]]['modalAttributes']['type'])->toBe('sheet');
-});
-
 it('normalizes invalid drawer position to right', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('corepine-modal.open', component: 'test.example-modal', modalAttributes: [
