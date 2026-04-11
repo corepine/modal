@@ -222,6 +222,21 @@ it('supports fluent action helpers for colors, outlines, disabled state, and att
     ]);
 });
 
+it('supports accent action colors as softer defaults', function (): void {
+    $payload = Action::make('saveUsers')
+        ->label('Save')
+        ->danger()
+        ->accent()
+        ->action('saveUsers')
+        ->toArray();
+
+    expect($payload['accent'])->toBeTrue();
+    expect($payload['class'])->toContain('bg-red-100');
+    expect($payload['class'])->toContain('hover:bg-red-200');
+    expect($payload['class'])->toContain('text-red-700');
+    expect($payload['style'])->toBe('');
+});
+
 it('resolves semantic action color aliases without explicit registration', function (): void {
     $config = app(ModalConfig::class);
 
