@@ -1,6 +1,9 @@
 # Corepine Modal
 
-Corepine Modal is a stack-based modal system for Livewire with three presentation modes:
+Corepine Modal is a stack-based modal system for Laravel with two runtime modes:
+
+- standalone Alpine + Blade modals
+- Livewire stack-based modals
 
 - `modal` (dialog)
 - `drawer` (left or right panel)
@@ -20,6 +23,9 @@ It supports:
 - Laravel `^11.0|^12.0|^13.0`
 - Livewire `^3.7|^4.0`
 
+Livewire is required by the package because stack mode uses a Livewire host.
+Standalone Alpine + Blade usage is still fully supported.
+
 ## Installation
 
 ```bash
@@ -34,7 +40,9 @@ php artisan vendor:publish --tag=corepine-modal-config
 
 ## Setup
 
-Render the global host once in your layout:
+### Livewire Stack Mode
+
+Render the host once in your layout:
 
 ```blade
 <x-corepine.modal.assets />
@@ -46,6 +54,11 @@ Optional: include package CSS directly from the host:
 <x-corepine.modal.assets include-styles />
 ```
 
+### Standalone Alpine + Blade Mode
+
+You can use `<x-corepine.modal />` directly with browser events and no Livewire modal class.
+The host is not required for standalone-only usage.
+
 ## Tailwind Setup
 
 Add the package stylesheet to your main CSS entry:
@@ -56,7 +69,7 @@ Add the package stylesheet to your main CSS entry:
 
 The package CSS already includes Tailwind `@source` paths for its own views and PHP classes.
 
-## Quick Start (Livewire Modal Class)
+## Quick Start (Livewire Stack Mode)
 
 ```php
 <?php
@@ -130,7 +143,7 @@ From Blade helpers:
 </x-corepine.modal.actions.close>
 ```
 
-## Standalone Blade Modal
+## Quick Start (Standalone Alpine + Blade Mode)
 
 Use this when you do not need a Livewire modal class:
 
@@ -302,4 +315,3 @@ Main sections in `config/corepine-modal.php`:
 - `<x-corepine.modal.footer />`
 - `<x-corepine.modal.actions.open />`
 - `<x-corepine.modal.actions.close />`
-
