@@ -27,9 +27,9 @@ BLADE);
     expect($html)->toContain('data-corepine-modal-id="standalone-user-modal"');
     expect($html)->toContain('x-teleport="body"');
     expect($html)->toContain('x-on:resize.window.debounce.120ms="handleViewportResize()"');
-    expect($html)->toContain("open: 'corepine-modal.open'");
-    expect($html)->toContain("close: 'corepine-modal.close'");
-    expect($html)->toContain("toggle: 'corepine-modal.toggle'");
+    expect($html)->toContain("open: 'modal.open'");
+    expect($html)->toContain("close: 'modal.close'");
+    expect($html)->toContain("toggle: 'modal.toggle'");
     expect($html)->toContain('registerWindowListener(this.eventNames.open');
     expect($html)->toContain('Livewire.on(this.eventNames.open');
     expect($html)->toContain('cp-modal-panel-default-height');
@@ -208,7 +208,7 @@ BLADE);
 
     expect($flat)->toContain('data-testid="open-trigger"');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('corepine-modal.open');
+    expect($flat)->toContain('modal.open');
     expect($flat)->toContain('modals.edit-user');
     expect($flat)->toContain('arguments: JSON.parse');
     expect($flat)->toContain('\u0022user\u0022:5');
@@ -302,7 +302,7 @@ BLADE);
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($flat)->toContain('ExampleModal');
-    expect($flat)->toContain('corepine-modal.open');
+    expect($flat)->toContain('modal.open');
 });
 
 it('merges modalAttributes class with incoming class on open helper', function (): void {
@@ -332,7 +332,7 @@ BLADE);
 
     expect($flat)->toContain('data-testid="close-trigger"');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('corepine-modal.close');
+    expect($flat)->toContain('modal.close');
     expect($flat)->toMatch('/count:\s*1/');
     expect($flat)->toMatch('/destroy:\s*true/');
 });
@@ -348,7 +348,7 @@ BLADE);
 
     expect($flat)->toMatch('/if\s*\(\s*true\s*\)/');
     expect($flat)->toContain('Livewire.dispatch');
-    expect($flat)->toContain('corepine-modal.close-all');
+    expect($flat)->toContain('modal.close-all');
     expect($flat)->toMatch('/destroy:\s*false/');
 });
 
@@ -368,9 +368,9 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('corepine-modal.open');
+    expect($openDecoded)->toContain('modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('corepine-modal.close');
+    expect($closeDecoded)->toContain('modal.close');
 });
 
 it('supports dotted actions open and close helper aliases', function (): void {
@@ -389,9 +389,9 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('corepine-modal.open');
+    expect($openDecoded)->toContain('modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('corepine-modal.close');
+    expect($closeDecoded)->toContain('modal.close');
 });
 
 it('supports dashed actions open and close aliases', function (): void {
@@ -410,7 +410,7 @@ BLADE);
     $closeDecoded = preg_replace('/\s+/', ' ', html_entity_decode($close, ENT_QUOTES));
 
     expect($openDecoded)->toContain('Livewire.dispatch');
-    expect($openDecoded)->toContain('corepine-modal.open');
+    expect($openDecoded)->toContain('modal.open');
     expect($closeDecoded)->toContain('Livewire.dispatch');
-    expect($closeDecoded)->toContain('corepine-modal.close');
+    expect($closeDecoded)->toContain('modal.close');
 });

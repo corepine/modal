@@ -12,29 +12,30 @@ use Corepine\Support\Enums\Placement;
 class ModalConfig
 {
     /**
-     * Built-in internal event names. Corepine always dispatches these.
+     * Built-in incoming event names.
      *
      * @var array<string, string>
      */
     private const DEFAULT_LISTEN_EVENTS = [
-        'open' => 'corepine-modal.open',
-        'open_sheet' => 'corepine-modal.open-sheet',
-        'close' => 'corepine-modal.close',
-        'close_top' => 'corepine-modal.close-top',
-        'close_all' => 'corepine-modal.close-all',
-        'destroy' => 'corepine-modal.destroy',
-        'reset' => 'corepine-modal.reset',
+        'open' => 'modal.open',
+        'open_sheet' => 'modal.open-sheet',
+        'close' => 'modal.close',
+        'close_top' => 'modal.close-top',
+        'close_all' => 'modal.close-all',
+        'destroy' => 'modal.destroy',
+        'reset' => 'modal.reset',
+        'toggle' => 'modal.toggle',
     ];
 
     /**
      * @var array<string, string>
      */
     private const DEFAULT_DISPATCH_EVENTS = [
-        'opened' => 'corepine-modal.opened',
-        'closed' => 'corepine-modal.closed',
-        'changed' => 'corepine-modal.changed',
-        'all_closed' => 'corepine-modal.all-closed',
-        'component_closed' => 'corepine-modal.component-closed',
+        'opened' => 'modal.opened',
+        'closed' => 'modal.closed',
+        'changed' => 'modal.changed',
+        'all_closed' => 'modal.all-closed',
+        'component_closed' => 'modal.component-closed',
     ];
 
     /**
@@ -90,15 +91,19 @@ class ModalConfig
      */
     public function listenEvents(string $key): array
     {
-        $defaultEvent = self::DEFAULT_LISTEN_EVENTS[$key] ?? null;
+        $eventName = $this->listenEvent($key);
 
-        return is_string($defaultEvent) && $defaultEvent !== ''
-            ? [$defaultEvent]
-            : [];
+        return $eventName !== '' ? [$eventName] : [];
     }
 
     public function listenEvent(string $key): string
     {
+        $configured = config("corepine-modal.events.listen.$key");
+
+        if (is_string($configured) && trim($configured) !== '') {
+            return trim($configured);
+        }
+
         return self::DEFAULT_LISTEN_EVENTS[$key] ?? '';
     }
 

@@ -170,9 +170,9 @@
             open: Boolean(options.open ?? false),
             modalId: options.id ?? null,
             eventNames: {
-                open: 'corepine-modal.open',
-                close: 'corepine-modal.close',
-                toggle: 'corepine-modal.toggle',
+                open: @js($modalConfig->listenEvent('open')),
+                close: @js($modalConfig->listenEvent('close')),
+                toggle: @js($modalConfig->listenEvent('toggle')),
             },
             windowListeners: [],
             livewireListeners: [],

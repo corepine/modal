@@ -2,13 +2,25 @@
 
 return [
     'events' => [
+        'listen' => [
+            // Incoming events consumed by the modal host and helpers.
+            // Rename these if your application needs a different namespace.
+            'open' => 'modal.open',
+            'open_sheet' => 'modal.open-sheet',
+            'close' => 'modal.close',
+            'close_top' => 'modal.close-top',
+            'close_all' => 'modal.close-all',
+            'destroy' => 'modal.destroy',
+            'reset' => 'modal.reset',
+            'toggle' => 'modal.toggle',
+        ],
         'dispatch' => [
             // Outgoing events emitted by the package after host state changes.
-            'opened' => 'corepine-modal.opened',
-            'closed' => 'corepine-modal.closed',
-            'changed' => 'corepine-modal.changed',
-            'all_closed' => 'corepine-modal.all-closed',
-            'component_closed' => 'corepine-modal.component-closed',
+            'opened' => 'modal.opened',
+            'closed' => 'modal.closed',
+            'changed' => 'modal.changed',
+            'all_closed' => 'modal.all-closed',
+            'component_closed' => 'modal.component-closed',
         ],
     ],
 

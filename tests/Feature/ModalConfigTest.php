@@ -302,4 +302,3 @@ it('resolves semantic action color aliases without explicit registration', funct
     expect($actions[2]['class'])->toContain('hover:bg-yellow-50');
     expect($actions[2]['style'])->toBe('');
 });
-
