@@ -170,6 +170,24 @@ Use this when you do not need a Livewire modal class:
 </x-corepine.modal>
 ```
 
+Standalone named slots:
+
+- `header`: custom header content. Slot attributes are merged onto the header wrapper classes.
+- When `header` slot is provided (even empty), it overrides built-in heading/description/close rendering.
+- `footer`: custom footer content.
+
+Example:
+
+```blade
+<x-corepine.modal id="custom-header-modal" show-close="false">
+    <x-slot:header class="font-bold text-lg" data-testid="custom-header">
+        Custom Header
+    </x-slot:header>
+
+    <p>Body</p>
+</x-corepine.modal>
+```
+
 Standalone browser events:
 
 - `modal.open`

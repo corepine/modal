@@ -27,6 +27,8 @@
 @php($resolvedId = is_string($id) && trim($id) !== '' ? trim($id) : null)
 @php($resolvedHeading = is_string($heading) && trim($heading) !== '' ? $heading : null)
 @php($resolvedDescription = is_string($description) && trim($description) !== '' ? $description : null)
+@php($hasHeaderSlot = isset($header))
+@php($namedHeader = $hasHeaderSlot ? $header : null)
 @php($hasFooter = isset($footer) && $footer->isNotEmpty())
 @php($panelAttributes = $attributes->except('class'))
 @php($normalizeBoolean = static function (mixed $value, ?bool $fallback = null): ?bool {
@@ -998,23 +1000,35 @@
                                 </div>
                             @endif
 
-                            @if ($resolvedHeading !== null || $resolvedDescription !== null || $showClose)
-                                <header class="cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70">
-                                    <div class="min-w-0">
-                                        @if ($resolvedHeading !== null)
-                                            <h2 class="cp-modal-heading text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
-                                                {{ $resolvedHeading }}
-                                            </h2>
-                                        @endif
+                            @if ($namedHeader !== null || $resolvedHeading !== null || $resolvedDescription !== null || $showClose)
+                                <header
+                                    @if ($namedHeader !== null)
+                                        {{ $namedHeader->attributes->class('cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70') }}
+                                    @else
+                                        class="cp-modal-header flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70"
+                                    @endif
+                                >
+                                    @if ($namedHeader !== null)
+                                        <div class="min-w-0 flex-1">
+                                            {{ $namedHeader }}
+                                        </div>
+                                    @else
+                                        <div class="min-w-0">
+                                            @if ($resolvedHeading !== null)
+                                                <h2 class="cp-modal-heading text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                                                    {{ $resolvedHeading }}
+                                                </h2>
+                                            @endif
 
-                                        @if ($resolvedDescription !== null)
-                                            <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                                                {{ $resolvedDescription }}
-                                            </p>
-                                        @endif
-                                    </div>
+                                            @if ($resolvedDescription !== null)
+                                                <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                                                    {{ $resolvedDescription }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
 
-                                    @if ($showClose)
+                                    @if ($showClose && $namedHeader === null)
                                         <button
                                             type="button"
                                             class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"

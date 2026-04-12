@@ -39,6 +39,53 @@ BLADE);
     expect($html)->toContain('Done');
 });
 
+it('supports standalone custom header slot with merged header attributes', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal
+    id="standalone-header-slot"
+    heading="Default Heading"
+    description="Default Description"
+    show-close="false"
+>
+    <x-slot:header class="font-bold text-lg" data-testid="standalone-custom-header">
+        <div>Custom Header Content</div>
+    </x-slot:header>
+
+    <div>Standalone body</div>
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('cp-modal-header');
+    expect($html)->toContain('font-bold');
+    expect($html)->toContain('data-testid="standalone-custom-header"');
+    expect($html)->toContain('Custom Header Content');
+    expect($html)->toContain('Standalone body');
+    expect($html)->not->toContain('Default Heading');
+    expect($html)->not->toContain('Default Description');
+});
+
+it('treats standalone empty header slot as explicit and hides built-in close action', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal
+    id="standalone-empty-header-slot"
+    heading="Default Heading"
+    description="Default Description"
+    show-close="true"
+>
+    <x-slot:header class="min-h-8"></x-slot:header>
+
+    <div>Standalone body</div>
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('cp-modal-header');
+    expect($html)->toContain('min-h-8');
+    expect($html)->toContain('Standalone body');
+    expect($html)->not->toContain('Default Heading');
+    expect($html)->not->toContain('Default Description');
+    expect($html)->not->toContain('x-on:click="close()"');
+});
+
 it('supports standalone modal presentation and sheet options', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine.modal
