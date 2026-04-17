@@ -3,16 +3,12 @@
 namespace Corepine\Modal\Actions;
 
 use Closure;
-use Corepine\Support\Colors\Color as SupportColor;
-use Corepine\Support\Facades\CorepineColor;
+use Corepine\Modal\Support\ModalActionClasses;
+use Corepine\Support\Actions\Action as SupportAction;
 
-class Action
+class Action extends SupportAction
 {
-    private string $name;
-
     private string $type = 'method';
-
-    private ?string $label = null;
 
     private ?string $method = null;
 
@@ -27,18 +23,9 @@ class Action
 
     private bool | Closure $disabled = false;
 
-    private bool | Closure $visible = true;
-
-    private array | string | Closure | null $color = null;
-
     private bool | Closure | null $accent = null;
 
     private bool | Closure | null $outline = null;
-
-    /**
-     * @var array<string, mixed>|Closure
-     */
-    private array | Closure $attributes = [];
 
     private int $count = 1;
 
@@ -48,19 +35,22 @@ class Action
 
     private function __construct(string $name)
     {
-        $name = trim($name);
-        $this->name = $name === '' ? 'action' : $name;
+        parent::__construct($name);
     }
 
-    public static function make(string $name): self
+    public static function make(string $name): static
     {
-        return new self($name);
+        return new static($name);
     }
 
-    public function label(string $label): self
+    public function label(string | Closure | null $label): static
     {
-        $label = trim($label);
-        $this->label = $label === '' ? null : $label;
+        if (is_string($label)) {
+            $label = trim($label);
+            $label = $label === '' ? null : $label;
+        }
+
+        $this->label = $label;
 
         return $this;
     }
@@ -122,53 +112,11 @@ class Action
         return $this;
     }
 
-    public function visible(bool | Closure $condition = true): self
+    public function visible(bool | Closure $condition = true): static
     {
         $this->visible = $condition;
 
         return $this;
-    }
-
-    public function color(array | string | Closure | null $color): self
-    {
-        $this->color = $color;
-
-        return $this;
-    }
-
-    public function primary(): self
-    {
-        return $this->color('primary');
-    }
-
-    public function danger(): self
-    {
-        return $this->color('danger');
-    }
-
-    public function success(): self
-    {
-        return $this->color('success');
-    }
-
-    public function warning(): self
-    {
-        return $this->color('warning');
-    }
-
-    public function info(): self
-    {
-        return $this->color('info');
-    }
-
-    public function gray(): self
-    {
-        return $this->color('gray');
-    }
-
-    public function dark(): self
-    {
-        return $this->color('dark');
     }
 
     public function accent(bool | Closure $condition = true): self
@@ -195,44 +143,6 @@ class Action
         return $this->outline($condition);
     }
 
-    /**
-     * @param  array<string, mixed>|Closure  $attributes
-     */
-    public function attributes(array | Closure $attributes): self
-    {
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
-    /**
-     * @param  array<string, mixed>|Closure  $attributes
-     */
-    public function extraAttributes(array | Closure $attributes): self
-    {
-        return $this->attributes($attributes);
-    }
-
-    public function attribute(string $name, mixed $value = true): self
-    {
-        $name = trim($name);
-
-        if ($name === '') {
-            return $this;
-        }
-
-        $attributes = $this->evaluate($this->attributes);
-
-        if (! is_array($attributes)) {
-            $attributes = [];
-        }
-
-        $attributes[$name] = $value;
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
     public function close(int $count = 1, bool $destroy = true, bool $closeAll = false): self
     {
         $this->type = 'close';
@@ -249,7 +159,7 @@ class Action
     public function toArray(): array
     {
         $disabled = (bool) $this->evaluate($this->disabled);
-        $visible = (bool) $this->evaluate($this->visible);
+        $visible = $this->resolveVisible();
         $rawColor = $this->evaluate($this->color);
         $color = $this->resolveColor($rawColor);
         $paletteName = $this->resolveColorName($rawColor, $color);
@@ -260,18 +170,16 @@ class Action
         $outline = $this->outline instanceof Closure || is_bool($this->outline)
             ? (bool) $this->evaluate($this->outline)
             : $outlineDefault;
-        $attributes = $this->evaluate($this->attributes);
-
-        if (! is_array($attributes)) {
-            $attributes = [];
-        }
+        $attributes = $this->resolveAttributes();
+        $style = $this->resolveStyle($color, $paletteName, $outline);
+        $usesVariableStyling = $style !== '';
 
         if ($this->type === 'close') {
             return [
                 'type' => 'close',
-                'label' => $this->label ?? 'Close',
-                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
-                'style' => $this->resolveStyle($color, $paletteName, $outline),
+                'label' => $this->resolveLabel('Close'),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'style' => $style,
                 'disabled' => $disabled,
                 'visible' => $visible,
                 'color' => $color,
@@ -293,13 +201,13 @@ class Action
 
         return [
             'type' => 'method',
-            'label' => $this->label ?? ucwords(str_replace(['-', '_'], ' ', $this->name)),
+            'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
             'method' => $method,
             'params' => $this->params,
-            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
+            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
             'disabled' => $disabled,
             'visible' => $visible,
-            'style' => $this->resolveStyle($color, $paletteName, $outline),
+            'style' => $style,
             'color' => $color,
             'outline' => $outline,
             'accent' => $accent,
@@ -309,166 +217,15 @@ class Action
         ];
     }
 
-    private function resolveColor(mixed $color): array | null
-    {
-        if (is_array($color)) {
-            $normalized = [];
-
-            foreach ($color as $shade => $value) {
-                if (! is_string($value)) {
-                    continue;
-                }
-
-                $value = trim($value);
-
-                if ($value === '') {
-                    continue;
-                }
-
-                $normalized[is_int($shade) || ! ctype_digit((string) $shade) ? $shade : (int) $shade] = $value;
-            }
-
-            if ($normalized === []) {
-                return null;
-            }
-
-            ksort($normalized);
-
-            return $normalized;
-        }
-
-        if (! is_string($color)) {
-            return null;
-        }
-
-        $color = trim($color);
-
-        if ($color === '') {
-            return null;
-        }
-
-        $primaryPalette = CorepineColor::palette($color);
-
-        if (is_array($primaryPalette)) {
-            return $primaryPalette;
-        }
-
-        return match (strtolower($color)) {
-            'primary' => CorepineColor::palette('primary') ?? SupportColor::Blue,
-            'danger' => SupportColor::Red,
-            'success' => SupportColor::Green,
-            'warning' => SupportColor::Yellow,
-            'info' => SupportColor::Sky,
-            'gray' => SupportColor::Gray,
-            'dark' => SupportColor::Zinc,
-            default => null,
-        };
-    }
-
-    /**
-     * @param  array<int|string, string>  $palette
-     */
-    private function footerActionSolidTextColor(array $palette): string
-    {
-        $baseColor = $this->paletteShade($palette, 500) ?? '';
-
-        return $this->isLightFooterActionColor($baseColor) ? '#18181b' : '#ffffff';
-    }
-
-    /**
-     * @param  array<int|string, string>  $palette
-     */
-    private function paletteShade(array $palette, int $shade): ?string
-    {
-        return $palette[$shade] ?? $palette[500] ?? null;
-    }
-
-    private function isLightFooterActionColor(string $color): bool
-    {
-        if (preg_match('/^oklch\(\s*([0-9.]+)/i', $color, $matches) === 1) {
-            return (float) ($matches[1] ?? 0) >= 0.72;
-        }
-
-        if (preg_match('/^#([0-9a-f]{6})$/i', $color, $matches) === 1) {
-            $hex = $matches[1];
-            $red = hexdec(substr($hex, 0, 2));
-            $green = hexdec(substr($hex, 2, 2));
-            $blue = hexdec(substr($hex, 4, 2));
-
-            return ((0.299 * $red) + (0.587 * $green) + (0.114 * $blue)) / 255 >= 0.65;
-        }
-
-        return false;
-    }
-
-    private function resolveColorName(mixed $rawColor, ?array $palette): ?string
-    {
-        $catalog = SupportColor::catalog();
-
-        if (is_array($palette)) {
-            foreach ($catalog as $name => $builtInPalette) {
-                if ($builtInPalette === $palette) {
-                    return $name;
-                }
-            }
-        }
-
-        if (! is_string($rawColor)) {
-            return null;
-        }
-
-        $name = strtolower(trim($rawColor));
-
-        if ($name === '') {
-            return null;
-        }
-
-        return match ($name) {
-            'primary' => $this->matchPrimaryPalette(),
-            'danger' => 'red',
-            'success' => 'green',
-            'warning' => 'yellow',
-            'info' => 'sky',
-            'gray' => 'gray',
-            'dark' => 'zinc',
-            default => $palette !== null ? $this->matchPaletteName($palette) : null,
-        };
-    }
-
-    private function matchPrimaryPalette(): ?string
-    {
-        $palette = CorepineColor::palette('primary');
-
-        if (! is_array($palette)) {
-            return null;
-        }
-
-        return $this->matchPaletteName($palette);
-    }
-
-    /**
-     * @param  array<int|string, string>  $palette
-     */
-    private function matchPaletteName(array $palette): ?string
-    {
-        foreach (SupportColor::catalog() as $name => $builtInPalette) {
-            if ($builtInPalette === $palette) {
-                return $name;
-            }
-        }
-
-        return null;
-    }
-
-    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled): string
+    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled, bool $usesVariableStyling): string
     {
         $paletteClass = $this->resolvePaletteClasses($paletteName, $outline, $accent, $disabled);
 
         return trim(implode(' ', array_filter([
-            'cp-modal-action',
+            ModalActionClasses::BASE,
             $paletteClass,
-            $disabled ? 'cp-modal-action-disabled' : '',
-            $disabled ? 'cursor-not-allowed' : '',
+            $usesVariableStyling ? ModalActionClasses::VARIABLE : '',
+            $disabled ? ModalActionClasses::DISABLED : '',
             trim($class),
         ])));
     }
@@ -552,27 +309,17 @@ class Action
                 '--cp-action-bg-hover: ' . ($this->paletteShade($color, 600) ?? '#27272a'),
                 '--cp-action-border: ' . ($this->paletteShade($color, 500) ?? '#18181b'),
                 '--cp-action-border-hover: ' . ($this->paletteShade($color, 600) ?? '#27272a'),
-                '--cp-action-text: ' . $this->footerActionSolidTextColor($color),
-                '--cp-action-text-hover: ' . $this->footerActionSolidTextColor($color),
+                '--cp-action-text: ' . $this->actionSolidTextColor($color),
+                '--cp-action-text-hover: ' . $this->actionSolidTextColor($color),
                 '--cp-action-dark-bg: ' . ($this->paletteShade($color, 600) ?? '#52525b'),
                 '--cp-action-dark-bg-hover: ' . ($this->paletteShade($color, 700) ?? '#3f3f46'),
                 '--cp-action-dark-border: ' . ($this->paletteShade($color, 600) ?? '#52525b'),
                 '--cp-action-dark-border-hover: ' . ($this->paletteShade($color, 700) ?? '#3f3f46'),
-                '--cp-action-dark-text: ' . $this->footerActionSolidTextColor($color),
-                '--cp-action-dark-text-hover: ' . $this->footerActionSolidTextColor($color),
+                '--cp-action-dark-text: ' . $this->actionSolidTextColor($color),
+                '--cp-action-dark-text-hover: ' . $this->actionSolidTextColor($color),
             ];
 
         return implode('; ', array_filter($variables));
     }
 
-    private function evaluate(mixed $value): mixed
-    {
-        if (! $value instanceof Closure) {
-            return $value;
-        }
-
-        return app()->call($value, [
-            'action' => $this,
-        ]);
-    }
 }

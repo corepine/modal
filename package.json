@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "@tailwindcss/cli -i ./resources/css/app.css -o ./dist/corepine-modal.css --watch",
-    "build": "@tailwindcss/cli -i ./resources/css/app.css -o ./dist/corepine-modal.css --minify"
+    "dev": "tailwindcss -i ./resources/css/app.css -o ./dist/corepine-modal.css --watch",
+    "build": "tailwindcss -i ./resources/css/app.css -o ./dist/corepine-modal.css --minify"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.0",

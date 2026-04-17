@@ -115,7 +115,7 @@ it('stores drawer and position attributes', function (): void {
 
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeTrue();
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('left');
-    $test->assertSee('cp-modal-panel-drawer-height');
+    $test->assertSee('h-[100dvh] max-h-[100dvh]');
 });
 
 it('stores explicit sheet type and renders sheet classes', function (): void {
@@ -135,9 +135,9 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['dismissible'])->toBeFalse();
     expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('bottom');
 
-    $test->assertSee('cp-modal-shape-sheet')
+    $test->assertSee('rounded-t-2xl rounded-b-none')
         ->assertSee('rounded-b-none')
-        ->assertSee('cp-modal-sheet-handle');
+        ->assertSee('cursor-row-resize select-none');
 });
 
 it('renders sheet drag handlers and panel style binding', function (): void {
@@ -272,8 +272,8 @@ it('keeps modalAttributes size when defined explicitly', function (): void {
 it('handles click-away from overlay layer while preventing panel clicks from bubbling', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal')
-        ->assertSee('cp-modal-livewire', false)
-        ->assertSee('cp-modal-layer-backdrop', false)
+        ->assertSee('data-corepine-modal-livewire', false)
+        ->assertSee('absolute inset-0 bg-zinc-950/50', false)
         ->assertSee('x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"', false)
         ->assertSee('x-on:click.stop', false);
 });
@@ -292,7 +292,7 @@ it('stores isolate modal attribute and renders isolate visibility hooks', functi
     expect($modals[$stack[1]]['modalAttributes']['isolate'])->toBeTrue();
 
     $test->assertSee('x-show="shouldShowModal(', false)
-        ->assertSee('cp-modal-layer-backdrop', false)
+        ->assertSee('absolute inset-0 bg-zinc-950/50', false)
         ->assertSee('pointer-events-none', false);
 });
 
@@ -307,7 +307,7 @@ it('renders automatic layout chrome and declarative footer actions', function ()
                 ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save', 'class' => 'rounded-md bg-zinc-900 px-3 py-2 text-sm text-white'],
             ],
         ])
-        ->assertSee('cp-modal-layout')
+        ->assertSee('overflow-hidden overscroll-contain')
         ->assertSee('Manage Users')
         ->assertSee('Search and view users in your system.')
         ->assertSee('Cancel')
@@ -377,14 +377,14 @@ it('resolves support colors and richer action options inside footerActions', fun
     $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
 
     expect($actions)->toHaveCount(2);
-    expect($actions[0]['class'])->toContain('cp-modal-action');
+    expect($actions[0]['class'])->toContain('inline-flex min-h-10');
     expect($actions[0]['class'])->toContain('border-purple-200');
     expect($actions[0]['class'])->toContain('hover:bg-purple-50');
     expect($actions[0]['style'])->toBe('');
     expect($actions[0]['attributes'])->toMatchArray(['data-testid' => 'cancel-action']);
     expect($actions[1]['disabled'])->toBeTrue();
     expect($actions[1]['class'])->toContain('bg-fuchsia-600');
-    expect($actions[1]['class'])->toContain('cp-modal-action-disabled');
+    expect($actions[1]['class'])->toContain('pointer-events-none');
     expect($actions[1]['class'])->toContain('cursor-not-allowed');
     expect($actions[1]['style'])->toBe('');
     expect($actions[1]['attributes'])->toMatchArray(['data-testid' => 'save-action']);
@@ -413,7 +413,7 @@ it('supports raw footer action arrays with color and outline options', function 
     $modals = $test->get('modals');
     $action = $modals[$stack[0]]['modalAttributes']['actions'][0] ?? [];
 
-    expect($action['class'])->toContain('cp-modal-action-outline');
+    expect($action['class'])->toContain('bg-[var(--cp-action-bg)]');
     expect($action['style'])->toContain(SupportColor::Rose[700]);
     expect($action['attributes'])->toMatchArray(['data-testid' => 'review-action']);
 });
@@ -424,7 +424,7 @@ it('supports disabling automatic shell with shell attribute', function (): void 
             'shell' => false,
             'heading' => 'Should not render chrome',
         ])
-        ->assertDontSee('cp-modal-layout');
+        ->assertDontSee('overflow-hidden overscroll-contain');
 });
 
 it('can keep manual layout footer visible while stacking when shell mode is disabled', function (): void {

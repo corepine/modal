@@ -158,7 +158,8 @@ it('normalizes declarative footer actions for auto layout', function (): void {
     expect($actions[1]['type'])->toBe('method');
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([5]);
-    expect($actions[1]['class'])->toContain('cp-modal-action-outline');
+    expect($actions[1]['class'])->toContain('inline-flex min-h-10');
+    expect($actions[1]['class'])->toContain('bg-[var(--cp-action-bg)]');
     expect($actions[1]['style'])->toContain(SupportColor::Gray[700]);
 
     expect($actions[2]['type'])->toBe('method');
@@ -185,12 +186,12 @@ it('normalizes fluent Action objects for auto layout footer actions', function (
     expect($actions[0]['type'])->toBe('close');
     expect($actions[0]['label'])->toBe('Cancel');
     expect($actions[0]['destroy'])->toBeTrue();
-    expect($actions[0]['class'])->toContain('cp-modal-action');
+    expect($actions[0]['class'])->toContain('inline-flex min-h-10');
 
     expect($actions[1]['type'])->toBe('method');
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([42]);
-    expect($actions[1]['class'])->toContain('cp-modal-action');
+    expect($actions[1]['class'])->toContain('inline-flex min-h-10');
 });
 
 it('supports fluent action helpers for colors, outlines, disabled state, and attributes', function (): void {
@@ -213,7 +214,7 @@ it('supports fluent action helpers for colors, outlines, disabled state, and att
     expect($payload['color'])->toMatchArray(SupportColor::Amber);
     expect($payload['class'])->toContain('bg-transparent');
     expect($payload['class'])->toContain('border-amber-200');
-    expect($payload['class'])->toContain('cp-modal-action-disabled');
+    expect($payload['class'])->toContain('pointer-events-none');
     expect($payload['class'])->toContain('cursor-not-allowed');
     expect($payload['style'])->toBe('');
     expect($payload['outline'])->toBeTrue();
@@ -248,7 +249,7 @@ it('marks disabled fluent actions as non-interactive', function (): void {
         ->toArray();
 
     expect($payload['disabled'])->toBeTrue();
-    expect($payload['class'])->toContain('cp-modal-action-disabled');
+    expect($payload['class'])->toContain('pointer-events-none');
     expect($payload['class'])->toContain('cursor-not-allowed');
 });
 

@@ -79,7 +79,7 @@
 
                 setShow(value) {
                     this.show = value;
-                    document.body.classList.toggle('cp-modal-open', value);
+                    document.body.classList.toggle('overflow-hidden', value);
                 },
 
                 stack() {
@@ -941,7 +941,7 @@
                     }
 
                     const panel = this.$refs[`panel-${id}`];
-                    const livewireRoot = panel?.querySelector('.cp-modal-livewire [wire\\:id]');
+                    const livewireRoot = panel?.querySelector('[data-corepine-modal-livewire] [wire\\:id]');
                     const componentId = livewireRoot?.getAttribute('wire:id');
 
                     if (!componentId || typeof Livewire?.find !== 'function') {
@@ -1001,12 +1001,12 @@
         x-on:mouseup.window="endSheetDrag($event)"
         x-on:resize.window.debounce.120ms="handleViewportResize()"
         x-show="show"
-        class="cp-modal fixed inset-0 z-[999] overflow-y-auto"
+        class="fixed inset-0 z-[999] overflow-y-auto"
         style="display: none;"
         role="dialog"
         aria-modal="true"
     >
-        <div class="cp-modal-viewport relative min-h-full">
+        <div class="relative min-h-full">
             @foreach ($stack as $id)
                 @php
                     $modal = $modals[$id] ?? null;
@@ -1035,7 +1035,7 @@
                     x-on:click="if (isTopModal(@js($id))) handleClickAway()"
                     x-bind:class="{ 'pointer-events-none': !isTopModal(@js($id)) }"
                     @class([
-                        'cp-modal-layer-backdrop absolute inset-0 bg-zinc-950/50',
+                        'absolute inset-0 bg-zinc-950/50',
                         'backdrop-blur-sm' => $hasBlur,
                     ])
                     style="z-index: {{ 20 + ($loop->index * 2) }};"
@@ -1058,16 +1058,14 @@
                     wire:key="corepine-modal-{{ $id }}"
                 >
                     <div @class([
-                        'cp-modal-component',
-                        'w-full overflow-hidden bg-white dark:bg-zinc-800',
-                        'flex min-h-0 flex-col',
-                        'cp-modal-panel-default-height' => ! $isDrawer && ! $isSheet,
-                        'cp-modal-panel-drawer-height' => $isDrawer,
+                        'flex min-h-0 w-full flex-col overflow-hidden bg-white dark:bg-zinc-800',
+                        'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
+                        'h-[100dvh] max-h-[100dvh]' => $isDrawer,
                         'mx-auto' => ! $isDrawer && ! in_array($position, ['left', 'right'], true),
-                        'cp-modal-shape-default' => ! $isDrawer && ! $isSheet,
-                        'cp-modal-shape-drawer-left' => $isDrawer && $position === 'left',
-                        'cp-modal-shape-drawer-right' => $isDrawer && $position === 'right',
-                        'cp-modal-shape-sheet' => $isSheet,
+                        'rounded-lg' => ! $isDrawer && ! $isSheet,
+                        'rounded-r-lg rounded-l-none' => $isDrawer && $position === 'left',
+                        'rounded-l-lg rounded-r-none' => $isDrawer && $position === 'right',
+                        'rounded-t-2xl rounded-b-none' => $isSheet,
                         $modalClasses,
                         'rounded-l-none' => $isDrawer && $position === 'left',
                         'rounded-r-none' => $isDrawer && $position === 'right',
@@ -1083,7 +1081,7 @@
                         @if ($isSheet)
                             <div
                                 x-show="shouldShowSheetDragHandle(@js($id))"
-                                class="cp-modal-sheet-handle cursor-row-resize select-none px-4 pt-3 sm:pt-4"
+                                class="cursor-row-resize select-none px-4 pt-3 sm:pt-4"
                                 x-on:pointerdown.stop.prevent="startSheetResize(@js($id), $event)"
                                 x-on:touchstart.stop.prevent="startSheetResize(@js($id), $event)"
                                 x-on:mousedown.stop.prevent="startSheetResize(@js($id), $event)"
@@ -1092,7 +1090,7 @@
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif
-                        <div class="cp-modal-livewire dark:text-white min-h-0 flex-1">
+                        <div class="min-h-0 flex flex-1 dark:text-white [&>*]:min-h-0 [&>*]:flex-1" data-corepine-modal-livewire>
                             @if ($usesLayout)
                                 <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))

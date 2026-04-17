@@ -351,20 +351,20 @@ class ModalConfig
 
         if ($this->isDrawer($attributes)) {
             return $position === 'left'
-                ? 'cp-modal-panel-wrap absolute inset-0 flex w-full items-stretch justify-start p-0'
-                : 'cp-modal-panel-wrap absolute inset-0 flex w-full items-stretch justify-end p-0';
+                ? 'absolute inset-0 flex w-full items-stretch justify-start p-0'
+                : 'absolute inset-0 flex w-full items-stretch justify-end p-0';
         }
 
         if ($this->isSheet($attributes)) {
-            return 'cp-modal-panel-wrap absolute inset-x-0 bottom-0 flex w-full items-end justify-center p-0';
+            return 'absolute inset-x-0 bottom-0 flex w-full items-end justify-center p-0';
         }
 
         return match ($position) {
-            'top' => 'cp-modal-panel-wrap absolute inset-0 flex w-full items-start justify-center p-4 sm:p-8',
-            'bottom' => 'cp-modal-panel-wrap absolute inset-0 flex w-full items-end justify-center p-4 sm:p-8',
-            'left' => 'cp-modal-panel-wrap absolute inset-0 flex w-full items-center justify-start p-4 sm:p-8',
-            'right' => 'cp-modal-panel-wrap absolute inset-0 flex w-full items-center justify-end p-4 sm:p-8',
-            default => 'cp-modal-panel-wrap absolute inset-0 flex w-full items-center justify-center p-4 sm:p-8',
+            'top' => 'absolute inset-0 flex w-full items-start justify-center p-4 sm:p-8',
+            'bottom' => 'absolute inset-0 flex w-full items-end justify-center p-4 sm:p-8',
+            'left' => 'absolute inset-0 flex w-full items-center justify-start p-4 sm:p-8',
+            'right' => 'absolute inset-0 flex w-full items-center justify-end p-4 sm:p-8',
+            default => 'absolute inset-0 flex w-full items-center justify-center p-4 sm:p-8',
         };
     }
 
@@ -693,8 +693,7 @@ class ModalConfig
             if ($disabled) {
                 $class = trim(implode(' ', array_filter([
                     $class,
-                    'cp-modal-action-disabled',
-                    'cursor-not-allowed',
+                    ModalActionClasses::DISABLED,
                 ])));
             }
 
@@ -732,21 +731,23 @@ class ModalConfig
         $style = '';
 
         $class = trim(implode(' ', array_filter([
-            'cp-modal-action',
-            $outline ? 'cp-modal-action-outline' : 'cp-modal-action-solid',
+            ModalActionClasses::BASE,
             $class,
         ])));
 
         if ($usesPresetStyling) {
             $palette = $this->resolveFooterActionPalette($action['color'] ?? ($outlineDefault ? 'gray' : 'primary'));
             $style = $this->footerActionStyle($palette, $outline);
+            $class = trim(implode(' ', array_filter([
+                $class,
+                ModalActionClasses::VARIABLE,
+            ])));
         }
 
         if ($disabled) {
             $class = trim(implode(' ', array_filter([
                 $class,
-                'cp-modal-action-disabled',
-                'cursor-not-allowed',
+                ModalActionClasses::DISABLED,
             ])));
         }
 

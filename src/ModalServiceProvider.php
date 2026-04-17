@@ -30,8 +30,8 @@ class ModalServiceProvider extends ServiceProvider
             Livewire::component('corepine-modal', ModalHost::class);
         }
 
-        Blade::component('corepine-modal::components.modal', 'corepine-modal');
-        Blade::component('corepine-modal::components.standalone-modal', 'corepine.modal');
+        Blade::component('corepine-modal::components.assets', 'corepine-modal');
+        Blade::component('corepine-modal::components.modal', 'corepine.modal');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-layout');
         Blade::component('corepine-modal::components.layout', 'corepine-modal-template');
         Blade::component('corepine-modal::components.footer', 'corepine-modal-footer');
@@ -39,7 +39,8 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.actions.close', 'corepine-modal-actions-close');
         Blade::component('corepine-modal::components.open-modal', 'corepine-modal-open');
         Blade::component('corepine-modal::components.close-modal', 'corepine-modal-close');
-        Blade::component('corepine-modal::components.modal', 'corepine.modal.assets');
+        
+        Blade::component('corepine-modal::components.assets', 'corepine.modal.assets');
         Blade::component('corepine-modal::components.layout', 'corepine.modal.layout');
         Blade::component('corepine-modal::components.layout', 'corepine.modal.template');
         Blade::component('corepine-modal::components.footer', 'corepine.modal.footer');
@@ -50,7 +51,7 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.open-modal', 'corepine-open-modal');
         Blade::component('corepine-modal::components.close-modal', 'corepine-close-modal');
 
-        Blade::directive('corepineModal', static fn () => "<?php echo app('view')->make('corepine-modal::components.modal')->render(); ?>");
+        Blade::directive('corepineModal', static fn () => "<?php echo app('view')->make('corepine-modal::components.assets')->render(); ?>");
 
         if ($this->app->runningInConsole()) {
             $this->publishes([

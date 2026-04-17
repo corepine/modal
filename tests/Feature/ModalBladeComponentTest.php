@@ -5,13 +5,15 @@ use Illuminate\Support\Facades\Blade;
 it('renders modal host using corepine-modal component', function (): void {
     $html = Blade::render('<x-corepine-modal />');
 
-    expect($html)->toContain('cp-modal fixed inset-0');
+    expect($html)->toContain('fixed inset-0 z-[999] overflow-y-auto');
+    expect($html)->not->toContain('vendor/corepine-modal/app.css');
 });
 
 it('renders modal host using dotted assets alias', function (): void {
     $html = Blade::render('<x-corepine.modal.assets />');
 
-    expect($html)->toContain('cp-modal fixed inset-0');
+    expect($html)->toContain('fixed inset-0 z-[999] overflow-y-auto');
+    expect($html)->not->toContain('vendor/corepine-modal/app.css');
 });
 
 it('renders standalone dotted modal component without livewire host dependency', function (): void {
@@ -32,7 +34,7 @@ BLADE);
     expect($html)->toContain("toggle: 'modal.toggle'");
     expect($html)->toContain('registerWindowListener(this.eventNames.open');
     expect($html)->toContain('Livewire.on(this.eventNames.open');
-    expect($html)->toContain('cp-modal-panel-default-height');
+    expect($html)->toContain('h-[50dvh] max-h-[calc(100dvh-1rem)]');
     expect($html)->toContain('Standalone Modal');
     expect($html)->toContain('Simple Blade-only modal.');
     expect($html)->toContain('Standalone body');
@@ -55,7 +57,7 @@ it('supports standalone custom header slot with merged header attributes', funct
 </x-corepine.modal>
 BLADE);
 
-    expect($html)->toContain('cp-modal-header');
+    expect($html)->toContain('flex items-start justify-between gap-3 border-b');
     expect($html)->toContain('font-bold');
     expect($html)->toContain('data-testid="standalone-custom-header"');
     expect($html)->toContain('Custom Header Content');
@@ -78,7 +80,7 @@ it('treats standalone empty header slot as explicit and hides built-in close act
 </x-corepine.modal>
 BLADE);
 
-    expect($html)->toContain('cp-modal-header');
+    expect($html)->toContain('flex items-start justify-between gap-3 border-b');
     expect($html)->toContain('min-h-8');
     expect($html)->toContain('Standalone body');
     expect($html)->not->toContain('Default Heading');
@@ -109,7 +111,7 @@ BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
-    expect($flat)->toContain('cp-modal-shape-sheet');
+    expect($flat)->toContain('rounded-t-2xl rounded-b-none');
     expect($flat)->toContain('origin-bottom');
     expect($flat)->toContain('max-w-2xl');
     expect($flat)->toContain('border border-zinc-200');
@@ -137,10 +139,10 @@ it('renders modal shell with header, body, and footer slots', function (): void 
 </x-corepine-modal-layout>
 BLADE);
 
-    expect($html)->toContain('cp-modal-layout');
-    expect($html)->toContain('cp-modal-header');
-    expect($html)->toContain('cp-modal-body');
-    expect($html)->toContain('cp-modal-footer');
+    expect($html)->toContain('overflow-hidden overscroll-contain');
+    expect($html)->toContain('flex shrink-0 items-center justify-between gap-3 border-b');
+    expect($html)->toContain('min-h-0 flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-4');
+    expect($html)->toContain('flex shrink-0 items-center justify-end border-t');
     expect($html)->toContain('justify-end');
     expect($html)->toContain('min-h-0 flex flex-1');
     expect($html)->toContain('Edit User');
@@ -169,9 +171,9 @@ BLADE);
 
     expect($html)->toContain('Body only');
     expect($html)->toContain('sr-only');
-    expect($html)->not->toContain('cp-modal-heading');
+    expect($html)->not->toContain('text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100');
     expect($html)->toContain('h-full');
-    expect($html)->not->toContain('cp-modal-footer');
+    expect($html)->not->toContain('flex shrink-0 items-center justify-end border-t');
 });
 
 it('merges custom wrapper attributes on modal shell', function (): void {
@@ -183,7 +185,7 @@ BLADE);
 
     expect($html)->toContain('id="users-modal"');
     expect($html)->toContain('ring-1');
-    expect($html)->toContain('cp-modal-layout');
+    expect($html)->toContain('overflow-hidden overscroll-contain');
 });
 
 it('renders modal shell using template alias', function (): void {
@@ -193,7 +195,7 @@ it('renders modal shell using template alias', function (): void {
 </x-corepine-modal-template>
 BLADE);
 
-    expect($html)->toContain('cp-modal-layout');
+    expect($html)->toContain('overflow-hidden overscroll-contain');
     expect($html)->toContain('Template Alias');
     expect($html)->toContain('Template content');
 });
@@ -205,7 +207,7 @@ it('renders modal shell using dotted layout alias', function (): void {
 </x-corepine.modal.layout>
 BLADE);
 
-    expect($html)->toContain('cp-modal-layout');
+    expect($html)->toContain('overflow-hidden overscroll-contain');
     expect($html)->toContain('Dot Layout');
     expect($html)->toContain('Layout content');
 });
@@ -223,7 +225,7 @@ it('supports inline footer component inside modal layout body', function (): voi
 </x-corepine-modal-layout>
 BLADE);
 
-    expect($html)->toContain('cp-modal-footer');
+    expect($html)->toContain('flex shrink-0 items-center justify-end border-t');
     expect($html)->toContain('id="users-footer-actions"');
     expect($html)->toContain('inline-footer-actions');
     expect($html)->toContain('Inline Save');

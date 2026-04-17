@@ -48,12 +48,6 @@ Render the host once in your layout:
 <x-corepine.modal.assets />
 ```
 
-Optional: include package CSS directly from the host:
-
-```blade
-<x-corepine.modal.assets include-styles />
-```
-
 ### Standalone Alpine + Blade Mode
 
 You can use `<x-corepine.modal />` directly with browser events and no Livewire modal class.
