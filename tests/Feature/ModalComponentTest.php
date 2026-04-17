@@ -27,6 +27,28 @@ it('dispatches close event with stacked count when skipping previous modal', fun
         ->assertDispatched('modal.close');
 });
 
+it('merges explicit and component-defined post-close dispatch payloads', function (): void {
+    Livewire::test('test.control-modal')
+        ->call('closeCurrentWithDispatches')
+        ->assertDispatched('modal.close', function (string $name, array $params): bool {
+            return ($params['dispatch'] ?? []) === [
+                'users-refreshed' => ['user' => 5],
+                'users-saved' => ['user' => 9],
+            ] && ($params['dispatchTo'] ?? []) === [
+                'test.example-modal' => [
+                    'focus-user' => ['user' => 5],
+                    'sync-user' => ['user' => 9],
+                ],
+            ];
+        });
+});
+
+it('supports overriding destroy with named closeModal arguments', function (): void {
+    Livewire::test('test.control-modal')
+        ->call('closeCurrentWithoutDestroy')
+        ->assertDispatched('modal.close', destroy: false);
+});
+
 it('dispatches close-top event explicitly', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeTopTwo')

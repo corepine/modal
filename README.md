@@ -121,6 +121,10 @@ $this->openModal('modals.edit-user', ['user' => 5]);
 $this->openBottomSheet('modals.user-sheet', ['user' => 5]);
 
 $this->closeModal();
+$this->closeModal(
+    dispatch: ['users-refreshed' => ['user' => 5]],
+    dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
+);
 $this->closeTopModal(2);
 $this->closeAll();
 ```

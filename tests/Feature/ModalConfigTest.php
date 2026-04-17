@@ -224,6 +224,31 @@ it('supports fluent action helpers for colors, outlines, disabled state, and att
     ]);
 });
 
+it('supports post-close dispatch payloads on fluent close actions', function (): void {
+    $payload = Action::make('cancel')
+        ->label('Cancel')
+        ->dispatch([
+            'users-refreshed' => ['user' => 5],
+        ])
+        ->dispatchTo([
+            'test.example-modal' => [
+                'focus-user' => ['user' => 5],
+            ],
+        ])
+        ->close()
+        ->toArray();
+
+    expect($payload['type'])->toBe('close');
+    expect($payload['dispatch'])->toBe([
+        'users-refreshed' => ['user' => 5],
+    ]);
+    expect($payload['dispatchTo'])->toBe([
+        'test.example-modal' => [
+            'focus-user' => ['user' => 5],
+        ],
+    ]);
+});
+
 it('supports accent action colors as softer defaults', function (): void {
     $payload = Action::make('saveUsers')
         ->label('Save')

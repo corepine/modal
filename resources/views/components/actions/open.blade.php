@@ -25,6 +25,8 @@
     'showClose' => null,
     'actions' => null,
     'footerActionsAlignment' => null,
+    'dispatch' => null,
+    'dispatchTo' => null,
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
@@ -218,6 +220,12 @@
 @endif
 @if (is_array($actions) && $actions !== [])
     @php($payloadModalAttributes['actions'] = $actions)
+@endif
+@if (is_array($dispatch) && $dispatch !== [])
+    @php($payloadModalAttributes['dispatch'] = $dispatch)
+@endif
+@if (is_array($dispatchTo) && $dispatchTo !== [])
+    @php($payloadModalAttributes['dispatchTo'] = $dispatchTo)
 @endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')

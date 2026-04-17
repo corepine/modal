@@ -296,6 +296,31 @@ it('stores isolate modal attribute and renders isolate visibility hooks', functi
         ->assertSee('pointer-events-none', false);
 });
 
+it('dispatches modal-level and request-level events after closing', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'dispatch' => [
+                'users-refreshed' => ['user' => 5],
+            ],
+            'dispatchTo' => [
+                'test.example-modal' => [
+                    'focus-user' => ['user' => 5],
+                ],
+            ],
+        ])
+        ->dispatch('modal.close-top', dispatch: [
+            'users-saved' => ['user' => 9],
+        ], dispatchTo: [
+            'test.example-modal' => [
+                'sync-user' => ['user' => 9],
+            ],
+        ])
+        ->assertDispatched('users-refreshed', user: 5)
+        ->assertDispatched('users-saved', user: 9)
+        ->assertDispatchedTo('test.example-modal', 'focus-user', user: 5)
+        ->assertDispatchedTo('test.example-modal', 'sync-user', user: 9);
+});
+
 it('renders automatic layout chrome and declarative footer actions', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [

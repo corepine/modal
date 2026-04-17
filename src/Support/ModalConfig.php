@@ -602,6 +602,8 @@ class ModalConfig
                     'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
                     'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
                     'closeAll' => $this->normalizeBoolean($action['closeAll'] ?? false, false),
+                    'dispatch' => is_array($action['dispatch'] ?? null) ? $action['dispatch'] : [],
+                    'dispatchTo' => is_array($action['dispatchTo'] ?? null) ? $action['dispatchTo'] : [],
                 ];
 
                 continue;
@@ -996,6 +998,8 @@ class ModalConfig
         $attributes['showClose'] = $this->layoutShowClose($attributes);
         $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
         $attributes['actions'] = $this->layoutFooterActions($attributes);
+        $attributes['dispatch'] = is_array($attributes['dispatch'] ?? null) ? $attributes['dispatch'] : [];
+        $attributes['dispatchTo'] = is_array($attributes['dispatchTo'] ?? null) ? $attributes['dispatchTo'] : [];
         unset($attributes['isolated']);
         unset($attributes['bottomSheet']);
         unset($attributes['closeOnClickAway']);

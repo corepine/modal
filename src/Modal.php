@@ -31,9 +31,9 @@ abstract class Modal extends Component
         return $this;
     }
 
-    public function closeAll(bool $destroy = true): void
+    public function closeAll(bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
-        $this->closeAllModals($destroy);
+        $this->closeAllModals($destroy, $dispatch, $dispatchTo);
         $this->resetCloseState();
     }
 
@@ -57,29 +57,42 @@ abstract class Modal extends Component
         );
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true): void
+    public function closeTopModal(int $count = 1, bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+
         $this->dispatch(
             $this->modalConfig()->listenEvent('close_top'),
             count: max(1, $count),
-            destroy: $destroy
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
     }
 
-    public function closeAllModals(bool $destroy = true): void
+    public function closeAllModals(bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+
         $this->dispatch(
             $this->modalConfig()->listenEvent('close_all'),
-            destroy: $destroy
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
     }
 
-    public function closeModal(): void
+    public function closeModal(?bool $destroy = null, array $dispatch = [], array $dispatchTo = []): void
     {
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+        $destroy ??= $this->destroySkipped;
+
         $this->dispatch(
             $this->modalConfig()->listenEvent('close'),
             count: max(1, $this->closeLayers),
-            destroy: $this->destroySkipped
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
         $this->resetCloseState();
     }
@@ -104,6 +117,16 @@ abstract class Modal extends Component
         $attributes['size'] = static::modalSize();
 
         return $attributes;
+    }
+
+    protected function dispatchCloseEvents(): array
+    {
+        return [];
+    }
+
+    protected function dispatchCloseEventsTo(): array
+    {
+        return [];
     }
 
     protected function resetCloseState(): void
@@ -134,5 +157,28 @@ abstract class Modal extends Component
 
             $this->dispatch($event, ...$params)->to($component);
         }
+    }
+
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, array<string, mixed>>}
+     */
+    private function resolvedCloseDispatches(array $dispatch, array $dispatchTo): array
+    {
+        $mergedDispatch = array_replace($this->dispatchCloseEvents(), $dispatch);
+        $mergedDispatchTo = $this->dispatchCloseEventsTo();
+
+        foreach ($dispatchTo as $component => $events) {
+            if (! is_string($component) || trim($component) === '' || ! is_array($events)) {
+                continue;
+            }
+
+            $component = trim($component);
+            $mergedDispatchTo[$component] = array_replace(
+                is_array($mergedDispatchTo[$component] ?? null) ? $mergedDispatchTo[$component] : [],
+                $events
+            );
+        }
+
+        return [$mergedDispatch, $mergedDispatchTo];
     }
 }

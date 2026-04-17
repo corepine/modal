@@ -112,16 +112,16 @@ class ModalHost extends Component
         );
     }
 
-    public function closeModal(?string $id = null, int $count = 1, bool $destroy = true, bool $closeAll = false): void
+    public function closeModal(?string $id = null, int $count = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
     {
         if ($closeAll) {
-            $this->closeAllModals($destroy);
+            $this->closeAllModals($destroy, $dispatch, $dispatchTo);
 
             return;
         }
 
         if ($id === null) {
-            $this->closeTopModal($count, $destroy);
+            $this->closeTopModal($count, $destroy, false, $dispatch, $dispatchTo);
 
             return;
         }
@@ -133,13 +133,13 @@ class ModalHost extends Component
         }
 
         $layersToClose = count($this->stack) - $position;
-        $this->closeTopModal($layersToClose, $destroy);
+        $this->closeTopModal($layersToClose, $destroy, false, $dispatch, $dispatchTo);
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true, bool $closeAll = false): void
+    public function closeTopModal(int $count = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
     {
         if ($closeAll) {
-            $this->closeAllModals($destroy);
+            $this->closeAllModals($destroy, $dispatch, $dispatchTo);
 
             return;
         }
@@ -161,6 +161,8 @@ class ModalHost extends Component
                 if (($modal['modalAttributes']['dispatchCloseEvent'] ?? false) === true) {
                     $this->dispatch($this->modalConfig()->dispatchEvent('component_closed'), id: $id, name: $modal['name']);
                 }
+
+                $this->dispatchConfiguredCloseEvents($modal);
             }
 
             if ($destroy) {
@@ -168,10 +170,11 @@ class ModalHost extends Component
             }
         }
 
+        $this->dispatchMappedCloseEvents($dispatch, $dispatchTo);
         $this->setCurrentActiveModal();
     }
 
-    public function closeAllModals(bool $destroy = true): void
+    public function closeAllModals(bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
         foreach (array_reverse($this->stack) as $id) {
             $modal = $this->modals[$id] ?? null;
@@ -186,11 +189,14 @@ class ModalHost extends Component
                 $this->dispatch($this->modalConfig()->dispatchEvent('component_closed'), id: $id, name: $modal['name']);
             }
 
+            $this->dispatchConfiguredCloseEvents($modal);
+
             if ($destroy) {
                 unset($this->modals[$id]);
             }
         }
 
+        $this->dispatchMappedCloseEvents($dispatch, $dispatchTo);
         $this->stack = [];
         $this->activeModalId = null;
 
@@ -381,6 +387,115 @@ class ModalHost extends Component
     protected function modalConfig(): ModalConfig
     {
         return app(ModalConfig::class);
+    }
+
+    /**
+     * @param  array<string, mixed>  $modal
+     */
+    protected function dispatchConfiguredCloseEvents(array $modal): void
+    {
+        $attributes = is_array($modal['modalAttributes'] ?? null) ? $modal['modalAttributes'] : [];
+
+        $this->dispatchMappedCloseEvents(
+            is_array($attributes['dispatch'] ?? null) ? $attributes['dispatch'] : [],
+            is_array($attributes['dispatchTo'] ?? null) ? $attributes['dispatchTo'] : [],
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $dispatch
+     * @param  array<string, mixed>  $dispatchTo
+     */
+    protected function dispatchMappedCloseEvents(array $dispatch = [], array $dispatchTo = []): void
+    {
+        foreach ($this->normalizeCloseDispatches($dispatch) as $event => $params) {
+            $this->dispatch($event, ...$params);
+        }
+
+        foreach ($this->normalizeCloseDispatchTargets($dispatchTo) as $component => $events) {
+            foreach ($events as $event => $params) {
+                $this->dispatch($event, ...$params)->to($component);
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $dispatch
+     * @return array<string, array<int|string, mixed>>
+     */
+    protected function normalizeCloseDispatches(array $dispatch): array
+    {
+        $normalized = [];
+
+        foreach ($dispatch as $event => $params) {
+            if (is_int($event)) {
+                if (is_string($params) && trim($params) !== '') {
+                    $normalized[trim($params)] = [];
+                }
+
+                continue;
+            }
+
+            if (! is_string($event) || trim($event) === '') {
+                continue;
+            }
+
+            $event = trim($event);
+
+            if ($params instanceof \Traversable) {
+                $params = iterator_to_array($params);
+            }
+
+            if (is_array($params)) {
+                $normalized[$event] = $params;
+
+                continue;
+            }
+
+            if (is_null($params)) {
+                $normalized[$event] = [];
+
+                continue;
+            }
+
+            if (is_scalar($params) || $params instanceof \Stringable) {
+                $normalized[$event] = [$params];
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $dispatchTo
+     * @return array<string, array<string, array<int|string, mixed>>>
+     */
+    protected function normalizeCloseDispatchTargets(array $dispatchTo): array
+    {
+        $normalized = [];
+
+        foreach ($dispatchTo as $component => $events) {
+            if (! is_string($component) || trim($component) === '') {
+                continue;
+            }
+
+            if ($events instanceof \Traversable) {
+                $events = iterator_to_array($events);
+            }
+
+            if (! is_array($events)) {
+                continue;
+            }
+
+            $component = trim($component);
+            $resolvedEvents = $this->normalizeCloseDispatches($events);
+
+            if ($resolvedEvents !== []) {
+                $normalized[$component] = $resolvedEvents;
+            }
+        }
+
+        return $normalized;
     }
 
     public function render()

@@ -21,6 +21,8 @@
     'closeAllOnEscape' => false,
     'dismissible' => null,
     'blur' => false,
+    'dispatch' => null,
+    'dispatchTo' => null,
 ])
 
 @php($modalConfig = app(\Corepine\Modal\Support\ModalConfig::class))
@@ -133,6 +135,12 @@
 @if (! is_null($normalizedShowDragHandle))
     @php($payloadModalAttributes['showDragHandle'] = $normalizedShowDragHandle)
 @endif
+@if (is_array($dispatch) && $dispatch !== [])
+    @php($payloadModalAttributes['dispatch'] = $dispatch)
+@endif
+@if (is_array($dispatchTo) && $dispatchTo !== [])
+    @php($payloadModalAttributes['dispatchTo'] = $dispatchTo)
+@endif
 @php($existingClass = isset($payloadModalAttributes['class']) && is_string($payloadModalAttributes['class']) ? $payloadModalAttributes['class'] : '')
 @php($incomingClass = is_string($attributes->get('class')) ? $attributes->get('class') : '')
 @php($mergedClass = trim(implode(' ', array_filter([$existingClass, $incomingClass]))))
@@ -161,6 +169,8 @@
     'height' => $resolvedModalAttributes['height'] ?? null,
     'maxHeight' => $resolvedModalAttributes['maxHeight'] ?? null,
     'panelClass' => is_string($resolvedModalAttributes['class'] ?? null) ? $resolvedModalAttributes['class'] : '',
+    'dispatch' => is_array($resolvedModalAttributes['dispatch'] ?? null) ? $resolvedModalAttributes['dispatch'] : [],
+    'dispatchTo' => is_array($resolvedModalAttributes['dispatchTo'] ?? null) ? $resolvedModalAttributes['dispatchTo'] : [],
 ])
 
 @if (isset($__livewire))
@@ -188,6 +198,8 @@
             heightValue: options.height ?? null,
             maxHeightValue: options.maxHeight ?? null,
             panelClassValue: options.panelClass ?? '',
+            closeDispatch: options.dispatch ?? {},
+            closeDispatchTo: options.dispatchTo ?? {},
             defaultSheetHeightRatio: 0.7,
             defaultSheetTopGap: 16,
             defaultSheetMinHeight: 260,
@@ -326,7 +338,7 @@
                     return;
                 }
 
-                this.close();
+                this.close(payload);
             },
 
             toggleFromEvent(payload = {}) {
@@ -335,7 +347,7 @@
                 }
 
                 if (this.open) {
-                    this.close();
+                    this.close(payload);
 
                     return;
                 }
@@ -343,13 +355,15 @@
                 this.openFromEvent(payload);
             },
 
-            close() {
+            close(payload = {}) {
                 this.open = false;
 
                 if (!this.closingFromDrag) {
                     this.clearSheetDrag();
                     this.clearSheetResize();
                 }
+
+                this.dispatchCloseEvents(payload);
             },
 
             handleEscape() {
@@ -378,6 +392,96 @@
                 }
 
                 document.body.classList.remove('overflow-hidden');
+            },
+
+            normalizeDispatchMap(value) {
+                if (!value || typeof value !== 'object' || Array.isArray(value)) {
+                    return {};
+                }
+
+                return Object.entries(value).reduce((carry, [eventName, params]) => {
+                    if (typeof eventName !== 'string' || eventName.trim() === '') {
+                        return carry;
+                    }
+
+                    if (params && typeof params === 'object' && !Array.isArray(params)) {
+                        carry[eventName.trim()] = params;
+                    } else if (Array.isArray(params)) {
+                        carry[eventName.trim()] = params;
+                    } else if (params == null) {
+                        carry[eventName.trim()] = {};
+                    } else {
+                        carry[eventName.trim()] = [params];
+                    }
+
+                    return carry;
+                }, {});
+            },
+
+            normalizeDispatchTargets(value) {
+                if (!value || typeof value !== 'object' || Array.isArray(value)) {
+                    return {};
+                }
+
+                return Object.entries(value).reduce((carry, [component, events]) => {
+                    if (typeof component !== 'string' || component.trim() === '') {
+                        return carry;
+                    }
+
+                    const normalizedEvents = this.normalizeDispatchMap(events);
+
+                    if (Object.keys(normalizedEvents).length > 0) {
+                        carry[component.trim()] = normalizedEvents;
+                    }
+
+                    return carry;
+                }, {});
+            },
+
+            mergedCloseDispatch(payload = {}) {
+                return {
+                    ...this.normalizeDispatchMap(this.closeDispatch),
+                    ...this.normalizeDispatchMap(payload.dispatch ?? {}),
+                };
+            },
+
+            mergedCloseDispatchTo(payload = {}) {
+                const merged = {
+                    ...this.normalizeDispatchTargets(this.closeDispatchTo),
+                };
+
+                Object.entries(this.normalizeDispatchTargets(payload.dispatchTo ?? {})).forEach(([component, events]) => {
+                    merged[component] = {
+                        ...(merged[component] ?? {}),
+                        ...events,
+                    };
+                });
+
+                return merged;
+            },
+
+            dispatchCloseEvents(payload = {}) {
+                Object.entries(this.mergedCloseDispatch(payload)).forEach(([eventName, params]) => {
+                    if (typeof Livewire?.dispatch === 'function') {
+                        Livewire.dispatch(eventName, params);
+
+                        return;
+                    }
+
+                    window.dispatchEvent(new CustomEvent(eventName, {
+                        detail: params,
+                    }));
+                });
+
+                if (typeof Livewire?.dispatchTo !== 'function') {
+                    return;
+                }
+
+                Object.entries(this.mergedCloseDispatchTo(payload)).forEach(([component, events]) => {
+                    Object.entries(events).forEach(([eventName, params]) => {
+                        Livewire.dispatchTo(component, eventName, params);
+                    });
+                });
             },
 
             eventClientY(event) {

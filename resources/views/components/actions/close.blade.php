@@ -3,6 +3,8 @@
     'destroy' => true,
     'closeAll' => false,
     'disabled' => false,
+    'dispatch' => [],
+    'dispatchTo' => [],
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
@@ -34,6 +36,8 @@
             default => false,
         }
         : (bool) $disabled))
+@php($resolvedDispatch = is_array($dispatch) ? $dispatch : [])
+@php($resolvedDispatchTo = is_array($dispatchTo) ? $dispatchTo : [])
 
 <button
     type="button"
@@ -46,15 +50,21 @@
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),
             closeAll: @js($resolvedCloseAll),
+            dispatch: @js($resolvedDispatch),
+            dispatchTo: @js($resolvedDispatchTo),
         });
     } else if (@js($resolvedCloseAll)) {
         Livewire.dispatch(@js($modalEvents->closeAllModals()), {
             destroy: @js($resolvedDestroy),
+            dispatch: @js($resolvedDispatch),
+            dispatchTo: @js($resolvedDispatchTo),
         });
     } else {
         Livewire.dispatch(@js($modalEvents->closeModal()), {
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),
+            dispatch: @js($resolvedDispatch),
+            dispatchTo: @js($resolvedDispatchTo),
         });
     }"
     @endif

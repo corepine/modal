@@ -33,6 +33,16 @@ class Action extends SupportAction
 
     private bool $closeAll = false;
 
+    /**
+     * @var array<string, mixed>
+     */
+    private array $dispatch = [];
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $dispatchTo = [];
+
     private function __construct(string $name)
     {
         parent::__construct($name);
@@ -154,6 +164,26 @@ class Action extends SupportAction
     }
 
     /**
+     * @param  array<string, mixed>  $events
+     */
+    public function dispatch(array $events): self
+    {
+        $this->dispatch = $events;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<string, mixed>  $events
+     */
+    public function dispatchTo(array $events): self
+    {
+        $this->dispatchTo = $events;
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -189,6 +219,8 @@ class Action extends SupportAction
                 'count' => $this->count,
                 'destroy' => $this->destroy,
                 'closeAll' => $this->closeAll,
+                'dispatch' => $this->dispatch,
+                'dispatchTo' => $this->dispatchTo,
                 'resolved' => true,
             ];
         }

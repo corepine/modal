@@ -839,12 +839,18 @@
 
                     if (closingIds.length === 0) {
                         if (closeAll) {
-                            Livewire.dispatch(events.closeAll, { destroy });
+                            Livewire.dispatch(events.closeAll, {
+                                destroy,
+                                dispatch: payload.dispatch ?? {},
+                                dispatchTo: payload.dispatchTo ?? {},
+                            });
                         } else {
                             Livewire.dispatch(events.close, {
                                 id,
                                 count: Math.max(1, Number.parseInt(payload.count ?? 1, 10) || 1),
                                 destroy,
+                                dispatch: payload.dispatch ?? {},
+                                dispatchTo: payload.dispatchTo ?? {},
                             });
                         }
 
@@ -858,12 +864,18 @@
                         this.closeTimeout = null;
 
                         if (closeAll) {
-                            Livewire.dispatch(events.closeAll, { destroy });
+                            Livewire.dispatch(events.closeAll, {
+                                destroy,
+                                dispatch: payload.dispatch ?? {},
+                                dispatchTo: payload.dispatchTo ?? {},
+                            });
                         } else {
                             Livewire.dispatch(events.close, {
                                 id,
                                 count: Math.max(1, closingIds.length),
                                 destroy,
+                                dispatch: payload.dispatch ?? {},
+                                dispatchTo: payload.dispatchTo ?? {},
                             });
                         }
                     }, 260);
@@ -1129,6 +1141,8 @@
                                                                     count: @js($action['count'] ?? 1),
                                                                     destroy: @js($action['destroy'] ?? true),
                                                                     closeAll: @js($action['closeAll'] ?? false),
+                                                                    dispatch: @js($action['dispatch'] ?? []),
+                                                                    dispatchTo: @js($action['dispatchTo'] ?? []),
                                                                 })"
                                                             @endif
                                                         >

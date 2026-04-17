@@ -21,6 +21,35 @@ class ControlModal extends Modal
         $this->skipPreviousModal(1)->closeModal();
     }
 
+    protected function dispatchCloseEvents(): array
+    {
+        return [
+            'users-refreshed' => ['user' => 5],
+        ];
+    }
+
+    protected function dispatchCloseEventsTo(): array
+    {
+        return [
+            'test.example-modal' => [
+                'focus-user' => ['user' => 5],
+            ],
+        ];
+    }
+
+    public function closeCurrentWithDispatches(): void
+    {
+        $this->closeModal(
+            dispatch: ['users-saved' => ['user' => 9]],
+            dispatchTo: ['test.example-modal' => ['sync-user' => ['user' => 9]]],
+        );
+    }
+
+    public function closeCurrentWithoutDestroy(): void
+    {
+        $this->closeModal(destroy: false);
+    }
+
     public function closeTopTwo(): void
     {
         $this->closeTopModal(2);

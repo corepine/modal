@@ -326,6 +326,26 @@ BLADE);
     expect($flat)->toContain('saveUsers');
 });
 
+it('supports post-close dispatch payloads on open helper', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-open
+    component="modals.edit-user"
+    :dispatch="['users-refreshed' => ['user' => 5]]"
+    :dispatch-to="['orders.table' => ['sync-user' => ['user' => 5]]]"
+>
+    <button type="button">Edit</button>
+</x-corepine-modal-open>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('\u0022dispatch\u0022');
+    expect($flat)->toContain('users-refreshed');
+    expect($flat)->toContain('\u0022dispatchTo\u0022');
+    expect($flat)->toContain('orders.table');
+    expect($flat)->toContain('sync-user');
+});
+
 it('emits isolate attribute on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open
@@ -399,6 +419,23 @@ BLADE);
     expect($flat)->toContain('Livewire.dispatch');
     expect($flat)->toContain('modal.close-all');
     expect($flat)->toMatch('/destroy:\s*false/');
+});
+
+it('renders close helper with post-close dispatch payloads', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-close
+    :dispatch="['users-refreshed' => ['user' => 5]]"
+    :dispatch-to="['orders.table' => ['sync-user' => ['user' => 5]]]"
+>
+    <button type="button">Close</button>
+</x-corepine-modal-close>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('users-refreshed');
+    expect($flat)->toContain('orders.table');
+    expect($flat)->toContain('sync-user');
 });
 
 it('keeps backward-compatible open and close aliases', function (): void {
