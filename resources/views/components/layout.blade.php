@@ -76,7 +76,7 @@
             @endif
         >
             @if ($namedHeader !== null)
-                    {{ $namedHeader }}
+                {{ $namedHeader }}
             @else
                 <div class="min-w-0 flex flex-col gap-2">
                     @if ($resolvedHeading !== null)
