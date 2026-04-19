@@ -144,11 +144,11 @@
     </main>
 
     @if ($namedFooter !== null)
-        <footer {{ $namedFooter->attributes->class('flex shrink-0 items-center justify-end border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
+        <footer {{ $namedFooter->attributes->class('flex shrink-0 items-center justify-end  border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
             {{ $namedFooter }}
         </footer>
     @elseif ($hasInlineFooter)
-        <footer class="flex shrink-0 items-center justify-end border-t border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
+        <footer class="flex shrink-0 items-center justify-end  border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
             @foreach ($inlineFooterBlocks as $inlineFooterBlock)
                 {!! $inlineFooterBlock !!}
             @endforeach
