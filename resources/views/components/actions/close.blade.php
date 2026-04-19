@@ -3,6 +3,7 @@
     'destroy' => true,
     'closeAll' => false,
     'disabled' => false,
+    'modalId' => null,
     'dispatch' => [],
     'dispatchTo' => [],
 ])
@@ -36,6 +37,7 @@
             default => false,
         }
         : (bool) $disabled))
+@php($resolvedModalId = is_string($modalId) && trim($modalId) !== '' ? trim($modalId) : null)
 @php($resolvedDispatch = is_array($dispatch) ? $dispatch : [])
 @php($resolvedDispatchTo = is_array($dispatchTo) ? $dispatchTo : [])
 
@@ -45,21 +47,35 @@
     {{ $attributes }}
     @if ($resolvedDisabled) disabled @endif
     @if (! $resolvedDisabled)
-        x-on:click="if (typeof window.corepineModalRequestClose === 'function') {
-        window.corepineModalRequestClose({
-            count: @js($resolvedCount),
-            destroy: @js($resolvedDestroy),
-            closeAll: @js($resolvedCloseAll),
-            dispatch: @js($resolvedDispatch),
-            dispatchTo: @js($resolvedDispatchTo),
-        });
+        x-on:click="const resolvedModalId = @js($resolvedModalId) ?? $el.closest('[data-corepine-modal-id]')?.getAttribute('data-corepine-modal-id') ?? null;
+    const closePayload = {
+        id: resolvedModalId,
+        count: @js($resolvedCount),
+        destroy: @js($resolvedDestroy),
+        closeAll: @js($resolvedCloseAll),
+        dispatch: @js($resolvedDispatch),
+        dispatchTo: @js($resolvedDispatchTo),
+    };
+
+    if (!@js($resolvedCloseAll) && resolvedModalId) {
+        window.dispatchEvent(new CustomEvent(@js($modalEvents->closeModal()), {
+            detail: closePayload,
+        }));
+
+        if (typeof Livewire?.dispatch === 'function') {
+            Livewire.dispatch(@js($modalEvents->closeModal()), closePayload);
+        }
+    } else if (typeof window.corepineModalRequestClose === 'function') {
+        window.corepineModalRequestClose(closePayload);
     } else if (@js($resolvedCloseAll)) {
-        Livewire.dispatch(@js($modalEvents->closeAllModals()), {
-            destroy: @js($resolvedDestroy),
-            dispatch: @js($resolvedDispatch),
-            dispatchTo: @js($resolvedDispatchTo),
-        });
-    } else {
+        if (typeof Livewire?.dispatch === 'function') {
+            Livewire.dispatch(@js($modalEvents->closeAllModals()), {
+                destroy: @js($resolvedDestroy),
+                dispatch: @js($resolvedDispatch),
+                dispatchTo: @js($resolvedDispatchTo),
+            });
+        }
+    } else if (typeof Livewire?.dispatch === 'function') {
         Livewire.dispatch(@js($modalEvents->closeModal()), {
             count: @js($resolvedCount),
             destroy: @js($resolvedDestroy),

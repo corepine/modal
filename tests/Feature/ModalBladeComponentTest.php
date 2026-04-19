@@ -140,7 +140,7 @@ it('renders modal shell with header, body, and footer slots', function (): void 
 BLADE);
 
     expect($html)->toContain('overflow-hidden overscroll-contain');
-    expect($html)->toContain('flex shrink-0 items-center justify-between gap-3 border-b');
+    expect($html)->toContain('flex shrink-0 items-start justify-between gap-3 border-b');
     expect($html)->toContain('min-h-0 flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-4');
     expect($html)->toContain('flex shrink-0 items-center justify-end border-t');
     expect($html)->toContain('justify-end');
@@ -210,6 +210,50 @@ BLADE);
     expect($html)->toContain('overflow-hidden overscroll-contain');
     expect($html)->toContain('Dot Layout');
     expect($html)->toContain('Layout content');
+});
+
+it('lets layout header slot override heading, description, and close action', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal.layout
+    heading="Manage Users"
+    description="Search and view users in your system."
+    show-close="true"
+>
+    <x-slot:header class="font-bold text-lg" data-testid="layout-custom-header">
+        <h2>Our Modals</h2>
+    </x-slot:header>
+
+    <div>Layout content</div>
+</x-corepine.modal.layout>
+BLADE);
+
+    expect($html)->toContain('data-testid="layout-custom-header"');
+    expect($html)->toContain('font-bold');
+    expect($html)->toContain('Our Modals');
+    expect($html)->toContain('Layout content');
+    expect($html)->not->toContain('Manage Users');
+    expect($html)->not->toContain('Search and view users in your system.');
+    expect($html)->not->toContain('sr-only');
+});
+
+it('treats empty layout header slot as explicit and hides built-in chrome', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal.layout
+    heading="Manage Users"
+    description="Search and view users in your system."
+    show-close="true"
+>
+    <x-slot:header class="min-h-8"></x-slot:header>
+
+    <div>Layout content</div>
+</x-corepine.modal.layout>
+BLADE);
+
+    expect($html)->toContain('min-h-8');
+    expect($html)->toContain('Layout content');
+    expect($html)->not->toContain('Manage Users');
+    expect($html)->not->toContain('Search and view users in your system.');
+    expect($html)->not->toContain('sr-only');
 });
 
 it('supports inline footer component inside modal layout body', function (): void {
@@ -436,6 +480,22 @@ BLADE);
     expect($flat)->toContain('users-refreshed');
     expect($flat)->toContain('orders.table');
     expect($flat)->toContain('sync-user');
+});
+
+it('supports targeted standalone close helper payloads by modal id', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-close modal-id="user-sheet">
+    <button type="button">Close</button>
+</x-corepine-modal-close>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('data-corepine-modal-id');
+    expect($flat)->toContain('user-sheet');
+    expect($flat)->toContain('window.dispatchEvent(new CustomEvent');
+    expect($flat)->toContain('modal.close');
+    expect($flat)->toContain('id: resolvedModalId');
 });
 
 it('keeps backward-compatible open and close aliases', function (): void {
