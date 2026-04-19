@@ -21,7 +21,7 @@ it('dispatches open-bottom-sheet event from modal component helper', function ()
         ->assertDispatched('modal.open-sheet');
 });
 
-it('dispatches close event with stacked count when skipping previous modal', function (): void {
+it('dispatches close event with stacked layers when skipping previous modal', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeCurrentAndPrevious')
         ->assertDispatched('modal.close');

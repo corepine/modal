@@ -18,14 +18,14 @@ abstract class Modal extends Component
         return $this;
     }
 
-    public function skipPreviousModals(int $count = 1, bool $destroy = true): self
+    public function skipPreviousModals(int $layers = 1, bool $destroy = true): self
     {
-        return $this->skipPreviousModal($count, $destroy);
+        return $this->skipPreviousModal($layers, $destroy);
     }
 
-    public function skipPreviousModal(int $count = 1, bool $destroy = true): self
+    public function skipPreviousModal(int $layers = 1, bool $destroy = true): self
     {
-        $this->closeLayers = max(1, $count + 1);
+        $this->closeLayers = max(1, $layers + 1);
         $this->destroySkipped = $destroy;
 
         return $this;
@@ -57,13 +57,13 @@ abstract class Modal extends Component
         );
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
+    public function closeTopModal(int $layers = 1, bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
         [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
 
         $this->dispatch(
             $this->modalConfig()->listenEvent('close_top'),
-            count: max(1, $count),
+            layers: max(1, $layers),
             destroy: $destroy,
             dispatch: $dispatch,
             dispatchTo: $dispatchTo,
@@ -89,7 +89,7 @@ abstract class Modal extends Component
 
         $this->dispatch(
             $this->modalConfig()->listenEvent('close'),
-            count: max(1, $this->closeLayers),
+            layers: max(1, $this->closeLayers),
             destroy: $destroy,
             dispatch: $dispatch,
             dispatchTo: $dispatchTo,

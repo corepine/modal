@@ -565,7 +565,7 @@ BLADE);
     expect($flat)->toContain('data-testid="close-trigger"');
     expect($flat)->toContain('Livewire.dispatch');
     expect($flat)->toContain('modal.close');
-    expect($flat)->toMatch('/count:\s*1/');
+    expect($flat)->toMatch('/layers:\s*1/');
     expect($flat)->toMatch('/destroy:\s*true/');
 });
 

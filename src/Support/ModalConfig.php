@@ -603,7 +603,7 @@ class ModalConfig
                     'visible' => $presentation['visible'],
                     'outline' => $presentation['outline'],
                     'attributes' => $presentation['attributes'],
-                    'count' => max(1, is_numeric($action['count'] ?? null) ? (int) $action['count'] : 1),
+                    'layers' => max(1, is_numeric($action['layers'] ?? null) ? (int) $action['layers'] : 1),
                     'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
                     'closeAll' => $this->normalizeBoolean($action['closeAll'] ?? false, false),
                     'dispatch' => is_array($action['dispatch'] ?? null) ? $action['dispatch'] : [],

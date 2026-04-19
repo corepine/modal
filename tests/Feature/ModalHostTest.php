@@ -36,7 +36,7 @@ it('closes top modal layers', function (): void {
 
     $initialStack = $test->get('stack');
 
-    $test->dispatch('modal.close-top', count: 2, destroy: true);
+    $test->dispatch('modal.close-top', layers: 2, destroy: true);
 
     $stack = $test->get('stack');
 

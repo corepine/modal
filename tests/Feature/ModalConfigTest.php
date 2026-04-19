@@ -145,7 +145,7 @@ it('normalizes declarative footer actions for auto layout', function (): void {
 
     $actions = $config->layoutFooterActions([
         'actions' => [
-            ['type' => 'close', 'label' => 'Cancel', 'count' => 2, 'destroy' => false],
+            ['type' => 'close', 'label' => 'Cancel', 'layers' => 2, 'destroy' => false],
             ['type' => 'method', 'method' => 'saveUsers', 'params' => [5], 'label' => 'Save'],
             'refreshList',
         ],
@@ -154,7 +154,7 @@ it('normalizes declarative footer actions for auto layout', function (): void {
     expect($actions)->toHaveCount(3);
     expect($actions[0]['type'])->toBe('close');
     expect($actions[0]['label'])->toBe('Cancel');
-    expect($actions[0]['count'])->toBe(2);
+    expect($actions[0]['layers'])->toBe(2);
     expect($actions[0]['destroy'])->toBeFalse();
 
     expect($actions[1]['type'])->toBe('method');

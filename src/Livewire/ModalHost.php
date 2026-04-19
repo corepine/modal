@@ -112,7 +112,7 @@ class ModalHost extends Component
         );
     }
 
-    public function closeModal(?string $id = null, int $count = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
+    public function closeModal(?string $id = null, int $layers = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
     {
         if ($closeAll) {
             $this->closeAllModals($destroy, $dispatch, $dispatchTo);
@@ -121,7 +121,7 @@ class ModalHost extends Component
         }
 
         if ($id === null) {
-            $this->closeTopModal($count, $destroy, false, $dispatch, $dispatchTo);
+            $this->closeTopModal($layers, $destroy, false, $dispatch, $dispatchTo);
 
             return;
         }
@@ -136,7 +136,7 @@ class ModalHost extends Component
         $this->closeTopModal($layersToClose, $destroy, false, $dispatch, $dispatchTo);
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
+    public function closeTopModal(int $layers = 1, bool $destroy = true, bool $closeAll = false, array $dispatch = [], array $dispatchTo = []): void
     {
         if ($closeAll) {
             $this->closeAllModals($destroy, $dispatch, $dispatchTo);
@@ -144,9 +144,9 @@ class ModalHost extends Component
             return;
         }
 
-        $count = max(1, $count);
+        $layers = max(1, $layers);
 
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $layers; $i++) {
             $id = array_pop($this->stack);
 
             if ($id === null) {

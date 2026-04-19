@@ -27,7 +27,7 @@ class Action extends SupportAction
 
     private bool | Closure | null $outline = null;
 
-    private int $count = 1;
+    private int $layers = 1;
 
     private bool $destroy = true;
 
@@ -153,10 +153,10 @@ class Action extends SupportAction
         return $this->outline($condition);
     }
 
-    public function close(int $count = 1, bool $destroy = true, bool $closeAll = false): self
+    public function close(int $layers = 1, bool $destroy = true, bool $closeAll = false): self
     {
         $this->type = 'close';
-        $this->count = max(1, $count);
+        $this->layers = max(1, $layers);
         $this->destroy = $destroy;
         $this->closeAll = $closeAll;
 
@@ -216,7 +216,7 @@ class Action extends SupportAction
                 'outline' => $outline,
                 'accent' => $accent,
                 'attributes' => $attributes,
-                'count' => $this->count,
+                'layers' => $this->layers,
                 'destroy' => $this->destroy,
                 'closeAll' => $this->closeAll,
                 'dispatch' => $this->dispatch,

@@ -599,7 +599,7 @@
 
                     this.requestClose({
                         id,
-                        count: 1,
+                        layers: 1,
                         destroy: destroyOnClose,
                     });
                 },
@@ -806,8 +806,8 @@
                         }
                     }
 
-                    const parsedCount = Number.parseInt(payload.count ?? 1, 10);
-                    const layers = Number.isNaN(parsedCount) ? 1 : Math.max(1, parsedCount);
+                    const parsedLayers = Number.parseInt(payload.layers ?? 1, 10);
+                    const layers = Number.isNaN(parsedLayers) ? 1 : Math.max(1, parsedLayers);
 
                     return stack.slice(-layers);
                 },
@@ -833,7 +833,7 @@
                     const id = typeof payload.id === 'string' && payload.id !== '' ? payload.id : null;
                     const closingIds = this.planClosingIds({
                         id,
-                        count: payload.count ?? 1,
+                        layers: payload.layers ?? 1,
                         closeAll,
                     });
 
@@ -847,7 +847,7 @@
                         } else {
                             Livewire.dispatch(events.close, {
                                 id,
-                                count: Math.max(1, Number.parseInt(payload.count ?? 1, 10) || 1),
+                                layers: Math.max(1, Number.parseInt(payload.layers ?? 1, 10) || 1),
                                 destroy,
                                 dispatch: payload.dispatch ?? {},
                                 dispatchTo: payload.dispatchTo ?? {},
@@ -872,7 +872,7 @@
                         } else {
                             Livewire.dispatch(events.close, {
                                 id,
-                                count: Math.max(1, closingIds.length),
+                                layers: Math.max(1, closingIds.length),
                                 destroy,
                                 dispatch: payload.dispatch ?? {},
                                 dispatchTo: payload.dispatchTo ?? {},
@@ -924,7 +924,7 @@
 
                     this.requestClose({
                         id: this.activeModalId,
-                        count: 1,
+                        layers: 1,
                         destroy: attrs.destroyOnClose ?? true,
                     });
                 },
@@ -942,7 +942,7 @@
 
                     this.requestClose({
                         id: this.activeModalId,
-                        count: 1,
+                        layers: 1,
                         destroy: attrs.destroyOnClose ?? true,
                     });
                 },
@@ -1138,7 +1138,7 @@
                                                             {{ $actionAttributes }}
                                                             @if (! $actionDisabled)
                                                                 x-on:click.stop="requestClose({
-                                                                    count: @js($action['count'] ?? 1),
+                                                                    layers: @js($action['layers'] ?? 1),
                                                                     destroy: @js($action['destroy'] ?? true),
                                                                     closeAll: @js($action['closeAll'] ?? false),
                                                                     dispatch: @js($action['dispatch'] ?? []),

@@ -127,7 +127,7 @@ $this->closeModal(
     dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
 );
 $this->closeTopModal(
-    count: 2,
+    layers: 2,
     dispatch: ['users-refreshed' => ['user' => 5]],
 );
 $this->closeAll(
@@ -147,7 +147,7 @@ From Blade helpers:
 </x-corepine.modal.actions.open>
 
 <x-corepine.modal.actions.close
-    count="1"
+    layers="1"
     :destroy="true"
     :dispatch="['users-refreshed' => ['user' => $user->id]]"
     :dispatch-to="['orders.table' => ['sync-user' => ['user' => $user->id]]]"
@@ -274,7 +274,7 @@ use Corepine\Modal\Actions\Action;
 Supported fluent helpers include:
 
 - `method()` / `action()`
-- `close(count, destroy, closeAll)`
+- `close(layers, destroy, closeAll)`
 - `dispatch()` / `dispatchTo()` on close actions
 - `disabled()`
 - `visible()`

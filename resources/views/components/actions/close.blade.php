@@ -1,5 +1,5 @@
 @props([
-    'count' => 1,
+    'layers' => 1,
     'destroy' => true,
     'closeAll' => false,
     'disabled' => false,
@@ -9,7 +9,7 @@
 ])
 
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
-@php($resolvedCount = is_numeric($count) ? max(1, (int) $count) : 1)
+@php($resolvedLayers = is_numeric($layers) ? max(1, (int) $layers) : 1)
 @php($resolvedDestroy = is_bool($destroy)
     ? $destroy
     : (is_string($destroy)
@@ -50,7 +50,7 @@
         x-on:click="const resolvedModalId = @js($resolvedModalId) ?? $el.closest('[data-corepine-modal-id]')?.getAttribute('data-corepine-modal-id') ?? null;
     const closePayload = {
         id: resolvedModalId,
-        count: @js($resolvedCount),
+        layers: @js($resolvedLayers),
         destroy: @js($resolvedDestroy),
         closeAll: @js($resolvedCloseAll),
         dispatch: @js($resolvedDispatch),
@@ -77,7 +77,7 @@
         }
     } else if (typeof Livewire?.dispatch === 'function') {
         Livewire.dispatch(@js($modalEvents->closeModal()), {
-            count: @js($resolvedCount),
+            layers: @js($resolvedLayers),
             destroy: @js($resolvedDestroy),
             dispatch: @js($resolvedDispatch),
             dispatchTo: @js($resolvedDispatchTo),
