@@ -45,7 +45,7 @@ return [
             'shell' => true,
             'heading' => null,
             'description' => null,
-            'showClose' => true,
+            'showClose' => null,
             'footerActionsAlignment' => 'end',
             'actions' => [],
         ],

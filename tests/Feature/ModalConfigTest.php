@@ -132,6 +132,8 @@ it('supports shell attributes', function (): void {
     expect($config->usesLayout(['shell' => false]))->toBeFalse();
     expect($config->layoutHeading(['heading' => 'Users']))->toBe('Users');
     expect($config->layoutDescription(['description' => 'Search and view users']))->toBe('Search and view users');
+    expect($config->layoutShowClose([]))->toBeFalse();
+    expect($config->layoutShowClose(['heading' => 'Users']))->toBeTrue();
     expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();
     expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => 'center']))->toBe('center');
     expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => Alignment::Right]))->toBe('end');

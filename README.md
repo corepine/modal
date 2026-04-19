@@ -122,11 +122,17 @@ $this->openBottomSheet('modals.user-sheet', ['user' => 5]);
 
 $this->closeModal();
 $this->closeModal(
+    destroy: false,
     dispatch: ['users-refreshed' => ['user' => 5]],
     dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
 );
-$this->closeTopModal(2);
-$this->closeAll();
+$this->closeTopModal(
+    count: 2,
+    dispatch: ['users-refreshed' => ['user' => 5]],
+);
+$this->closeAll(
+    dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
+);
 ```
 
 From Blade helpers:
@@ -136,10 +142,19 @@ From Blade helpers:
     <button type="button">Edit</button>
 </x-corepine.modal.actions.open>
 
-<x-corepine.modal.actions.close count="1" :destroy="true">
+<x-corepine.modal.actions.close
+    count="1"
+    :destroy="true"
+    :dispatch="['users-refreshed' => ['user' => $user->id]]"
+    :dispatch-to="['orders.table' => ['sync-user' => ['user' => $user->id]]]"
+>
     Close
 </x-corepine.modal.actions.close>
 ```
+
+`dispatch` fires regular Livewire/browser events after the close finishes.
+
+`dispatchTo` fires Livewire targeted events after the close finishes.
 
 ## Quick Start (Standalone Alpine + Blade Mode)
 
@@ -213,12 +228,14 @@ The canonical shell/action API uses `actions` (not legacy keys).
 | `closeOnEscape` | `bool` | `true` | Escape closes top layer. |
 | `closeAllOnEscape` | `bool` | `false` | Escape closes full stack. |
 | `destroyOnClose` | `bool` | `true` | Remove closed layers from host state. |
-| `dispatchCloseEvent` | `bool` | `false` | Emits `modal.component-closed` for that layer. |
+| `dispatch` | `array` | `[]` | Default events to dispatch after close. |
+| `dispatchTo` | `array` | `[]` | Default targeted Livewire events to dispatch after close. |
+| `dispatchCloseEvent` | `bool` | `false` | Emits the built-in `modal.component-closed` notification for that layer. |
 | `blur` | `bool` | `false` | Scrim blur effect. |
 | `shell` | `bool` | `true` | Enables built-in shell header/body/footer structure. |
 | `heading` | `string \| null` | `null` | Shell heading text. |
 | `description` | `string \| null` | `null` | Shell description text. |
-| `showClose` | `bool` | `true` | Built-in shell close icon. |
+| `showClose` | `bool \| null` | `auto` | Built-in shell close icon. Defaults to visible only when built-in `heading` or `description` is present. |
 | `footerActionsAlignment` | `Alignment \| string` | `end` | `start`, `center`, `end`. |
 | `actions` | `array` | `[]` | Declarative shell actions (`close` / `method`). |
 | `class` | `string` | `''` | Extra panel classes. |
@@ -252,6 +269,7 @@ Supported fluent helpers include:
 
 - `method()` / `action()`
 - `close(count, destroy, closeAll)`
+- `dispatch()` / `dispatchTo()` on close actions
 - `disabled()`
 - `visible()`
 - `color()` and shortcuts (`primary`, `danger`, `success`, `warning`, `info`, `gray`, `dark`)

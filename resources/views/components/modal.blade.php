@@ -3,7 +3,7 @@
     'open' => false,
     'heading' => null,
     'description' => null,
-    'showClose' => true,
+    'showClose' => null,
     'modalAttributes' => [],
     'size' => 'default',
     'type' => null,
@@ -119,6 +119,9 @@
 @if (! is_null($normalizedCloseOnEscape))
     @php($payloadModalAttributes['closeOnEscape'] = $normalizedCloseOnEscape)
 @endif
+@php($resolvedShowClose = ! is_null($showClose)
+    ? $normalizeBoolean($showClose, true)
+    : ($resolvedHeading !== null || $resolvedDescription !== null))
 @php($normalizedCloseAllOnEscape = $normalizeBoolean($closeAllOnEscape, null))
 @if (! is_null($normalizedCloseAllOnEscape))
     @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
@@ -1103,7 +1106,7 @@
                                 </div>
                             @endif
 
-                            @if ($namedHeader !== null || $resolvedHeading !== null || $resolvedDescription !== null || $showClose)
+                            @if ($namedHeader !== null || $resolvedHeading !== null || $resolvedDescription !== null || $resolvedShowClose)
                                 <header
                                     @if ($namedHeader !== null)
                                         {{ $namedHeader->attributes->class('flex items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70') }}
@@ -1131,7 +1134,7 @@
                                         </div>
                                     @endif
 
-                                    @if ($showClose && $namedHeader === null)
+                                    @if ($resolvedShowClose && $namedHeader === null)
                                         <button
                                             type="button"
                                             class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"

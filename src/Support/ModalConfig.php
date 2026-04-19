@@ -517,10 +517,14 @@ class ModalConfig
      */
     public function layoutShowClose(array $attributes): bool
     {
-        $defaults = $this->defaultModalAttributes();
-        $showClose = $attributes['showClose'] ?? ($defaults['showClose'] ?? true);
+        $showClose = $attributes['showClose'] ?? null;
 
-        return $this->normalizeBoolean($showClose, true);
+        if (! is_null($showClose)) {
+            return $this->normalizeBoolean($showClose, true);
+        }
+
+        return $this->layoutHeading($attributes) !== null
+            || $this->layoutDescription($attributes) !== null;
     }
 
     /**

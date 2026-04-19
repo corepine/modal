@@ -129,6 +129,30 @@ BLADE);
     expect($flat)->toContain('\u0022showDragHandle\u0022:true');
 });
 
+it('hides standalone close action by default when heading and description are empty', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="standalone-no-header-copy">
+    <div>Standalone body</div>
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('Standalone body');
+    expect($html)->not->toContain('x-on:click="close()"');
+    expect($html)->not->toContain('sr-only');
+});
+
+it('allows standalone close action to be forced on without heading and description', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="standalone-force-close" show-close="true">
+    <div>Standalone body</div>
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('Standalone body');
+    expect($html)->toContain('x-on:click="close()"');
+    expect($html)->toContain('sr-only');
+});
+
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-layout heading="Edit User">
@@ -162,7 +186,7 @@ BLADE);
     expect($html)->toContain('text-zinc-500');
 });
 
-it('supports null heading while keeping close action by default', function (): void {
+it('hides layout close action by default when heading and description are empty', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-layout :heading="null">
     <div>Body only</div>
@@ -170,10 +194,21 @@ it('supports null heading while keeping close action by default', function (): v
 BLADE);
 
     expect($html)->toContain('Body only');
-    expect($html)->toContain('sr-only');
+    expect($html)->not->toContain('sr-only');
     expect($html)->not->toContain('text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100');
     expect($html)->toContain('h-full');
     expect($html)->not->toContain('flex shrink-0 items-center justify-end border-t');
+});
+
+it('allows layout close action to be forced on without heading and description', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout :heading="null" show-close="true">
+    <div>Body only</div>
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('Body only');
+    expect($html)->toContain('sr-only');
 });
 
 it('merges custom wrapper attributes on modal shell', function (): void {

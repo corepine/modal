@@ -1,16 +1,45 @@
 @props([
     'heading' => null,
     'description' => null,
-    'showClose' => true,
+    'showClose' => null,
 ])
 
 @php
     $resolvedHeading = is_string($heading) && trim($heading) !== '' ? $heading : null;
+    $resolvedDescription = is_string($description) && trim($description) !== '' ? $description : null;
     $hasHeaderSlot = isset($header);
     $namedHeader = $hasHeaderSlot ? $header : null;
     $namedFooter = isset($footer) && $footer->isNotEmpty() ? $footer : null;
     $renderedBody = $slot;
     $inlineFooterBlocks = [];
+    $normalizeBoolean = static function (mixed $value, ?bool $fallback = null): ?bool {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return match (strtolower(trim($value))) {
+                '1', 'true', 'yes', 'on' => true,
+                '0', 'false', 'no', 'off' => false,
+                default => $fallback,
+            };
+        }
+
+        if (is_int($value) || is_float($value)) {
+            if ((float) $value === 1.0) {
+                return true;
+            }
+
+            if ((float) $value === 0.0) {
+                return false;
+            }
+        }
+
+        return $fallback;
+    };
+    $resolvedShowClose = ! is_null($showClose)
+        ? $normalizeBoolean($showClose, true)
+        : ($resolvedHeading !== null || $resolvedDescription !== null);
 
     if ($namedFooter === null) {
         $slotHtml = (string) $slot;
@@ -38,7 +67,7 @@
 @endphp
 
 <section {{ $attributes->merge(['class' => 'h-full max-h-full min-h-0 flex flex-col overflow-hidden overscroll-contain bg-inherit dark:bg-zinc-800 dark:text-white']) }}>
-    @if ($namedHeader !== null || $resolvedHeading !== null || filled($description) || $showClose)
+    @if ($namedHeader !== null || $resolvedHeading !== null || $resolvedDescription !== null || $resolvedShowClose)
         <header
             @if ($namedHeader !== null)
                 {{ $namedHeader->attributes->class('flex shrink-0 items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70') }}
@@ -58,13 +87,13 @@
                         </h2>
                     @endif
 
-                    @if (filled($description))
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $description }}</p>
+                    @if ($resolvedDescription !== null)
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $resolvedDescription }}</p>
                     @endif
                 </div>
             @endif
 
-            @if ($showClose && $namedHeader === null)
+            @if ($resolvedShowClose && $namedHeader === null)
                 <x-corepine-modal-close
                     class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
