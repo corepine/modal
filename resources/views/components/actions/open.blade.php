@@ -9,8 +9,8 @@
     'drawer' => null,
     'sheet' => null,
     'bottomSheet' => null,
+    'placement' => null,
     'isolate' => null,
-    'position' => null,
     'origin' => null,
     'height' => null,
     'maxHeight' => null,
@@ -141,8 +141,8 @@
 @if (! is_null($normalizedType))
     @php($payloadModalAttributes['type'] = $normalizedType)
 @endif
-@if (is_string($position) && trim($position) !== '')
-    @php($payloadModalAttributes['position'] = strtolower(trim($position)))
+@if (is_string($placement) && trim($placement) !== '')
+    @php($payloadModalAttributes['placement'] = strtolower(trim($placement)))
 @endif
 @if (is_string($origin) && trim($origin) !== '')
     @php($payloadModalAttributes['origin'] = strtolower(trim($origin)))

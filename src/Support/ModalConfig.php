@@ -60,30 +60,30 @@ class ModalConfig
 
     private const DEFAULT_SIZE_CLASSES = 'max-w-lg sm:max-w-full';
 
-    private const DEFAULT_MODAL_POSITION = 'center';
+    private const DEFAULT_MODAL_PLACEMENT = 'center';
 
     private const DEFAULT_MODAL_ORIGIN = 'center';
 
-    private const DEFAULT_DRAWER_POSITION = 'right';
+    private const DEFAULT_DRAWER_PLACEMENT = 'right';
 
-    private const DEFAULT_SHEET_POSITION = 'bottom';
+    private const DEFAULT_SHEET_PLACEMENT = 'bottom';
 
     private const DEFAULT_MODAL_TYPE = ModalType::Modal->value;
 
     /**
      * @var array<int, string>
      */
-    private const MODAL_POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
+    private const MODAL_PLACEMENTS = ['center', 'top', 'bottom', 'left', 'right'];
 
     /**
      * @var array<int, string>
      */
-    private const DRAWER_POSITIONS = ['left', 'right'];
+    private const DRAWER_PLACEMENTS = ['left', 'right'];
 
     /**
      * @var array<int, string>
      */
-    private const SHEET_POSITIONS = ['bottom'];
+    private const SHEET_PLACEMENTS = ['bottom'];
 
     /**
      * @param  string  $key
@@ -278,32 +278,32 @@ class ModalConfig
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function modalPosition(array $attributes): string
+    public function modalPlacement(array $attributes): string
     {
         $type = $this->modalType($attributes);
 
         if ($type === ModalType::Sheet->value) {
-            return self::DEFAULT_SHEET_POSITION;
+            return self::DEFAULT_SHEET_PLACEMENT;
         }
 
-        $position = Placement::fromValue($attributes['position'] ?? null);
+        $placement = Placement::fromValue($attributes['placement'] ?? null);
 
-        if ($position === null) {
+        if ($placement === null) {
             return match ($type) {
-                ModalType::Drawer->value => self::DEFAULT_DRAWER_POSITION,
-                default => self::DEFAULT_MODAL_POSITION,
+                ModalType::Drawer->value => self::DEFAULT_DRAWER_PLACEMENT,
+                default => self::DEFAULT_MODAL_PLACEMENT,
             };
         }
 
         if ($type === ModalType::Drawer->value) {
-            return in_array($position->value, self::DRAWER_POSITIONS, true)
-                ? $position->value
-                : self::DEFAULT_DRAWER_POSITION;
+            return in_array($placement->value, self::DRAWER_PLACEMENTS, true)
+                ? $placement->value
+                : self::DEFAULT_DRAWER_PLACEMENT;
         }
 
-        return in_array($position->value, self::MODAL_POSITIONS, true)
-            ? $position->value
-            : self::DEFAULT_MODAL_POSITION;
+        return in_array($placement->value, self::MODAL_PLACEMENTS, true)
+            ? $placement->value
+            : self::DEFAULT_MODAL_PLACEMENT;
     }
 
     /**
@@ -314,11 +314,11 @@ class ModalConfig
         $type = $this->modalType($attributes);
 
         if ($type === ModalType::Sheet->value) {
-            return self::DEFAULT_SHEET_POSITION;
+            return self::DEFAULT_SHEET_PLACEMENT;
         }
 
         if ($type === ModalType::Drawer->value) {
-            return $this->modalPosition($attributes);
+            return $this->modalPlacement($attributes);
         }
 
         $origin = Placement::fromValue($attributes['origin'] ?? null);
@@ -327,10 +327,10 @@ class ModalConfig
             return $origin->value;
         }
 
-        $position = $this->modalPosition($attributes);
+        $placement = $this->modalPlacement($attributes);
 
-        return in_array($position, self::MODAL_POSITIONS, true)
-            ? $position
+        return in_array($placement, self::MODAL_PLACEMENTS, true)
+            ? $placement
             : self::DEFAULT_MODAL_ORIGIN;
     }
 
@@ -347,10 +347,10 @@ class ModalConfig
      */
     public function modalPanelWrapClasses(array $attributes): string
     {
-        $position = $this->modalPosition($attributes);
+        $placement = $this->modalPlacement($attributes);
 
         if ($this->isDrawer($attributes)) {
-            return $position === 'left'
+            return $placement === 'left'
                 ? 'absolute inset-0 flex w-full items-stretch justify-start p-0'
                 : 'absolute inset-0 flex w-full items-stretch justify-end p-0';
         }
@@ -359,7 +359,7 @@ class ModalConfig
             return 'absolute inset-x-0 bottom-0 flex w-full items-end justify-center p-0';
         }
 
-        return match ($position) {
+        return match ($placement) {
             'top' => 'absolute inset-0 flex w-full items-start justify-center p-4 sm:p-8',
             'bottom' => 'absolute inset-0 flex w-full items-end justify-center p-4 sm:p-8',
             'left' => 'absolute inset-0 flex w-full items-center justify-start p-4 sm:p-8',
@@ -375,8 +375,8 @@ class ModalConfig
     public function modalTransitionClasses(array $attributes): array
     {
         if ($this->isDrawer($attributes)) {
-            $position = $this->modalPosition($attributes);
-            $offscreen = $position === 'left' ? '-translate-x-full' : 'translate-x-full';
+            $placement = $this->modalPlacement($attributes);
+            $offscreen = $placement === 'left' ? '-translate-x-full' : 'translate-x-full';
 
             return [
                 'enter' => 'duration-250 ease-out',
@@ -1011,7 +1011,7 @@ class ModalConfig
         unset($attributes['enableDrag']);
         unset($attributes['footerActionsAlign']);
         unset($attributes['layout']);
-        $attributes['position'] = $this->modalPosition($attributes);
+        $attributes['placement'] = $this->modalPlacement($attributes);
         $attributes['origin'] = $this->modalOrigin($attributes);
 
         return $attributes;

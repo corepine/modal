@@ -11,53 +11,53 @@ use Corepine\Support\Enums\Alignment;
 it('normalizes drawer positions to left or right', function (): void {
     $config = app(ModalConfig::class);
 
-    expect($config->modalPosition(['drawer' => true, 'position' => 'left']))->toBe('left');
-    expect($config->modalPosition(['drawer' => true, 'position' => 'right']))->toBe('right');
-    expect($config->modalPosition(['drawer' => true, 'position' => 'top']))->toBe('right');
-    expect($config->modalPosition(['drawer' => true, 'position' => 'center']))->toBe('right');
+    expect($config->modalPlacement(['drawer' => true, 'placement' => 'left']))->toBe('left');
+    expect($config->modalPlacement(['drawer' => true, 'placement' => 'right']))->toBe('right');
+    expect($config->modalPlacement(['drawer' => true, 'placement' => 'top']))->toBe('right');
+    expect($config->modalPlacement(['drawer' => true, 'placement' => 'center']))->toBe('right');
 });
 
 it('forces sheet positions to bottom', function (): void {
     $config = app(ModalConfig::class);
 
-    expect($config->modalPosition(['type' => 'sheet']))->toBe('bottom');
-    expect($config->modalPosition(['type' => 'sheet', 'position' => 'top']))->toBe('bottom');
-    expect($config->modalPosition(['bottomSheet' => true, 'position' => 'left']))->toBe('bottom');
+    expect($config->modalPlacement(['type' => 'sheet']))->toBe('bottom');
+    expect($config->modalPlacement(['type' => 'sheet', 'placement' => 'top']))->toBe('bottom');
+    expect($config->modalPlacement(['bottomSheet' => true, 'placement' => 'left']))->toBe('bottom');
 });
 
 it('normalizes standard modal positions', function (): void {
     $config = app(ModalConfig::class);
 
-    expect($config->modalPosition(['drawer' => false, 'position' => 'top']))->toBe('top');
-    expect($config->modalPosition(['drawer' => false, 'position' => 'bottom']))->toBe('bottom');
-    expect($config->modalPosition(['drawer' => false, 'position' => 'left']))->toBe('left');
-    expect($config->modalPosition(['drawer' => false, 'position' => 'right']))->toBe('right');
-    expect($config->modalPosition(['drawer' => false, 'position' => 'invalid']))->toBe('center');
+    expect($config->modalPlacement(['drawer' => false, 'placement' => 'top']))->toBe('top');
+    expect($config->modalPlacement(['drawer' => false, 'placement' => 'bottom']))->toBe('bottom');
+    expect($config->modalPlacement(['drawer' => false, 'placement' => 'left']))->toBe('left');
+    expect($config->modalPlacement(['drawer' => false, 'placement' => 'right']))->toBe('right');
+    expect($config->modalPlacement(['drawer' => false, 'placement' => 'invalid']))->toBe('center');
 });
 
 it('normalizes modal origins by modal type', function (): void {
     $config = app(ModalConfig::class);
 
     expect($config->modalOrigin(['type' => 'sheet', 'origin' => 'left']))->toBe('bottom');
-    expect($config->modalOrigin(['drawer' => true, 'position' => 'left', 'origin' => 'top']))->toBe('left');
-    expect($config->modalOrigin(['type' => 'modal', 'position' => 'right']))->toBe('right');
-    expect($config->modalOrigin(['type' => 'modal', 'position' => 'right', 'origin' => 'left']))->toBe('left');
+    expect($config->modalOrigin(['drawer' => true, 'placement' => 'left', 'origin' => 'top']))->toBe('left');
+    expect($config->modalOrigin(['type' => 'modal', 'placement' => 'right']))->toBe('right');
+    expect($config->modalOrigin(['type' => 'modal', 'placement' => 'right', 'origin' => 'left']))->toBe('left');
     expect($config->modalOrigin(['type' => 'modal', 'origin' => 'invalid']))->toBe('center');
-    expect($config->modalPosition(['type' => 'modal', 'position' => Placement::Left]))->toBe('left');
+    expect($config->modalPlacement(['type' => 'modal', 'placement' => Placement::Left]))->toBe('left');
     expect($config->modalOrigin(['type' => 'modal', 'origin' => Placement::Bottom]))->toBe('bottom');
     expect($config->modalOriginClass(['type' => 'modal', 'origin' => 'top']))->toBe('origin-top');
 });
 
-it('uses position-aware transitions for standard modals', function (): void {
+it('uses placement-aware transitions for standard modals', function (): void {
     $config = app(ModalConfig::class);
 
-    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'left'])['enterStart'])->toContain('-translate-x-6');
-    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'right'])['enterStart'])->toContain('translate-x-6');
-    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'top'])['enterStart'])->toContain('-translate-y-6');
-    expect($config->modalTransitionClasses(['type' => 'modal', 'position' => 'bottom'])['enterStart'])->toContain('translate-y-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'placement' => 'left'])['enterStart'])->toContain('-translate-x-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'placement' => 'right'])['enterStart'])->toContain('translate-x-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'placement' => 'top'])['enterStart'])->toContain('-translate-y-6');
+    expect($config->modalTransitionClasses(['type' => 'modal', 'placement' => 'bottom'])['enterStart'])->toContain('translate-y-6');
     expect($config->modalTransitionClasses([
         'type' => 'modal',
-        'position' => 'bottom',
+        'placement' => 'bottom',
         'origin' => 'right',
     ])['enterStart'])->toContain('translate-x-6');
 });
@@ -110,7 +110,7 @@ it('normalizes modal type using enum, explicit type, and helper flags', function
     expect($normalizedSheet['type'])->toBe('sheet');
     expect($normalizedSheet['sheet'])->toBeTrue();
     expect($normalizedSheet['drawer'])->toBeFalse();
-    expect($normalizedSheet['position'])->toBe('bottom');
+    expect($normalizedSheet['placement'])->toBe('bottom');
 
     expect($normalizedBottomSheet['type'])->toBe('sheet');
     expect($normalizedBottomSheet['sheet'])->toBeTrue();
@@ -122,7 +122,7 @@ it('normalizes modal type using enum, explicit type, and helper flags', function
     expect($normalizedDrawer['type'])->toBe('drawer');
     expect($normalizedDrawer['drawer'])->toBeTrue();
     expect($normalizedDrawer['sheet'])->toBeFalse();
-    expect($normalizedDrawer['position'])->toBe('right');
+    expect($normalizedDrawer['placement'])->toBe('right');
 });
 
 it('supports shell attributes', function (): void {

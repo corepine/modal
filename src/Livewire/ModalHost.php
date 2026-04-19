@@ -126,13 +126,13 @@ class ModalHost extends Component
             return;
         }
 
-        $position = array_search($id, $this->stack, true);
+        $stackIndex = array_search($id, $this->stack, true);
 
-        if ($position === false) {
+        if ($stackIndex === false) {
             return;
         }
 
-        $layersToClose = count($this->stack) - $position;
+        $layersToClose = count($this->stack) - $stackIndex;
         $this->closeTopModal($layersToClose, $destroy, false, $dispatch, $dispatchTo);
     }
 

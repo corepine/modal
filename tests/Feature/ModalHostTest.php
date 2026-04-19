@@ -103,18 +103,18 @@ it('stores runtime class and blur attributes', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['blur'])->toBeTrue();
 });
 
-it('stores drawer and position attributes', function (): void {
+it('stores drawer and placement attributes', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
-            'position' => 'left',
+            'placement' => 'left',
         ]);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
 
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeTrue();
-    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('left');
+    expect($modals[$stack[0]]['modalAttributes']['placement'])->toBe('left');
     $test->assertSee('h-[100dvh] max-h-[100dvh]');
 });
 
@@ -133,7 +133,7 @@ it('stores explicit sheet type and renders sheet classes', function (): void {
     expect($modals[$stack[0]]['modalAttributes']['sheet'])->toBeTrue();
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
     expect($modals[$stack[0]]['modalAttributes']['dismissible'])->toBeFalse();
-    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('bottom');
+    expect($modals[$stack[0]]['modalAttributes']['placement'])->toBe('bottom');
 
     $test->assertSee('rounded-t-2xl rounded-b-none')
         ->assertSee('rounded-b-none')
@@ -202,44 +202,44 @@ it('opens a bottom sheet through the prefixed open-sheet event', function (): vo
     expect($modals[$stack[0]]['modalAttributes']['type'])->toBe('sheet');
 });
 
-it('normalizes invalid drawer position to right', function (): void {
+it('normalizes invalid drawer placement to right', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
-            'position' => 'top',
+            'placement' => 'top',
         ]);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
 
-    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('right');
+    expect($modals[$stack[0]]['modalAttributes']['placement'])->toBe('right');
 });
 
-it('stores non-drawer position for centered modal layout overrides', function (): void {
+it('stores non-drawer placement for centered modal layout overrides', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
-            'position' => 'top',
+            'placement' => 'top',
         ]);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
 
     expect($modals[$stack[0]]['modalAttributes']['drawer'])->toBeFalse();
-    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('top');
+    expect($modals[$stack[0]]['modalAttributes']['placement'])->toBe('top');
 });
 
 it('renders standard modal origin and edge alignment classes', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
             'type' => 'modal',
-            'position' => 'right',
+            'placement' => 'right',
             'origin' => 'left',
         ]);
 
     $stack = $test->get('stack');
     $modals = $test->get('modals');
 
-    expect($modals[$stack[0]]['modalAttributes']['position'])->toBe('right');
+    expect($modals[$stack[0]]['modalAttributes']['placement'])->toBe('right');
     expect($modals[$stack[0]]['modalAttributes']['origin'])->toBe('left');
 
     $test->assertSee('justify-end')
@@ -252,7 +252,7 @@ it('forces drawer edge side to remain square in rendered classes', function (): 
     Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
             'drawer' => true,
-            'position' => 'right',
+            'placement' => 'right',
             'class' => 'rounded-3xl',
         ])
         ->assertSee('rounded-3xl')

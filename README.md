@@ -84,7 +84,7 @@ class EditUser extends Modal
     {
         return [
             'type' => ModalType::Modal,
-            'position' => Placement::Center,
+            'placement' => Placement::Center,
             'origin' => Placement::Center,
             'shell' => true,
             'heading' => 'Edit User',
@@ -222,8 +222,8 @@ The canonical shell/action API uses `actions` (not legacy keys).
 | Key | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `type` | `modal \| drawer \| sheet` | `modal` | Presentation type. |
-| `position` | `Placement \| string` | by type | `modal`: `center/top/bottom/left/right`, `drawer`: `left/right`, `sheet`: forced `bottom`. |
-| `origin` | `Placement \| string` | follows type/position | Transform origin; same value set as `position` vocabulary. |
+| `placement` | `Placement \| string` | by type | `modal`: `center/top/bottom/left/right`, `drawer`: `left/right`, `sheet`: forced `bottom`. |
+| `origin` | `Placement \| string` | follows type/placement | Transform origin; same value set as `placement` vocabulary. |
 | `size` | `string` | `default` | Width token from config sizes, or custom class string. |
 | `height` | `string \| number \| null` | `null` | Panel height (modal/drawer) and initial sheet height. |
 | `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for all types. |
@@ -248,9 +248,9 @@ The canonical shell/action API uses `actions` (not legacy keys).
 
 ### Type Behavior Rules
 
-- `sheet`: always renders from bottom and always uses `position=bottom`, `origin=bottom`.
+- `sheet`: always renders from bottom and always uses `placement=bottom`, `origin=bottom`.
 - `drawer`: only `left` and `right` are valid.
-- `modal`: supports all five placement values and now fully respects both `position` and `origin`.
+- `modal`: supports all five placement values and now fully respects both `placement` and `origin`.
 
 ## Declarative Actions
 

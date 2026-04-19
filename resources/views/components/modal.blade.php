@@ -10,7 +10,7 @@
     'drawer' => null,
     'sheet' => null,
     'bottomSheet' => null,
-    'position' => null,
+    'placement' => null,
     'origin' => null,
     'height' => null,
     'maxHeight' => null,
@@ -93,8 +93,8 @@
 @if (! is_null($normalizedType))
     @php($payloadModalAttributes['type'] = $normalizedType)
 @endif
-@if (is_string($position) && trim($position) !== '')
-    @php($payloadModalAttributes['position'] = strtolower(trim($position)))
+@if (is_string($placement) && trim($placement) !== '')
+    @php($payloadModalAttributes['placement'] = strtolower(trim($placement)))
 @endif
 @if (is_string($origin) && trim($origin) !== '')
     @php($payloadModalAttributes['origin'] = strtolower(trim($origin)))
@@ -169,7 +169,7 @@
 @php($resolvedModalAttributes = $modalConfig->mergedModalAttributes([], $payloadModalAttributes))
 @php($isDrawer = $modalConfig->isDrawer($resolvedModalAttributes))
 @php($isSheet = $modalConfig->isSheet($resolvedModalAttributes))
-@php($position = $modalConfig->modalPosition($resolvedModalAttributes))
+@php($placement = $modalConfig->modalPlacement($resolvedModalAttributes))
 @php($originClass = $modalConfig->modalOriginClass($resolvedModalAttributes))
 @php($hasBlur = (bool) ($resolvedModalAttributes['blur'] ?? false))
 @php($modalClasses = $modalConfig->mergedModalClasses($resolvedModalAttributes))
@@ -1099,12 +1099,12 @@
                                 'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                                 'h-[100dvh] max-h-[100dvh]' => $isDrawer,
                                 'rounded-lg' => ! $isDrawer && ! $isSheet,
-                                'rounded-r-lg rounded-l-none' => $isDrawer && $position === 'left',
-                                'rounded-l-lg rounded-r-none' => $isDrawer && $position === 'right',
+                                'rounded-r-lg rounded-l-none' => $isDrawer && $placement === 'left',
+                                'rounded-l-lg rounded-r-none' => $isDrawer && $placement === 'right',
                                 'rounded-t-2xl rounded-b-none' => $isSheet,
                                 $modalClasses,
-                                'rounded-l-none' => $isDrawer && $position === 'left',
-                                'rounded-r-none' => $isDrawer && $position === 'right',
+                                'rounded-l-none' => $isDrawer && $placement === 'left',
+                                'rounded-r-none' => $isDrawer && $placement === 'right',
                                 'rounded-b-none' => $isSheet,
                             ])
                             {{ $panelElementAttributes }}

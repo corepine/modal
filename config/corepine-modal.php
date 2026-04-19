@@ -36,7 +36,7 @@ return [
             'drawer' => false,
             'sheet' => false,
             'isolate' => false,
-            'position' => 'center',
+            'placement' => 'center',
             'origin' => 'center',
             'size' => 'default',
             'height' => null,

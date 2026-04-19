@@ -799,10 +799,10 @@
                     }
 
                     if (typeof payload.id === 'string' && payload.id !== '') {
-                        const position = stack.indexOf(payload.id);
+                        const stackIndex = stack.indexOf(payload.id);
 
-                        if (position !== -1) {
-                            return stack.slice(position);
+                        if (stackIndex !== -1) {
+                            return stack.slice(stackIndex);
                         }
                     }
 
@@ -1028,7 +1028,7 @@
                     $modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']);
                     $isDrawer = $modalConfig->isDrawer($modal['modalAttributes']);
                     $isSheet = $modalConfig->isSheet($modal['modalAttributes']);
-                    $position = $modalConfig->modalPosition($modal['modalAttributes']);
+                    $placement = $modalConfig->modalPlacement($modal['modalAttributes']);
                     $originClass = $modalConfig->modalOriginClass($modal['modalAttributes']);
                     $hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false);
                     $panelWrapClasses = $modalConfig->modalPanelWrapClasses($modal['modalAttributes']);
@@ -1073,14 +1073,14 @@
                         'flex min-h-0 w-full flex-col overflow-hidden bg-white dark:bg-zinc-800',
                         'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                         'h-[100dvh] max-h-[100dvh]' => $isDrawer,
-                        'mx-auto' => ! $isDrawer && ! in_array($position, ['left', 'right'], true),
+                        'mx-auto' => ! $isDrawer && ! in_array($placement, ['left', 'right'], true),
                         'rounded-lg' => ! $isDrawer && ! $isSheet,
-                        'rounded-r-lg rounded-l-none' => $isDrawer && $position === 'left',
-                        'rounded-l-lg rounded-r-none' => $isDrawer && $position === 'right',
+                        'rounded-r-lg rounded-l-none' => $isDrawer && $placement === 'left',
+                        'rounded-l-lg rounded-r-none' => $isDrawer && $placement === 'right',
                         'rounded-t-2xl rounded-b-none' => $isSheet,
                         $modalClasses,
-                        'rounded-l-none' => $isDrawer && $position === 'left',
-                        'rounded-r-none' => $isDrawer && $position === 'right',
+                        'rounded-l-none' => $isDrawer && $placement === 'left',
+                        'rounded-r-none' => $isDrawer && $placement === 'right',
                         'rounded-b-none' => $isSheet,
                     ])
                         x-ref="panel-{{ $id }}"

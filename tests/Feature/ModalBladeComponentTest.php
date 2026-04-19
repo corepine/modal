@@ -93,7 +93,7 @@ it('supports standalone modal presentation and sheet options', function (): void
 <x-corepine.modal
     id="settings-sheet"
     type="bottomSheet"
-    position="bottom"
+    placement="bottom"
     origin="left"
     size="2xl"
     height="72vh"
@@ -393,7 +393,7 @@ it('renders open helper with new alias and forwards class to modal attributes', 
     blur="true"
     drawer="true"
     isolate="true"
-    position="left"
+    placement="left"
     origin="left"
     data-testid="open-trigger"
 >
@@ -417,7 +417,7 @@ BLADE);
     expect($flat)->toContain('\u0022drawer\u0022:true');
     expect($flat)->toContain('\u0022type\u0022:\u0022drawer\u0022');
     expect($flat)->toContain('\u0022isolate\u0022:true');
-    expect($flat)->toContain('\u0022position\u0022:\u0022left\u0022');
+    expect($flat)->toContain('\u0022placement\u0022:\u0022left\u0022');
     expect($flat)->toContain('\u0022origin\u0022:\u0022left\u0022');
     expect($flat)->not->toContain('class="p-8 rounded-2xl"');
 });
