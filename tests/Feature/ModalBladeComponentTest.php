@@ -453,6 +453,21 @@ BLADE);
     expect($flat)->toContain('modal.open');
 });
 
+it('supports targeted standalone open helper payloads by modal id', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-open modal-id="user-sheet">
+    <button type="button">Open</button>
+</x-corepine-modal-open>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('window.dispatchEvent(new CustomEvent');
+    expect($flat)->toContain('modal.open');
+    expect($flat)->toContain("const standalonePayload = { id: 'user-sheet' }");
+    expect($flat)->toContain('Livewire.dispatch');
+});
+
 it('merges modalAttributes class with incoming class on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-open

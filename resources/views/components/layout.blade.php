@@ -76,9 +76,7 @@
             @endif
         >
             @if ($namedHeader !== null)
-                <div class="min-w-0 flex-1">
                     {{ $namedHeader }}
-                </div>
             @else
                 <div class="min-w-0 flex flex-col gap-2">
                     @if ($resolvedHeading !== null)

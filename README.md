@@ -142,6 +142,10 @@ From Blade helpers:
     <button type="button">Edit</button>
 </x-corepine.modal.actions.open>
 
+<x-corepine.modal.actions.open modal-id="user-sheet">
+    <button type="button">Open Sheet</button>
+</x-corepine.modal.actions.open>
+
 <x-corepine.modal.actions.close
     count="1"
     :destroy="true"
@@ -155,6 +159,8 @@ From Blade helpers:
 `dispatch` fires regular Livewire/browser events after the close finishes.
 
 `dispatchTo` fires Livewire targeted events after the close finishes.
+
+Use `modal-id` on open/close helpers when you want to target a standalone `<x-corepine.modal id="..." />` by id.
 
 ## Quick Start (Standalone Alpine + Blade Mode)
 

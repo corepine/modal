@@ -1,5 +1,6 @@
 @props([
     'component' => null,
+    'modalId' => null,
     'arguments' => [],
     'modalAttributes' => [],
     'size' => null,
@@ -32,6 +33,7 @@
 @php($modalEvents = app(\Corepine\Modal\ModalService::class)->event())
 @php($triggerAttributes = $attributes->except('class'))
 @php($payloadModalAttributes = is_array($modalAttributes) ? $modalAttributes : [])
+@php($resolvedModalId = is_string($modalId) && trim($modalId) !== '' ? trim($modalId) : null)
 @php($normalizeBoolean = static function (mixed $value): ?bool {
     if (is_bool($value)) {
         return $value;
@@ -237,11 +239,24 @@
 <div
     x-data
     {{ $triggerAttributes }}
-    x-on:click="Livewire.dispatch(@js($modalEvents->openModal()), {
+    x-on:click="const standalonePayload = { id: @js($resolvedModalId) };
+    const stackPayload = {
         component: @js($component),
         arguments: @js($arguments),
         modalAttributes: @js($payloadModalAttributes),
-    })"
+    };
+
+    if (@js($resolvedModalId)) {
+        window.dispatchEvent(new CustomEvent(@js($modalEvents->openModal()), {
+            detail: standalonePayload,
+        }));
+
+        if (typeof Livewire?.dispatch === 'function') {
+            Livewire.dispatch(@js($modalEvents->openModal()), standalonePayload);
+        }
+    } else if (typeof Livewire?.dispatch === 'function') {
+        Livewire.dispatch(@js($modalEvents->openModal()), stackPayload);
+    }"
 >
     {{ $slot }}
 </div>

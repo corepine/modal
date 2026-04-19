@@ -1115,9 +1115,9 @@
                                     @endif
                                 >
                                     @if ($namedHeader !== null)
-                                        <div class="min-w-0 flex-1">
+                                
                                             {{ $namedHeader }}
-                                        </div>
+                       
                                     @else
                                         <div class="min-w-0">
                                             @if ($resolvedHeading !== null)
