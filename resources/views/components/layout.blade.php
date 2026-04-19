@@ -40,6 +40,26 @@
     $resolvedShowClose = ! is_null($showClose)
         ? $normalizeBoolean($showClose, true)
         : ($resolvedHeading !== null || $resolvedDescription !== null);
+    $attributeMap = method_exists($attributes, 'getAttributes') ? $attributes->getAttributes() : iterator_to_array($attributes);
+    $hasSubmitAttribute = collect(array_keys($attributeMap))->contains(
+        static fn (string $key): bool => str_starts_with($key, 'wire:submit')
+            || str_starts_with($key, 'x-on:submit')
+            || str_starts_with($key, '@submit')
+    );
+    $isFormLayout = $hasSubmitAttribute;
+    $rootAttributes = $isFormLayout ? $attributes->except('method') : $attributes;
+    $submittedMethod = is_string($attributes->get('method')) ? strtolower(trim((string) $attributes->get('method'))) : null;
+    $formMethod = $submittedMethod;
+
+    if ($isFormLayout) {
+        if (! in_array($formMethod, ['get', 'post', 'put', 'patch', 'delete'], true)) {
+            $formMethod = 'post';
+        }
+
+        $rootAttributes = $rootAttributes->merge([
+            'method' => in_array($formMethod, ['put', 'patch', 'delete'], true) ? 'post' : $formMethod,
+        ]);
+    }
 
     if ($namedFooter === null) {
         $slotHtml = (string) $slot;
@@ -66,7 +86,18 @@
     $hasFooter = $namedFooter !== null || $hasInlineFooter;
 @endphp
 
-<section {{ $attributes->merge(['class' => 'h-full max-h-full min-h-0 flex flex-col overflow-hidden overscroll-contain bg-inherit dark:bg-zinc-800 dark:text-white']) }}>
+@if ($isFormLayout)
+    <form {{ $rootAttributes->merge(['class' => 'h-full max-h-full min-h-0 flex flex-col overflow-hidden overscroll-contain bg-inherit dark:bg-zinc-800 dark:text-white']) }}>
+        @if ($formMethod !== 'get')
+            {!! csrf_field() !!}
+        @endif
+
+        @if (in_array($formMethod, ['put', 'patch', 'delete'], true))
+            {!! method_field(strtoupper($formMethod)) !!}
+        @endif
+@else
+    <section {{ $rootAttributes->merge(['class' => 'h-full max-h-full min-h-0 flex flex-col overflow-hidden overscroll-contain bg-inherit dark:bg-zinc-800 dark:text-white']) }}>
+@endif
     @if ($namedHeader !== null || $resolvedHeading !== null || $resolvedDescription !== null || $resolvedShowClose)
         <header
             @if ($namedHeader !== null)
@@ -123,4 +154,8 @@
             @endforeach
         </footer>
     @endif
-</section>
+@if ($isFormLayout)
+    </form>
+@else
+    </section>
+@endif

@@ -122,6 +122,22 @@
 @php($resolvedShowClose = ! is_null($showClose)
     ? $normalizeBoolean($showClose, true)
     : ($resolvedHeading !== null || $resolvedDescription !== null))
+@php($attributeMap = method_exists($attributes, 'getAttributes') ? $attributes->getAttributes() : iterator_to_array($attributes))
+@php($hasSubmitAttribute = collect(array_keys($attributeMap))->contains(
+    static fn (string $key): bool => str_starts_with($key, 'wire:submit')
+        || str_starts_with($key, 'x-on:submit')
+        || str_starts_with($key, '@submit')
+))
+@php($isFormPanel = $hasSubmitAttribute)
+@php($panelElement = $isFormPanel ? 'form' : 'section')
+@php($submittedMethod = is_string($attributes->get('method')) ? strtolower(trim((string) $attributes->get('method'))) : null)
+@php($formMethod = $submittedMethod)
+@if ($isFormPanel)
+    @php($formMethod = in_array($formMethod, ['get', 'post', 'put', 'patch', 'delete'], true) ? $formMethod : 'post')
+@endif
+@php($panelElementAttributes = $isFormPanel ? $panelAttributes->except('method')->merge([
+    'method' => in_array($formMethod, ['put', 'patch', 'delete'], true) ? 'post' : $formMethod,
+]) : $panelAttributes)
 @php($normalizedCloseAllOnEscape = $normalizeBoolean($closeAllOnEscape, null))
 @if (! is_null($normalizedCloseAllOnEscape))
     @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
@@ -1071,7 +1087,7 @@
                         x-on:click="if ($event.target === $event.currentTarget) handleClickAway()"
                         class="{{ $panelWrapClasses }} {{ $originClass }}"
                     >
-                        <section
+                        <{{ $panelElement }}
                             x-ref="panel"
                             x-bind:style="panelStyle()"
                             x-on:pointerdown.capture="startSheetDrag($event)"
@@ -1091,8 +1107,16 @@
                                 'rounded-r-none' => $isDrawer && $position === 'right',
                                 'rounded-b-none' => $isSheet,
                             ])
-                            {{ $panelAttributes }}
+                            {{ $panelElementAttributes }}
                         >
+                            @if ($isFormPanel && $formMethod !== 'get')
+                                {!! csrf_field() !!}
+                            @endif
+
+                            @if ($isFormPanel && in_array($formMethod, ['put', 'patch', 'delete'], true))
+                                {!! method_field(strtoupper($formMethod)) !!}
+                            @endif
+
                             @if ($isSheet)
                                 <div
                                     x-show="shouldShowSheetDragHandle()"
@@ -1158,7 +1182,7 @@
                                     {{ $footer }}
                                 </footer>
                             @endif
-                        </section>
+                        </{{ $panelElement }}>
                     </div>
                 </div>
             </div>

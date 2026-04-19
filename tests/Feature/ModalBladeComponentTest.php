@@ -153,6 +153,34 @@ BLADE);
     expect($html)->toContain('sr-only');
 });
 
+it('renders standalone modal panel as a form when submit directives are present', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="standalone-form" heading="Edit User" wire:submit="save">
+    <input type="text" name="name" />
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('<form');
+    expect($html)->toContain('wire:submit="save"');
+    expect($html)->toContain('method="post"');
+    expect($html)->toContain('name="_token"');
+    expect($html)->not->toContain('<section');
+});
+
+it('spoofs non-get methods on submit-aware standalone modal panels', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="standalone-form-patch" heading="Edit User" wire:submit="save" method="patch">
+    <input type="text" name="name" />
+</x-corepine.modal>
+BLADE);
+
+    expect($html)->toContain('<form');
+    expect($html)->toContain('method="post"');
+    expect($html)->toContain('name="_method"');
+    expect($html)->toContain('value="PATCH"');
+    expect($html)->toContain('name="_token"');
+});
+
 it('renders modal shell with header, body, and footer slots', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine-modal-layout heading="Edit User">
@@ -311,6 +339,47 @@ BLADE);
     expect($html)->toContain('Body content');
     expect($html)->not->toContain('<corepine-modal-footer');
     expect($html)->not->toContain('corepine-modal-footer:start');
+});
+
+it('renders layout root as a form when submit directives are present', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout heading="Edit User" wire:submit="save">
+    <input type="text" name="name" />
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('<form');
+    expect($html)->toContain('wire:submit="save"');
+    expect($html)->toContain('method="post"');
+    expect($html)->toContain('name="_token"');
+    expect($html)->not->toContain('<section');
+});
+
+it('spoofs non-get form methods on submit-aware layouts', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout heading="Edit User" wire:submit="save" method="patch">
+    <input type="text" name="name" />
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('<form');
+    expect($html)->toContain('method="post"');
+    expect($html)->toContain('name="_method"');
+    expect($html)->toContain('value="PATCH"');
+    expect($html)->toContain('name="_token"');
+});
+
+it('renders layout root as a form for alpine submit handlers too', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout heading="Edit User" x-on:submit.prevent="save()">
+    <input type="text" name="name" />
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('<form');
+    expect($html)->toContain('x-on:submit.prevent="save()"');
+    expect($html)->toContain('name="_token"');
+    expect($html)->not->toContain('<section');
 });
 
 it('renders open helper with new alias and forwards class to modal attributes', function (): void {
