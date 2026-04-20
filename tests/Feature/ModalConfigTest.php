@@ -251,6 +251,46 @@ it('supports post-close dispatch payloads on fluent close actions', function ():
     ]);
 });
 
+it('treats dispatch-only fluent actions as dispatch actions', function (): void {
+    $payload = Action::make('users')
+        ->label('Users')
+        ->dispatch('modal.open', ['component' => 'users'])
+        ->toArray();
+
+    expect($payload['type'])->toBe('dispatch');
+    expect($payload['event'])->toBe('modal.open');
+    expect($payload['payload'])->toBe([
+        'component' => 'users',
+    ]);
+    expect($payload)->not->toHaveKey('method');
+});
+
+it('treats dispatch-to fluent actions as dispatchTo actions', function (): void {
+    $payload = Action::make('focusUsers')
+        ->label('Focus Users')
+        ->dispatchTo('orders.table', 'sync-user', ['user' => 5])
+        ->toArray();
+
+    expect($payload['type'])->toBe('dispatchTo');
+    expect($payload['target'])->toBe('orders.table');
+    expect($payload['event'])->toBe('sync-user');
+    expect($payload['payload'])->toBe([
+        'user' => 5,
+    ]);
+    expect($payload)->not->toHaveKey('method');
+});
+
+it('supports plain fluent buttons with explicit html button types', function (): void {
+    $payload = Action::make('submitForm')
+        ->label('Submit')
+        ->type('submit')
+        ->toArray();
+
+    expect($payload['type'])->toBe('button');
+    expect($payload['buttonType'])->toBe('submit');
+    expect($payload)->not->toHaveKey('method');
+});
+
 it('supports accent action colors as softer defaults', function (): void {
     $payload = Action::make('saveUsers')
         ->label('Save')

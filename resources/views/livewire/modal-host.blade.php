@@ -1131,7 +1131,7 @@
                                                         }
                                                     @endphp
 
-                                                    @if (($action['type'] ?? 'method') === 'close')
+                                                    @if (($action['type'] ?? 'button') === 'close')
                                                         <button
                                                             type="button"
                                                             @if ($actionDisabled) disabled @endif
@@ -1148,12 +1148,44 @@
                                                         >
                                                             {{ $action['label'] ?? 'Close' }}
                                                         </button>
+                                                    @elseif (($action['type'] ?? 'button') === 'dispatch')
+                                                        <button
+                                                            type="{{ $action['buttonType'] ?? 'button' }}"
+                                                            @if ($actionDisabled) disabled @endif
+                                                            {{ $actionAttributes }}
+                                                            @if (! $actionDisabled)
+                                                                x-on:click.stop="$dispatch(@js($action['event'] ?? ''), @js($action['payload'] ?? []))"
+                                                            @endif
+                                                        >
+                                                            {{ $action['label'] ?? 'Action' }}
+                                                        </button>
+                                                    @elseif (($action['type'] ?? 'button') === 'dispatchTo')
+                                                        <button
+                                                            type="{{ $action['buttonType'] ?? 'button' }}"
+                                                            @if ($actionDisabled) disabled @endif
+                                                            {{ $actionAttributes }}
+                                                            @if (! $actionDisabled)
+                                                                x-on:click.stop="$dispatchTo(@js($action['target'] ?? ''), @js($action['event'] ?? ''), @js($action['payload'] ?? []))"
+                                                            @endif
+                                                        >
+                                                            {{ $action['label'] ?? 'Action' }}
+                                                        </button>
+                                                    @elseif (($action['type'] ?? 'button') === 'method')
+                                                        <button
+                                                            type="{{ $action['buttonType'] ?? 'button' }}"
+                                                            @if ($actionDisabled) disabled @endif
+                                                            {{ $actionAttributes }}
+                                                            @if (! $actionDisabled)
+                                                                x-on:click.stop="callModalMethod(@js($id), @js($action['method'] ?? ''), @js($action['params'] ?? []))"
+                                                            @endif
+                                                        >
+                                                            {{ $action['label'] ?? 'Action' }}
+                                                        </button>
                                                     @else
                                                         <button
                                                             type="{{ $action['buttonType'] ?? 'button' }}"
                                                             @if ($actionDisabled) disabled @endif
                                                             {{ $actionAttributes }}
-                                                            x-on:click.stop="callModalMethod(@js($id), @js($action['method'] ?? ''), @js($action['params'] ?? []))"
                                                         >
                                                             {{ $action['label'] ?? 'Action' }}
                                                         </button>

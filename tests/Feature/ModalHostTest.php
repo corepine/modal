@@ -370,6 +370,82 @@ it('supports fluent Action objects inside footerActions', function (): void {
     expect($actions[1]['method'])->toBe('saveUsers');
 });
 
+it('renders dispatch-only footer actions without falling back to modal methods', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
+            'actions' => [
+                Action::make('users')
+                    ->label('Users')
+                    ->dispatch('modal.open', ['component' => 'users']),
+            ],
+        ])
+        ->assertSee('Users')
+        ->assertSee('$dispatch(', false)
+        ->assertSee('modal.open', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0]['type'])->toBe('dispatch');
+    expect($actions[0]['event'])->toBe('modal.open');
+    expect($actions[0]['payload'])->toBe([
+        'component' => 'users',
+    ]);
+});
+
+it('renders plain footer buttons without modal method handlers', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
+            'actions' => [
+                Action::make('submitForm')
+                    ->label('Submit')
+                    ->type('submit'),
+            ],
+        ])
+        ->assertSee('Submit')
+        ->assertSee('type="submit"', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0]['type'])->toBe('button');
+    expect($actions[0]['buttonType'])->toBe('submit');
+});
+
+it('renders dispatch-to footer actions with livewire dispatchTo helpers', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Manage Users',
+            'actions' => [
+                Action::make('focusUsers')
+                    ->label('Focus Users')
+                    ->dispatchTo('orders.table', 'sync-user', ['user' => 5]),
+            ],
+        ])
+        ->assertSee('Focus Users')
+        ->assertSee('$dispatchTo(', false)
+        ->assertSee('orders.table', false)
+        ->assertSee('sync-user', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+    $actions = $modals[$stack[0]]['modalAttributes']['actions'] ?? [];
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0]['type'])->toBe('dispatchTo');
+    expect($actions[0]['target'])->toBe('orders.table');
+    expect($actions[0]['event'])->toBe('sync-user');
+    expect($actions[0]['payload'])->toBe([
+        'user' => 5,
+    ]);
+});
+
 it('resolves support colors and richer action options inside footerActions', function (): void {
     CorepineColor::register([
         'brand' => SupportColor::Fuchsia,

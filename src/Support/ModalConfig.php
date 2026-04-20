@@ -586,9 +586,40 @@ class ModalConfig
                 ? trim((string) $action['label'])
                 : null;
             $type = is_string($action['type'] ?? null) ? strtolower(trim((string) $action['type'])) : null;
+            $dispatch = is_array($action['dispatch'] ?? null) ? $action['dispatch'] : [];
+            $dispatchTo = is_array($action['dispatchTo'] ?? null) ? $action['dispatchTo'] : [];
+            $target = is_string($action['target'] ?? null) ? trim((string) $action['target']) : '';
+            $event = is_string($action['event'] ?? null) ? trim((string) $action['event']) : '';
+            $payload = is_array($action['payload'] ?? null) ? $action['payload'] : [];
+            $method = is_string($action['method'] ?? null) ? trim((string) $action['method']) : '';
+            $params = $action['params'] ?? [];
+
+            if (! is_array($params)) {
+                $params = [$params];
+            }
+
+            $buttonType = is_string($action['buttonType'] ?? null)
+                ? strtolower(trim((string) $action['buttonType']))
+                : 'button';
+
+            if (! in_array($buttonType, ['button', 'submit', 'reset'], true)) {
+                $buttonType = 'button';
+            }
 
             if (is_null($type) && $this->normalizeBoolean($action['close'] ?? false, false)) {
                 $type = 'close';
+            }
+
+            if (is_null($type)) {
+                if ($method !== '') {
+                    $type = 'method';
+                } elseif ($target !== '' && $event !== '') {
+                    $type = 'dispatchto';
+                } elseif ($event !== '') {
+                    $type = 'dispatch';
+                } else {
+                    $type = 'button';
+                }
             }
 
             if ($type === 'close') {
@@ -606,31 +637,74 @@ class ModalConfig
                     'layers' => max(1, is_numeric($action['layers'] ?? null) ? (int) $action['layers'] : 1),
                     'destroy' => $this->normalizeBoolean($action['destroy'] ?? true, true),
                     'closeAll' => $this->normalizeBoolean($action['closeAll'] ?? false, false),
-                    'dispatch' => is_array($action['dispatch'] ?? null) ? $action['dispatch'] : [],
-                    'dispatchTo' => is_array($action['dispatchTo'] ?? null) ? $action['dispatchTo'] : [],
+                    'dispatch' => $dispatch,
+                    'dispatchTo' => $dispatchTo,
                 ];
 
                 continue;
             }
 
-            $method = is_string($action['method'] ?? null) ? trim((string) $action['method']) : '';
+            if ($type === 'dispatchto' || $type === 'dispatch_to' || $type === 'dispatch-to') {
+                $presentation = $this->normalizeFooterActionPresentation($action, 'dispatchto');
 
-            if ($method === '') {
+                $normalized[] = [
+                    'type' => 'dispatchTo',
+                    'label' => $label ?? ucwords(str_replace(['-', '_', '.'], ' ', $event !== '' ? $event : 'action')),
+                    'class' => $presentation['class'],
+                    'style' => $presentation['style'],
+                    'disabled' => $presentation['disabled'],
+                    'visible' => $presentation['visible'],
+                    'outline' => $presentation['outline'],
+                    'attributes' => $presentation['attributes'],
+                    'buttonType' => $buttonType,
+                    'target' => $target,
+                    'event' => $event,
+                    'payload' => $payload,
+                ];
+
                 continue;
             }
 
-            $params = $action['params'] ?? [];
+            if ($type === 'dispatch') {
+                $presentation = $this->normalizeFooterActionPresentation($action, 'dispatch');
 
-            if (! is_array($params)) {
-                $params = [$params];
+                $normalized[] = [
+                    'type' => 'dispatch',
+                    'label' => $label ?? ucwords(str_replace(['-', '_', '.'], ' ', $event !== '' ? $event : 'action')),
+                    'class' => $presentation['class'],
+                    'style' => $presentation['style'],
+                    'disabled' => $presentation['disabled'],
+                    'visible' => $presentation['visible'],
+                    'outline' => $presentation['outline'],
+                    'attributes' => $presentation['attributes'],
+                    'buttonType' => $buttonType,
+                    'event' => $event,
+                    'payload' => $payload,
+                ];
+
+                continue;
             }
 
-            $buttonType = is_string($action['buttonType'] ?? null)
-                ? strtolower(trim((string) $action['buttonType']))
-                : 'button';
+            if ($type === 'button') {
+                $presentation = $this->normalizeFooterActionPresentation($action, 'button');
 
-            if (! in_array($buttonType, ['button', 'submit', 'reset'], true)) {
-                $buttonType = 'button';
+                $normalized[] = [
+                    'type' => 'button',
+                    'label' => $label ?? 'Action',
+                    'class' => $presentation['class'],
+                    'style' => $presentation['style'],
+                    'disabled' => $presentation['disabled'],
+                    'visible' => $presentation['visible'],
+                    'outline' => $presentation['outline'],
+                    'attributes' => $presentation['attributes'],
+                    'buttonType' => $buttonType,
+                ];
+
+                continue;
+            }
+
+            if ($type !== 'method' || $method === '') {
+                continue;
             }
 
             $presentation = $this->normalizeFooterActionPresentation($action, 'method');

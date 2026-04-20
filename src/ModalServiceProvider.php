@@ -37,8 +37,6 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.footer', 'corepine-modal-footer');
         Blade::component('corepine-modal::components.actions.open', 'corepine-modal-actions-open');
         Blade::component('corepine-modal::components.actions.close', 'corepine-modal-actions-close');
-        Blade::component('corepine-modal::components.open-modal', 'corepine-modal-open');
-        Blade::component('corepine-modal::components.close-modal', 'corepine-modal-close');
         
         Blade::component('corepine-modal::components.assets', 'corepine.modal.assets');
         Blade::component('corepine-modal::components.layout', 'corepine.modal.layout');
@@ -46,10 +44,6 @@ class ModalServiceProvider extends ServiceProvider
         Blade::component('corepine-modal::components.footer', 'corepine.modal.footer');
         Blade::component('corepine-modal::components.actions.open', 'corepine.modal.actions.open');
         Blade::component('corepine-modal::components.actions.close', 'corepine.modal.actions.close');
-        Blade::component('corepine-modal::components.open-modal', 'corepine.modal.open');
-        Blade::component('corepine-modal::components.close-modal', 'corepine.modal.close');
-        Blade::component('corepine-modal::components.open-modal', 'corepine-open-modal');
-        Blade::component('corepine-modal::components.close-modal', 'corepine-close-modal');
 
         Blade::directive('corepineModal', static fn () => "<?php echo app('view')->make('corepine-modal::components.assets')->render(); ?>");
 

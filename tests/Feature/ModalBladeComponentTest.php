@@ -384,7 +384,7 @@ BLADE);
 
 it('renders open helper with new alias and forwards class to modal attributes', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     :arguments="['user' => 5]"
     class="p-8 rounded-2xl"
@@ -398,7 +398,7 @@ it('renders open helper with new alias and forwards class to modal attributes', 
     data-testid="open-trigger"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -424,7 +424,7 @@ BLADE);
 
 it('supports explicit bottom sheet aliases and presentation props on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     type="bottomSheet"
     dismissible="false"
@@ -433,7 +433,7 @@ it('supports explicit bottom sheet aliases and presentation props on open helper
     close-all-on-escape="true"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -447,7 +447,7 @@ BLADE);
 
 it('supports shell chrome props on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     shell="true"
     heading="Manage Users"
@@ -460,7 +460,7 @@ it('supports shell chrome props on open helper', function (): void {
     ]"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -476,13 +476,13 @@ BLADE);
 
 it('supports post-close dispatch payloads on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     :dispatch="['users-refreshed' => ['user' => 5]]"
     :dispatch-to="['orders.table' => ['sync-user' => ['user' => 5]]]"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -496,12 +496,12 @@ BLADE);
 
 it('emits isolate attribute on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     isolate="true"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -511,9 +511,9 @@ BLADE);
 
 it('supports Livewire component classes through the component prop on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open :component="\Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal::class">
+<x-corepine.modal.actions.open :component="\Corepine\Modal\Tests\Fixtures\Livewire\ExampleModal::class">
     <button type="button">Open</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -524,9 +524,9 @@ BLADE);
 
 it('supports targeted standalone open helper payloads by modal id', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open modal-id="user-sheet">
+<x-corepine.modal.actions.open modal-id="user-sheet">
     <button type="button">Open</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -539,13 +539,13 @@ BLADE);
 
 it('merges modalAttributes class with incoming class on open helper', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-open
+<x-corepine.modal.actions.open
     component="modals.edit-user"
     :modal-attributes="['class' => 'bg-white border border-zinc-200']"
     class="rounded-3xl shadow-xl"
 >
     <button type="button">Edit</button>
-</x-corepine-modal-open>
+</x-corepine.modal.actions.open>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -555,9 +555,9 @@ BLADE);
 
 it('renders close helper with new alias and default close payload', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-close data-testid="close-trigger">
+<x-corepine.modal.actions.close data-testid="close-trigger">
     <button type="button">Close</button>
-</x-corepine-modal-close>
+</x-corepine.modal.actions.close>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -571,9 +571,9 @@ BLADE);
 
 it('renders close helper close-all path and dispatches close-all event', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-close :close-all="true" :destroy="false">
+<x-corepine.modal.actions.close :close-all="true" :destroy="false">
     <button type="button">Close All</button>
-</x-corepine-modal-close>
+</x-corepine.modal.actions.close>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -586,12 +586,12 @@ BLADE);
 
 it('renders close helper with post-close dispatch payloads', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-close
+<x-corepine.modal.actions.close
     :dispatch="['users-refreshed' => ['user' => 5]]"
     :dispatch-to="['orders.table' => ['sync-user' => ['user' => 5]]]"
 >
     <button type="button">Close</button>
-</x-corepine-modal-close>
+</x-corepine.modal.actions.close>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -603,9 +603,9 @@ BLADE);
 
 it('supports targeted standalone close helper payloads by modal id', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-close modal-id="user-sheet">
+<x-corepine.modal.actions.close modal-id="user-sheet">
     <button type="button">Close</button>
-</x-corepine-modal-close>
+</x-corepine.modal.actions.close>
 BLADE);
 
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
@@ -619,14 +619,14 @@ BLADE);
 
 it('keeps backward-compatible open and close aliases', function (): void {
     $open = Blade::render(<<<'BLADE'
-<x-corepine-open-modal component="modals.edit-user">
+<x-corepine.modal.actions.open component="modals.edit-user">
     <button type="button">Open</button>
-</x-corepine-open-modal>
+</x-corepine.modal.actions.open>
 BLADE);
     $close = Blade::render(<<<'BLADE'
-<x-corepine-close-modal>
+<x-corepine.modal.actions.close>
     <button type="button">Close</button>
-</x-corepine-close-modal>
+</x-corepine.modal.actions.close>
 BLADE);
 
     $openDecoded = preg_replace('/\s+/', ' ', html_entity_decode($open, ENT_QUOTES));

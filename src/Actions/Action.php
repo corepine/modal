@@ -8,7 +8,7 @@ use Corepine\Support\Actions\Action as SupportAction;
 
 class Action extends SupportAction
 {
-    private string $type = 'method';
+    private string $actionType = 'button';
 
     private ?string $method = null;
 
@@ -37,6 +37,22 @@ class Action extends SupportAction
      * @var array<string, mixed>
      */
     private array $dispatch = [];
+
+    private ?string $dispatchEvent = null;
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $dispatchPayload = [];
+
+    private ?string $dispatchToTarget = null;
+
+    private ?string $dispatchToEvent = null;
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $dispatchToPayload = [];
 
     /**
      * @var array<string, mixed>
@@ -77,7 +93,7 @@ class Action extends SupportAction
      */
     public function method(?string $method = null, array $params = []): self
     {
-        $this->type = 'method';
+        $this->actionType = 'method';
 
         $resolved = is_string($method) ? trim($method) : '';
         $this->method = $resolved !== '' ? $resolved : $this->name;
@@ -113,6 +129,11 @@ class Action extends SupportAction
         }
 
         return $this;
+    }
+
+    public function type(string $buttonType): self
+    {
+        return $this->buttonType($buttonType);
     }
 
     public function disabled(bool | Closure $condition = true): self
@@ -155,7 +176,36 @@ class Action extends SupportAction
 
     public function close(int $layers = 1, bool $destroy = true, bool $closeAll = false): self
     {
-        $this->type = 'close';
+        if (
+            is_string($this->dispatchEvent)
+            && trim($this->dispatchEvent) !== ''
+            && $this->dispatch === []
+        ) {
+            $this->dispatch = [
+                $this->dispatchEvent => $this->dispatchPayload,
+            ];
+            $this->dispatchEvent = null;
+            $this->dispatchPayload = [];
+        }
+
+        if (
+            is_string($this->dispatchToTarget)
+            && trim($this->dispatchToTarget) !== ''
+            && is_string($this->dispatchToEvent)
+            && trim($this->dispatchToEvent) !== ''
+            && $this->dispatchTo === []
+        ) {
+            $this->dispatchTo = [
+                $this->dispatchToTarget => [
+                    $this->dispatchToEvent => $this->dispatchToPayload,
+                ],
+            ];
+            $this->dispatchToTarget = null;
+            $this->dispatchToEvent = null;
+            $this->dispatchToPayload = [];
+        }
+
+        $this->actionType = 'close';
         $this->layers = max(1, $layers);
         $this->destroy = $destroy;
         $this->closeAll = $closeAll;
@@ -164,21 +214,98 @@ class Action extends SupportAction
     }
 
     /**
-     * @param  array<string, mixed>  $events
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $event
      */
-    public function dispatch(array $events): self
+    public function dispatch(string | array $event, array $payload = []): self
     {
-        $this->dispatch = $events;
+        if (is_string($event)) {
+            $event = trim($event);
+
+            if ($event === '') {
+                return $this;
+            }
+
+            if ($this->actionType === 'close') {
+                $this->dispatch = [$event => $payload];
+
+                return $this;
+            }
+
+            $this->actionType = 'dispatch';
+            $this->dispatchEvent = $event;
+            $this->dispatchPayload = $payload;
+
+            return $this;
+        }
+
+        if ($this->actionType === 'close') {
+            $this->dispatch = $event;
+
+            return $this;
+        }
+
+        $eventName = array_key_first($event);
+
+        if (! is_string($eventName) || trim($eventName) === '') {
+            return $this;
+        }
+
+        $this->actionType = 'dispatch';
+        $this->dispatchEvent = trim($eventName);
+        $resolvedPayload = $event[$eventName] ?? [];
+        $this->dispatchPayload = is_array($resolvedPayload) ? $resolvedPayload : [];
 
         return $this;
     }
 
     /**
      * @param  array<string, mixed>  $events
+     * @param  array<string, mixed>  $payload
      */
-    public function dispatchTo(array $events): self
+    public function dispatchTo(string | array $events, string | array | null $event = null, array $payload = []): self
     {
-        $this->dispatchTo = $events;
+        if (is_array($events)) {
+            $this->dispatchTo = $events;
+
+            return $this;
+        }
+
+        $target = trim($events);
+
+        if ($target === '') {
+            return $this;
+        }
+
+        if (is_array($event)) {
+            $eventName = array_key_first($event);
+
+            if (! is_string($eventName) || trim($eventName) === '') {
+                return $this;
+            }
+
+            $payload = $event[$eventName] ?? [];
+            $event = $eventName;
+        }
+
+        if (! is_string($event) || trim($event) === '') {
+            return $this;
+        }
+
+        if ($this->actionType === 'close') {
+            $this->dispatchTo = [
+                $target => [
+                    trim($event) => $payload,
+                ],
+            ];
+
+            return $this;
+        }
+
+        $this->actionType = 'dispatch_to';
+        $this->dispatchToTarget = $target;
+        $this->dispatchToEvent = trim($event);
+        $this->dispatchToPayload = $payload;
 
         return $this;
     }
@@ -188,6 +315,7 @@ class Action extends SupportAction
      */
     public function toArray(): array
     {
+        $actionType = $this->resolveActionType();
         $disabled = (bool) $this->evaluate($this->disabled);
         $visible = $this->resolveVisible();
         $rawColor = $this->evaluate($this->color);
@@ -196,7 +324,7 @@ class Action extends SupportAction
         $accent = $this->accent instanceof Closure || is_bool($this->accent)
             ? (bool) $this->evaluate($this->accent)
             : false;
-        $outlineDefault = $this->type === 'close' || $color === null;
+        $outlineDefault = $actionType === 'close' || $color === null;
         $outline = $this->outline instanceof Closure || is_bool($this->outline)
             ? (bool) $this->evaluate($this->outline)
             : $outlineDefault;
@@ -204,7 +332,7 @@ class Action extends SupportAction
         $style = $this->resolveStyle($color, $paletteName, $outline);
         $usesVariableStyling = $style !== '';
 
-        if ($this->type === 'close') {
+        if ($actionType === 'close') {
             return [
                 'type' => 'close',
                 'label' => $this->resolveLabel('Close'),
@@ -225,17 +353,48 @@ class Action extends SupportAction
             ];
         }
 
-        $method = $this->method;
-
-        if (! is_string($method) || trim($method) === '') {
-            $method = $this->name;
+        if ($actionType === 'dispatch') {
+            return [
+                'type' => 'dispatch',
+                'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'disabled' => $disabled,
+                'visible' => $visible,
+                'style' => $style,
+                'color' => $color,
+                'outline' => $outline,
+                'accent' => $accent,
+                'attributes' => $attributes,
+                'buttonType' => $this->buttonType,
+                'event' => $this->dispatchEvent,
+                'payload' => $this->dispatchPayload,
+                'resolved' => true,
+            ];
         }
 
-        return [
-            'type' => 'method',
+        if ($actionType === 'dispatch_to') {
+            return [
+                'type' => 'dispatchTo',
+                'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'disabled' => $disabled,
+                'visible' => $visible,
+                'style' => $style,
+                'color' => $color,
+                'outline' => $outline,
+                'accent' => $accent,
+                'attributes' => $attributes,
+                'buttonType' => $this->buttonType,
+                'target' => $this->dispatchToTarget,
+                'event' => $this->dispatchToEvent,
+                'payload' => $this->dispatchToPayload,
+                'resolved' => true,
+            ];
+        }
+
+        $payload = [
+            'type' => $actionType,
             'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
-            'method' => $method,
-            'params' => $this->params,
             'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
             'disabled' => $disabled,
             'visible' => $visible,
@@ -247,6 +406,40 @@ class Action extends SupportAction
             'buttonType' => $this->buttonType,
             'resolved' => true,
         ];
+
+        if ($actionType === 'method') {
+            $payload['method'] = $this->method;
+            $payload['params'] = $this->params;
+        }
+
+        return $payload;
+    }
+
+    private function resolveActionType(): string
+    {
+        if ($this->actionType === 'close') {
+            return 'close';
+        }
+
+        if ($this->actionType === 'method' && is_string($this->method) && trim($this->method) !== '') {
+            return 'method';
+        }
+
+        if ($this->actionType === 'dispatch' && is_string($this->dispatchEvent) && trim($this->dispatchEvent) !== '') {
+            return 'dispatch';
+        }
+
+        if (
+            $this->actionType === 'dispatch_to'
+            && is_string($this->dispatchToTarget)
+            && trim($this->dispatchToTarget) !== ''
+            && is_string($this->dispatchToEvent)
+            && trim($this->dispatchToEvent) !== ''
+        ) {
+            return 'dispatch_to';
+        }
+
+        return 'button';
     }
 
     private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled, bool $usesVariableStyling): string
