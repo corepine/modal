@@ -1178,7 +1178,7 @@
                             </main>
 
                             @if ($hasFooter)
-                                <footer {{ $footer->attributes->class('flex items-center justify-end  border-zinc-200/70 px-5 py-3 dark:border-zinc-700/70') }}>
+                                <footer {{ $footer->attributes->class('flex items-center justify-end  border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70') }}>
                                     {{ $footer }}
                                 </footer>
                             @endif
