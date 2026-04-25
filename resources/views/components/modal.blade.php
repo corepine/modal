@@ -169,6 +169,8 @@
 @php($resolvedModalAttributes = $modalConfig->mergedModalAttributes([], $payloadModalAttributes))
 @php($isDrawer = $modalConfig->isDrawer($resolvedModalAttributes))
 @php($isSheet = $modalConfig->isSheet($resolvedModalAttributes))
+@php($hasRoundedClass = is_string($resolvedModalAttributes['class'] ?? null)
+    && preg_match('/(?:^|\s)rounded(?:-[^\s]+)?(?:\s|$)/', $resolvedModalAttributes['class']) === 1)
 @php($footerClasses = $isSheet
     ? 'flex items-center justify-end border-zinc-200/70 px-5 py-1.5 sm:py-2 dark:border-zinc-700/70'
     : 'flex items-center justify-end border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70')
@@ -1062,7 +1064,7 @@
             <div
                 x-cloak
                 x-show="open"
-                class="fixed inset-0 z-[999] overflow-y-auto"
+                class="fixed inset-0 z-999 overflow-y-auto"
                 style="display: none;"
                 role="dialog"
                 aria-modal="true"
@@ -1101,7 +1103,7 @@
                                 'flex w-full flex-col overflow-hidden bg-white text-zinc-900 shadow-xl dark:bg-zinc-800 dark:text-zinc-100',
                                 'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                                 'h-[100dvh] max-h-[100dvh]' => $isDrawer,
-                                'rounded-lg' => ! $isDrawer && ! $isSheet,
+                                'rounded-lg' => ! $isDrawer && ! $isSheet && ! $hasRoundedClass,
                                 'rounded-r-lg rounded-l-none' => $isDrawer && $placement === 'left',
                                 'rounded-l-lg rounded-r-none' => $isDrawer && $placement === 'right',
                                 'rounded-t-2xl rounded-b-none' => $isSheet,

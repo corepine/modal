@@ -259,6 +259,15 @@ it('forces drawer edge side to remain square in rendered classes', function (): 
         ->assertSee('rounded-r-none');
 });
 
+it('lets custom rounded classes replace the default radius on standard modals', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'class' => 'rounded-3xl',
+        ])
+        ->assertSee('rounded-3xl')
+        ->assertDontSee('rounded-lg');
+});
+
 it('keeps modalAttributes size when defined explicitly', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.attribute-sized-modal');
