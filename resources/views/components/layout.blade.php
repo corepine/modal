@@ -2,6 +2,7 @@
     'heading' => null,
     'description' => null,
     'showClose' => null,
+    'modalType' => null,
 ])
 
 @php
@@ -40,6 +41,13 @@
     $resolvedShowClose = ! is_null($showClose)
         ? $normalizeBoolean($showClose, true)
         : ($resolvedHeading !== null || $resolvedDescription !== null);
+    $resolvedModalType = $modalType instanceof \Corepine\Modal\Enums\ModalType
+        ? $modalType->value
+        : (is_string($modalType) ? strtolower(trim($modalType)) : null);
+    $isSheetLayout = in_array($resolvedModalType, ['sheet', 'bottomsheet', 'bottom-sheet', 'bottom_sheet'], true);
+    $footerClasses = $isSheetLayout
+        ? 'flex shrink-0 items-center justify-end border-zinc-200/70 px-5 py-1.5 sm:py-2 dark:border-zinc-700/70'
+        : 'flex shrink-0 items-center justify-end border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70';
     $attributeMap = method_exists($attributes, 'getAttributes') ? $attributes->getAttributes() : iterator_to_array($attributes);
     $hasSubmitAttribute = collect(array_keys($attributeMap))->contains(
         static fn (string $key): bool => str_starts_with($key, 'wire:submit')
@@ -144,11 +152,11 @@
     </main>
 
     @if ($namedFooter !== null)
-        <footer {{ $namedFooter->attributes->class('flex shrink-0 items-center justify-end  border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70') }}>
+        <footer {{ $namedFooter->attributes->class($footerClasses) }}>
             {{ $namedFooter }}
         </footer>
     @elseif ($hasInlineFooter)
-        <footer class="flex shrink-0 items-center justify-end  border-zinc-200/70 px-5 py-2.5 dark:border-zinc-700/70">
+        <footer class="{{ $footerClasses }}">
             @foreach ($inlineFooterBlocks as $inlineFooterBlock)
                 {!! $inlineFooterBlock !!}
             @endforeach

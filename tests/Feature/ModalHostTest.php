@@ -342,6 +342,20 @@ it('renders automatic layout chrome and declarative footer actions', function ()
         ->assertSee('saveUsers', false);
 });
 
+it('uses tighter footer spacing for sheet modals with shell actions', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'type' => 'sheet',
+            'heading' => 'Manage Users',
+            'actions' => [
+                ['type' => 'close', 'label' => 'Cancel'],
+                ['type' => 'method', 'method' => 'saveUsers', 'label' => 'Save'],
+            ],
+        ])
+        ->assertSee('px-5 py-1.5 sm:py-2', false)
+        ->assertDontSee('px-5 py-2.5', false);
+});
+
 it('supports fluent Action objects inside footerActions', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
@@ -514,8 +528,9 @@ it('supports raw footer action arrays with color and outline options', function 
     $modals = $test->get('modals');
     $action = $modals[$stack[0]]['modalAttributes']['actions'][0] ?? [];
 
-    expect($action['class'])->toContain('bg-[var(--cp-action-bg)]');
-    expect($action['style'])->toContain(SupportColor::Rose[700]);
+    expect($action['class'])->toContain('border-rose-200');
+    expect($action['class'])->toContain('text-rose-700');
+    expect($action['style'])->toBe('');
     expect($action['attributes'])->toMatchArray(['data-testid' => 'review-action']);
 });
 

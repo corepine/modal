@@ -809,18 +809,17 @@ class ModalConfig
             : $outlineDefault;
         $usesPresetStyling = $class === '' || $hasColor || $hasOutline;
         $style = '';
+        $paletteName = $this->resolveFooterActionPaletteName($action['color'] ?? ($outlineDefault ? 'gray' : 'primary'));
 
         $class = trim(implode(' ', array_filter([
             ModalActionClasses::BASE,
             $class,
         ])));
 
-        if ($usesPresetStyling) {
-            $palette = $this->resolveFooterActionPalette($action['color'] ?? ($outlineDefault ? 'gray' : 'primary'));
-            $style = $this->footerActionStyle($palette, $outline);
+        if ($usesPresetStyling && $paletteName !== null) {
             $class = trim(implode(' ', array_filter([
                 $class,
-                ModalActionClasses::VARIABLE,
+                $this->footerActionPaletteClasses($paletteName, $outline, $disabled),
             ])));
         }
 
@@ -886,7 +885,7 @@ class ModalConfig
     /**
      * @return array<int|string, string>|null
      */
-    private function resolveFooterActionPalette(mixed $color): ?array
+    private function resolveFooterActionPaletteName(mixed $color): ?string
     {
         if (is_string($color)) {
             $color = trim($color);
@@ -900,16 +899,16 @@ class ModalConfig
                 : null;
 
             if (is_array($palette)) {
-                return $palette;
+                return $this->matchFooterActionPaletteName($palette);
             }
 
             $builtin = SupportColor::palette($color);
 
             if (is_array($builtin)) {
-                return $builtin;
+                return $this->matchFooterActionPaletteName($builtin);
             }
 
-            return $this->semanticFooterActionPalette($color);
+            return $this->semanticFooterActionPaletteName($color);
         }
 
         if (! is_array($color)) {
@@ -938,103 +937,86 @@ class ModalConfig
 
         ksort($normalized);
 
-        return $normalized;
+        return $this->matchFooterActionPaletteName($normalized);
     }
 
     /**
      * Resolve semantic aliases for common action intent names.
      *
-     * @return array<int|string, string>|null
+     * @return string|null
      */
-    private function semanticFooterActionPalette(string $name): ?array
+    private function semanticFooterActionPaletteName(string $name): ?string
     {
         return match (strtolower(trim($name))) {
-            'primary' => SupportColor::Blue,
-            'danger' => SupportColor::Red,
-            'success' => SupportColor::Green,
-            'warning' => SupportColor::Amber,
-            'info' => SupportColor::Sky,
-            'secondary' => SupportColor::Zinc,
+            'primary' => 'blue',
+            'danger' => 'red',
+            'success' => 'green',
+            'warning' => 'amber',
+            'info' => 'sky',
+            'secondary' => 'zinc',
             default => null,
         };
     }
 
     /**
-     * @param  array<int|string, string>|null  $palette
-     */
-    private function footerActionStyle(?array $palette, bool $outline): string
-    {
-        if ($palette === null) {
-            return '';
-        }
-
-        $variables = $outline
-            ? [
-                '--cp-action-bg: transparent',
-                '--cp-action-bg-hover: ' . ($this->paletteShade($palette, 50) ?? 'transparent'),
-                '--cp-action-border: ' . ($this->paletteShade($palette, 200) ?? 'currentColor'),
-                '--cp-action-border-hover: ' . ($this->paletteShade($palette, 300) ?? 'currentColor'),
-                '--cp-action-text: ' . ($this->paletteShade($palette, 700) ?? 'currentColor'),
-                '--cp-action-text-hover: ' . ($this->paletteShade($palette, 800) ?? 'currentColor'),
-                '--cp-action-dark-bg: transparent',
-                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 950) ?? 'transparent'),
-                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 700) ?? 'currentColor'),
-                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 600) ?? 'currentColor'),
-                '--cp-action-dark-text: ' . ($this->paletteShade($palette, 200) ?? '#e4e4e7'),
-                '--cp-action-dark-text-hover: ' . ($this->paletteShade($palette, 100) ?? '#f4f4f5'),
-            ]
-            : [
-                '--cp-action-bg: ' . ($this->paletteShade($palette, 500) ?? '#18181b'),
-                '--cp-action-bg-hover: ' . ($this->paletteShade($palette, 600) ?? '#27272a'),
-                '--cp-action-border: ' . ($this->paletteShade($palette, 500) ?? '#18181b'),
-                '--cp-action-border-hover: ' . ($this->paletteShade($palette, 600) ?? '#27272a'),
-                '--cp-action-text: ' . $this->footerActionSolidTextColor($palette),
-                '--cp-action-text-hover: ' . $this->footerActionSolidTextColor($palette),
-                '--cp-action-dark-bg: ' . ($this->paletteShade($palette, 600) ?? '#52525b'),
-                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($palette, 700) ?? '#3f3f46'),
-                '--cp-action-dark-border: ' . ($this->paletteShade($palette, 600) ?? '#52525b'),
-                '--cp-action-dark-border-hover: ' . ($this->paletteShade($palette, 700) ?? '#3f3f46'),
-                '--cp-action-dark-text: ' . $this->footerActionSolidTextColor($palette),
-                '--cp-action-dark-text-hover: ' . $this->footerActionSolidTextColor($palette),
-            ];
-
-        return implode('; ', array_filter($variables));
-    }
-
-    /**
      * @param  array<int|string, string>  $palette
      */
-    private function footerActionSolidTextColor(array $palette): string
+    private function matchFooterActionPaletteName(array $palette): ?string
     {
-        $baseColor = $this->paletteShade($palette, 500) ?? '';
-
-        return $this->isLightFooterActionColor($baseColor) ? '#18181b' : '#ffffff';
-    }
-
-    /**
-     * @param  array<int|string, string>  $palette
-     */
-    private function paletteShade(array $palette, int $shade): ?string
-    {
-        return $palette[$shade] ?? $palette[500] ?? null;
-    }
-
-    private function isLightFooterActionColor(string $color): bool
-    {
-        if (preg_match('/^oklch\(\s*([0-9.]+)/i', $color, $matches) === 1) {
-            return (float) ($matches[1] ?? 0) >= 0.72;
+        foreach (SupportColor::catalog() as $name => $builtInPalette) {
+            if ($builtInPalette === $palette) {
+                return $name;
+            }
         }
 
-        if (preg_match('/^#([0-9a-f]{6})$/i', $color, $matches) === 1) {
-            $hex = $matches[1];
-            $red = hexdec(substr($hex, 0, 2));
-            $green = hexdec(substr($hex, 2, 2));
-            $blue = hexdec(substr($hex, 4, 2));
+        return null;
+    }
 
-            return ((0.299 * $red) + (0.587 * $green) + (0.114 * $blue)) / 255 >= 0.65;
+    private function footerActionPaletteClasses(string $paletteName, bool $outline, bool $disabled): string
+    {
+        $name = strtolower(trim($paletteName));
+
+        if ($disabled) {
+            return match ($name) {
+                'red' => $outline ? 'bg-transparent border-red-200 text-red-700 dark:bg-transparent dark:border-red-700 dark:text-red-200' : 'bg-red-600 border-red-600 text-white dark:bg-red-500 dark:border-red-500 dark:text-white',
+                'green' => $outline ? 'bg-transparent border-green-200 text-green-700 dark:bg-transparent dark:border-green-700 dark:text-green-200' : 'bg-green-600 border-green-600 text-white dark:bg-green-500 dark:border-green-500 dark:text-white',
+                'yellow' => $outline ? 'bg-transparent border-yellow-200 text-yellow-700 dark:bg-transparent dark:border-yellow-700 dark:text-yellow-200' : 'bg-yellow-600 border-yellow-600 text-white dark:bg-yellow-500 dark:border-yellow-500 dark:text-white',
+                'sky' => $outline ? 'bg-transparent border-sky-200 text-sky-700 dark:bg-transparent dark:border-sky-700 dark:text-sky-200' : 'bg-sky-600 border-sky-600 text-white dark:bg-sky-500 dark:border-sky-500 dark:text-white',
+                'gray' => $outline ? 'bg-transparent border-gray-200 text-gray-700 dark:bg-transparent dark:border-gray-700 dark:text-gray-200' : 'bg-gray-600 border-gray-600 text-white dark:bg-gray-500 dark:border-gray-500 dark:text-white',
+                'zinc' => $outline ? 'bg-transparent border-zinc-200 text-zinc-700 dark:bg-transparent dark:border-zinc-700 dark:text-zinc-200' : 'bg-zinc-600 border-zinc-600 text-white dark:bg-zinc-500 dark:border-zinc-500 dark:text-white',
+                'blue' => $outline ? 'bg-transparent border-blue-200 text-blue-700 dark:bg-transparent dark:border-blue-700 dark:text-blue-200' : 'bg-blue-600 border-blue-600 text-white dark:bg-blue-500 dark:border-blue-500 dark:text-white',
+                'amber' => $outline ? 'bg-transparent border-amber-200 text-amber-700 dark:bg-transparent dark:border-amber-700 dark:text-amber-200' : 'bg-amber-600 border-amber-600 text-white dark:bg-amber-500 dark:border-amber-500 dark:text-white',
+                'fuchsia' => $outline ? 'bg-transparent border-fuchsia-200 text-fuchsia-700 dark:bg-transparent dark:border-fuchsia-700 dark:text-fuchsia-200' : 'bg-fuchsia-600 border-fuchsia-600 text-white dark:bg-fuchsia-500 dark:border-fuchsia-500 dark:text-white',
+                'purple' => $outline ? 'bg-transparent border-purple-200 text-purple-700 dark:bg-transparent dark:border-purple-700 dark:text-purple-200' : 'bg-purple-600 border-purple-600 text-white dark:bg-purple-500 dark:border-purple-500 dark:text-white',
+                'pink' => $outline ? 'bg-transparent border-pink-200 text-pink-700 dark:bg-transparent dark:border-pink-700 dark:text-pink-200' : 'bg-pink-600 border-pink-600 text-white dark:bg-pink-500 dark:border-pink-500 dark:text-white',
+                'rose' => $outline ? 'bg-transparent border-rose-200 text-rose-700 dark:bg-transparent dark:border-rose-700 dark:text-rose-200' : 'bg-rose-600 border-rose-600 text-white dark:bg-rose-500 dark:border-rose-500 dark:text-white',
+                'indigo' => $outline ? 'bg-transparent border-indigo-200 text-indigo-700 dark:bg-transparent dark:border-indigo-700 dark:text-indigo-200' : 'bg-indigo-600 border-indigo-600 text-white dark:bg-indigo-500 dark:border-indigo-500 dark:text-white',
+                'teal' => $outline ? 'bg-transparent border-teal-200 text-teal-700 dark:bg-transparent dark:border-teal-700 dark:text-teal-200' : 'bg-teal-600 border-teal-600 text-white dark:bg-teal-500 dark:border-teal-500 dark:text-white',
+                'cyan' => $outline ? 'bg-transparent border-cyan-200 text-cyan-700 dark:bg-transparent dark:border-cyan-700 dark:text-cyan-200' : 'bg-cyan-600 border-cyan-600 text-white dark:bg-cyan-500 dark:border-cyan-500 dark:text-white',
+                'emerald' => $outline ? 'bg-transparent border-emerald-200 text-emerald-700 dark:bg-transparent dark:border-emerald-700 dark:text-emerald-200' : 'bg-emerald-600 border-emerald-600 text-white dark:bg-emerald-500 dark:border-emerald-500 dark:text-white',
+                default => '',
+            };
         }
 
-        return false;
+        return match ($name) {
+            'red' => $outline ? 'bg-transparent border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 hover:text-red-800 dark:bg-transparent dark:border-red-700 dark:text-red-200 dark:hover:bg-red-950 dark:hover:border-red-600 dark:hover:text-red-100' : 'bg-red-600 border-red-600 text-white hover:bg-red-500 hover:border-red-500 dark:bg-red-500 dark:border-red-500 dark:text-white dark:hover:bg-red-600 dark:hover:border-red-600',
+            'green' => $outline ? 'bg-transparent border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:text-green-800 dark:bg-transparent dark:border-green-700 dark:text-green-200 dark:hover:bg-green-950 dark:hover:border-green-600 dark:hover:text-green-100' : 'bg-green-600 border-green-600 text-white hover:bg-green-500 hover:border-green-500 dark:bg-green-500 dark:border-green-500 dark:text-white dark:hover:bg-green-600 dark:hover:border-green-600',
+            'yellow' => $outline ? 'bg-transparent border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-300 hover:text-yellow-800 dark:bg-transparent dark:border-yellow-700 dark:text-yellow-200 dark:hover:bg-yellow-950 dark:hover:border-yellow-600 dark:hover:text-yellow-100' : 'bg-yellow-600 border-yellow-600 text-white hover:bg-yellow-500 hover:border-yellow-500 dark:bg-yellow-500 dark:border-yellow-500 dark:text-white dark:hover:bg-yellow-600 dark:hover:border-yellow-600',
+            'sky' => $outline ? 'bg-transparent border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-800 dark:bg-transparent dark:border-sky-700 dark:text-sky-200 dark:hover:bg-sky-950 dark:hover:border-sky-600 dark:hover:text-sky-100' : 'bg-sky-600 border-sky-600 text-white hover:bg-sky-500 hover:border-sky-500 dark:bg-sky-500 dark:border-sky-500 dark:text-white dark:hover:bg-sky-600 dark:hover:border-sky-600',
+            'gray' => $outline ? 'bg-transparent border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:bg-transparent dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-950 dark:hover:border-gray-600 dark:hover:text-gray-100' : 'bg-gray-600 border-gray-600 text-white hover:bg-gray-500 hover:border-gray-500 dark:bg-gray-500 dark:border-gray-500 dark:text-white dark:hover:bg-gray-600 dark:hover:border-gray-600',
+            'zinc' => $outline ? 'bg-transparent border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-800 dark:bg-transparent dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:text-zinc-100' : 'bg-zinc-600 border-zinc-600 text-white hover:bg-zinc-500 hover:border-zinc-500 dark:bg-zinc-500 dark:border-zinc-500 dark:text-white dark:hover:bg-zinc-600 dark:hover:border-zinc-600',
+            'blue' => $outline ? 'bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 dark:bg-transparent dark:border-blue-700 dark:text-blue-200 dark:hover:bg-blue-950 dark:hover:border-blue-600 dark:hover:text-blue-100' : 'bg-blue-600 border-blue-600 text-white hover:bg-blue-500 hover:border-blue-500 dark:bg-blue-500 dark:border-blue-500 dark:text-white dark:hover:bg-blue-600 dark:hover:border-blue-600',
+            'amber' => $outline ? 'bg-transparent border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 dark:bg-transparent dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-950 dark:hover:border-amber-600 dark:hover:text-amber-100' : 'bg-amber-600 border-amber-600 text-white hover:bg-amber-500 hover:border-amber-500 dark:bg-amber-500 dark:border-amber-500 dark:text-white dark:hover:bg-amber-600 dark:hover:border-amber-600',
+            'fuchsia' => $outline ? 'bg-transparent border-fuchsia-200 text-fuchsia-700 hover:bg-fuchsia-50 hover:border-fuchsia-300 hover:text-fuchsia-800 dark:bg-transparent dark:border-fuchsia-700 dark:text-fuchsia-200 dark:hover:bg-fuchsia-950 dark:hover:border-fuchsia-600 dark:hover:text-fuchsia-100' : 'bg-fuchsia-600 border-fuchsia-600 text-white hover:bg-fuchsia-500 hover:border-fuchsia-500 dark:bg-fuchsia-500 dark:border-fuchsia-500 dark:text-white dark:hover:bg-fuchsia-600 dark:hover:border-fuchsia-600',
+            'purple' => $outline ? 'bg-transparent border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-800 dark:bg-transparent dark:border-purple-700 dark:text-purple-200 dark:hover:bg-purple-950 dark:hover:border-purple-600 dark:hover:text-purple-100' : 'bg-purple-600 border-purple-600 text-white hover:bg-purple-500 hover:border-purple-500 dark:bg-purple-500 dark:border-purple-500 dark:text-white dark:hover:bg-purple-600 dark:hover:border-purple-600',
+            'pink' => $outline ? 'bg-transparent border-pink-200 text-pink-700 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-800 dark:bg-transparent dark:border-pink-700 dark:text-pink-200 dark:hover:bg-pink-950 dark:hover:border-pink-600 dark:hover:text-pink-100' : 'bg-pink-600 border-pink-600 text-white hover:bg-pink-500 hover:border-pink-500 dark:bg-pink-500 dark:border-pink-500 dark:text-white dark:hover:bg-pink-600 dark:hover:border-pink-600',
+            'rose' => $outline ? 'bg-transparent border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-800 dark:bg-transparent dark:border-rose-700 dark:text-rose-200 dark:hover:bg-rose-950 dark:hover:border-rose-600 dark:hover:text-rose-100' : 'bg-rose-600 border-rose-600 text-white hover:bg-rose-500 hover:border-rose-500 dark:bg-rose-500 dark:border-rose-500 dark:text-white dark:hover:bg-rose-600 dark:hover:border-rose-600',
+            'indigo' => $outline ? 'bg-transparent border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-800 dark:bg-transparent dark:border-indigo-700 dark:text-indigo-200 dark:hover:bg-indigo-950 dark:hover:border-indigo-600 dark:hover:text-indigo-100' : 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-500 hover:border-indigo-500 dark:bg-indigo-500 dark:border-indigo-500 dark:text-white dark:hover:bg-indigo-600 dark:hover:border-indigo-600',
+            'teal' => $outline ? 'bg-transparent border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-800 dark:bg-transparent dark:border-teal-700 dark:text-teal-200 dark:hover:bg-teal-950 dark:hover:border-teal-600 dark:hover:text-teal-100' : 'bg-teal-600 border-teal-600 text-white hover:bg-teal-500 hover:border-teal-500 dark:bg-teal-500 dark:border-teal-500 dark:text-white dark:hover:bg-teal-600 dark:hover:border-teal-600',
+            'cyan' => $outline ? 'bg-transparent border-cyan-200 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-300 hover:text-cyan-800 dark:bg-transparent dark:border-cyan-700 dark:text-cyan-200 dark:hover:bg-cyan-950 dark:hover:border-cyan-600 dark:hover:text-cyan-100' : 'bg-cyan-600 border-cyan-600 text-white hover:bg-cyan-500 hover:border-cyan-500 dark:bg-cyan-500 dark:border-cyan-500 dark:text-white dark:hover:bg-cyan-600 dark:hover:border-cyan-600',
+            'emerald' => $outline ? 'bg-transparent border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800 dark:bg-transparent dark:border-emerald-700 dark:text-emerald-200 dark:hover:bg-emerald-950 dark:hover:border-emerald-600 dark:hover:text-emerald-100' : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-500 hover:border-emerald-500 dark:bg-emerald-500 dark:border-emerald-500 dark:text-white dark:hover:bg-emerald-600 dark:hover:border-emerald-600',
+            default => '',
+        };
     }
 
     /**

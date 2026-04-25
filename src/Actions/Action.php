@@ -329,14 +329,13 @@ class Action extends SupportAction
             ? (bool) $this->evaluate($this->outline)
             : $outlineDefault;
         $attributes = $this->resolveAttributes();
-        $style = $this->resolveStyle($color, $paletteName, $outline);
-        $usesVariableStyling = $style !== '';
+        $style = '';
 
         if ($actionType === 'close') {
             return [
                 'type' => 'close',
                 'label' => $this->resolveLabel('Close'),
-                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
                 'style' => $style,
                 'disabled' => $disabled,
                 'visible' => $visible,
@@ -357,7 +356,7 @@ class Action extends SupportAction
             return [
                 'type' => 'dispatch',
                 'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
-                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
                 'disabled' => $disabled,
                 'visible' => $visible,
                 'style' => $style,
@@ -395,7 +394,7 @@ class Action extends SupportAction
         $payload = [
             'type' => $actionType,
             'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
-            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+            'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
             'disabled' => $disabled,
             'visible' => $visible,
             'style' => $style,
@@ -442,14 +441,13 @@ class Action extends SupportAction
         return 'button';
     }
 
-    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled, bool $usesVariableStyling): string
+    private function resolveClass(string $class, ?string $paletteName, bool $outline, bool $accent, bool $disabled): string
     {
         $paletteClass = $this->resolvePaletteClasses($paletteName, $outline, $accent, $disabled);
 
         return trim(implode(' ', array_filter([
             ModalActionClasses::BASE,
             $paletteClass,
-            $usesVariableStyling ? ModalActionClasses::VARIABLE : '',
             $disabled ? ModalActionClasses::DISABLED : '',
             trim($class),
         ])));
@@ -506,45 +504,7 @@ class Action extends SupportAction
 
     private function resolveStyle(?array $color, ?string $paletteName, bool $outline): string
     {
-        if ($paletteName !== null && trim($paletteName) !== '') {
-            return '';
-        }
-
-        if ($color === null) {
-            return '';
-        }
-
-        $variables = $outline
-            ? [
-                '--cp-action-bg: transparent',
-                '--cp-action-bg-hover: ' . ($this->paletteShade($color, 50) ?? 'transparent'),
-                '--cp-action-border: ' . ($this->paletteShade($color, 200) ?? 'currentColor'),
-                '--cp-action-border-hover: ' . ($this->paletteShade($color, 300) ?? 'currentColor'),
-                '--cp-action-text: ' . ($this->paletteShade($color, 700) ?? 'currentColor'),
-                '--cp-action-text-hover: ' . ($this->paletteShade($color, 800) ?? 'currentColor'),
-                '--cp-action-dark-bg: transparent',
-                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($color, 950) ?? 'transparent'),
-                '--cp-action-dark-border: ' . ($this->paletteShade($color, 700) ?? 'currentColor'),
-                '--cp-action-dark-border-hover: ' . ($this->paletteShade($color, 600) ?? 'currentColor'),
-                '--cp-action-dark-text: ' . ($this->paletteShade($color, 200) ?? '#e4e4e7'),
-                '--cp-action-dark-text-hover: ' . ($this->paletteShade($color, 100) ?? '#f4f4f5'),
-            ]
-            : [
-                '--cp-action-bg: ' . ($this->paletteShade($color, 500) ?? '#18181b'),
-                '--cp-action-bg-hover: ' . ($this->paletteShade($color, 600) ?? '#27272a'),
-                '--cp-action-border: ' . ($this->paletteShade($color, 500) ?? '#18181b'),
-                '--cp-action-border-hover: ' . ($this->paletteShade($color, 600) ?? '#27272a'),
-                '--cp-action-text: ' . $this->actionSolidTextColor($color),
-                '--cp-action-text-hover: ' . $this->actionSolidTextColor($color),
-                '--cp-action-dark-bg: ' . ($this->paletteShade($color, 600) ?? '#52525b'),
-                '--cp-action-dark-bg-hover: ' . ($this->paletteShade($color, 700) ?? '#3f3f46'),
-                '--cp-action-dark-border: ' . ($this->paletteShade($color, 600) ?? '#52525b'),
-                '--cp-action-dark-border-hover: ' . ($this->paletteShade($color, 700) ?? '#3f3f46'),
-                '--cp-action-dark-text: ' . $this->actionSolidTextColor($color),
-                '--cp-action-dark-text-hover: ' . $this->actionSolidTextColor($color),
-            ];
-
-        return implode('; ', array_filter($variables));
+        return '';
     }
 
 }

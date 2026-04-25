@@ -169,6 +169,9 @@
 @php($resolvedModalAttributes = $modalConfig->mergedModalAttributes([], $payloadModalAttributes))
 @php($isDrawer = $modalConfig->isDrawer($resolvedModalAttributes))
 @php($isSheet = $modalConfig->isSheet($resolvedModalAttributes))
+@php($footerClasses = $isSheet
+    ? 'flex items-center justify-end border-zinc-200/70 px-5 py-1.5 sm:py-2 dark:border-zinc-700/70'
+    : 'flex items-center justify-end border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70')
 @php($placement = $modalConfig->modalPlacement($resolvedModalAttributes))
 @php($originClass = $modalConfig->modalOriginClass($resolvedModalAttributes))
 @php($hasBlur = (bool) ($resolvedModalAttributes['blur'] ?? false))
@@ -1178,7 +1181,7 @@
                             </main>
 
                             @if ($hasFooter)
-                                <footer {{ $footer->attributes->class('flex items-center justify-end  border-zinc-200/70 px-5 py-2 dark:border-zinc-700/70') }}>
+                                <footer {{ $footer->attributes->class($footerClasses) }}>
                                     {{ $footer }}
                                 </footer>
                             @endif

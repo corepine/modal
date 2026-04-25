@@ -1104,7 +1104,7 @@
                         @endif
                         <div class="min-h-0 flex flex-1 dark:text-white [&>*]:min-h-0 [&>*]:flex-1" data-corepine-modal-livewire>
                             @if ($usesLayout)
-                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" class="h-full">
+                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :modal-type="$modal['modalAttributes']['type'] ?? null" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])

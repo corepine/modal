@@ -161,8 +161,9 @@ it('normalizes declarative footer actions for auto layout', function (): void {
     expect($actions[1]['method'])->toBe('saveUsers');
     expect($actions[1]['params'])->toBe([5]);
     expect($actions[1]['class'])->toContain('inline-flex min-h-10');
-    expect($actions[1]['class'])->toContain('bg-[var(--cp-action-bg)]');
-    expect($actions[1]['style'])->toContain(SupportColor::Gray[700]);
+    expect($actions[1]['class'])->toContain('border-gray-200');
+    expect($actions[1]['class'])->toContain('text-gray-700');
+    expect($actions[1]['style'])->toBe('');
 
     expect($actions[2]['type'])->toBe('method');
     expect($actions[2]['method'])->toBe('refreshList');
