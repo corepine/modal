@@ -129,17 +129,6 @@ BLADE);
     expect($flat)->toContain('\u0022showDragHandle\u0022:true');
 });
 
-it('lets standalone custom rounded classes replace the default radius', function (): void {
-    $html = Blade::render(<<<'BLADE'
-<x-corepine.modal id="standalone-rounded" class="rounded-3xl">
-    <div>Standalone body</div>
-</x-corepine.modal>
-BLADE);
-
-    expect($html)->toContain('rounded-3xl');
-    expect($html)->not->toContain('rounded-lg');
-});
-
 it('hides standalone close action by default when heading and description are empty', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine.modal id="standalone-no-header-copy">

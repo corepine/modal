@@ -1013,7 +1013,7 @@
         x-on:mouseup.window="endSheetDrag($event)"
         x-on:resize.window.debounce.120ms="handleViewportResize()"
         x-show="show"
-        class="fixed inset-0 z-999 overflow-y-auto"
+        class="fixed inset-0 z-[999] overflow-y-auto"
         style="display: none;"
         role="dialog"
         aria-modal="true"
@@ -1028,8 +1028,6 @@
                     $modalClasses = $modalConfig->mergedModalClasses($modal['modalAttributes']);
                     $isDrawer = $modalConfig->isDrawer($modal['modalAttributes']);
                     $isSheet = $modalConfig->isSheet($modal['modalAttributes']);
-                    $hasRoundedClass = is_string($modal['modalAttributes']['class'] ?? null)
-                        && preg_match('/(?:^|\s)rounded(?:-[^\s]+)?(?:\s|$)/', $modal['modalAttributes']['class']) === 1;
                     $placement = $modalConfig->modalPlacement($modal['modalAttributes']);
                     $originClass = $modalConfig->modalOriginClass($modal['modalAttributes']);
                     $hasBlur = (bool) ($modal['modalAttributes']['blur'] ?? false);
@@ -1076,7 +1074,7 @@
                         'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                         'h-[100dvh] max-h-[100dvh]' => $isDrawer,
                         'mx-auto' => ! $isDrawer && ! in_array($placement, ['left', 'right'], true),
-                        'rounded-lg' => ! $isDrawer && ! $isSheet && ! $hasRoundedClass,
+                        'rounded-lg' => ! $isDrawer && ! $isSheet,
                         'rounded-r-lg rounded-l-none' => $isDrawer && $placement === 'left',
                         'rounded-l-lg rounded-r-none' => $isDrawer && $placement === 'right',
                         'rounded-t-2xl rounded-b-none' => $isSheet,
@@ -1104,7 +1102,7 @@
                                 <div class="mx-auto h-1.5 w-10 rounded-full bg-zinc-300/80 dark:bg-zinc-600/80"></div>
                             </div>
                         @endif
-                        <div class="min-h-0 flex flex-1 dark:text-white *:min-h-0 *:flex-1" data-corepine-modal-livewire>
+                        <div class="min-h-0 flex flex-1 dark:text-white [&>*]:min-h-0 [&>*]:flex-1" data-corepine-modal-livewire>
                             @if ($usesLayout)
                                 <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :modal-type="$modal['modalAttributes']['type'] ?? null" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
