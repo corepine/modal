@@ -28,6 +28,8 @@ class ModalConfig
     ];
 
     /**
+     * Built-in outgoing event names emitted by the host.
+     *
      * @var array<string, string>
      */
     private const DEFAULT_DISPATCH_EVENTS = [
@@ -58,29 +60,53 @@ class ModalConfig
         '7xl' => 'max-w-7xl',
     ];
 
+    /**
+     * Fallback width classes used when a configured size token is missing.
+     */
     private const DEFAULT_SIZE_CLASSES = 'max-w-lg sm:max-w-full';
 
+    /**
+     * Default placement for standard centered modals.
+     */
     private const DEFAULT_MODAL_PLACEMENT = 'center';
 
+    /**
+     * Default transform origin used for standard modal transitions.
+     */
     private const DEFAULT_MODAL_ORIGIN = 'center';
 
+    /**
+     * Default placement for drawer-style panels.
+     */
     private const DEFAULT_DRAWER_PLACEMENT = 'right';
 
+    /**
+     * Default placement for sheet-style panels.
+     */
     private const DEFAULT_SHEET_PLACEMENT = 'bottom';
 
+    /**
+     * Default modal type when no explicit drawer/sheet mode is requested.
+     */
     private const DEFAULT_MODAL_TYPE = ModalType::Modal->value;
 
     /**
+     * Supported placement tokens for standard modals.
+     *
      * @var array<int, string>
      */
     private const MODAL_PLACEMENTS = ['center', 'top', 'bottom', 'left', 'right'];
 
     /**
+     * Supported placement tokens for drawer-style panels.
+     *
      * @var array<int, string>
      */
     private const DRAWER_PLACEMENTS = ['left', 'right'];
 
     /**
+     * Supported placement tokens for sheet-style panels.
+     *
      * @var array<int, string>
      */
     private const SHEET_PLACEMENTS = ['bottom'];

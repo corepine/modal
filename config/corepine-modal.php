@@ -1,10 +1,18 @@
 <?php
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Modal Events
+    |--------------------------------------------------------------------------
+    |
+    | Event names used by the modal host, helpers, and lifecycle hooks.
+    | Rename these if your application needs a different event namespace.
+    |
+    */
     'events' => [
         'listen' => [
             // Incoming events consumed by the modal host and helpers.
-            // Rename these if your application needs a different namespace.
             'open' => 'modal.open',
             'open_sheet' => 'modal.open-sheet',
             'close' => 'modal.close',
@@ -24,13 +32,25 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default Modal Attributes
+    |--------------------------------------------------------------------------
+    |
+    | These values are merged into every modal unless a component or runtime
+    | payload overrides them.
+    |
+    */
     'defaults' => [
         'attributes' => [
+            // Close behavior.
             'closeOnEscape' => true,
             'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
             'dismissible' => true,
+
+            // Visual presentation.
             'blur' => false,
             'type' => 'modal',
             'drawer' => false,
@@ -42,10 +62,14 @@ return [
             'height' => null,
             'maxHeight' => null,
             'class' => '',
+
+            // Built-in shell content.
             'shell' => true,
             'heading' => null,
             'description' => null,
             'showClose' => null,
+
+            // Footer action defaults.
             'footerActionsAlignment' => 'end',
             'actions' => [],
         ],
