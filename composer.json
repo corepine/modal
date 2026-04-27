@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": "^8.2|^8.3|^8.4",
-        "corepine/support": "^0.1.0 || dev-main",
+        "corepine/support": "^0.1.3 || dev-main",
         "laravel/framework": "^11.0|^12.0|^13.0",
         "livewire/livewire": "^3.7|^4.0"
     },
