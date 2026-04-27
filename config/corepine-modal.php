@@ -1,36 +1,77 @@
 <?php
 
 return [
-    'host_component' => 'corepine-modal',
-
+    /*
+    |--------------------------------------------------------------------------
+    | Modal Events
+    |--------------------------------------------------------------------------
+    |
+    | Event names used by the modal host, helpers, and lifecycle hooks.
+    | Rename these if your application needs a different event namespace.
+    |
+    */
     'events' => [
         'listen' => [
-            'open' => ['openModal', 'corepine-modal.open'],
-            'close' => ['closeModal', 'corepine-modal.close'],
-            'close_top' => ['closeTopModal', 'corepine-modal.close-top'],
-            'close_all' => ['closeAllModals', 'corepine-modal.close-all'],
-            'destroy' => ['destroyModal', 'corepine-modal.destroy'],
-            'reset' => ['resetModal', 'corepine-modal.reset'],
+            // Incoming events consumed by the modal host and helpers.
+            'open' => 'modal.open',
+            'open_sheet' => 'modal.open-sheet',
+            'close' => 'modal.close',
+            'close_top' => 'modal.close-top',
+            'close_all' => 'modal.close-all',
+            'destroy' => 'modal.destroy',
+            'reset' => 'modal.reset',
+            'toggle' => 'modal.toggle',
         ],
         'dispatch' => [
-            'opened' => 'modalOpened',
-            'closed' => 'modalClosed',
-            'changed' => 'activeModalChanged',
-            'all_closed' => 'allModalsClosed',
-            'component_closed' => 'modalComponentClosed',
+            // Outgoing events emitted by the package after host state changes.
+            'opened' => 'modal.opened',
+            'closed' => 'modal.closed',
+            'changed' => 'modal.changed',
+            'all_closed' => 'modal.all-closed',
+            'component_closed' => 'modal.component-closed',
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default Modal Attributes
+    |--------------------------------------------------------------------------
+    |
+    | These values are merged into every modal unless a component or runtime
+    | payload overrides them.
+    |
+    */
     'defaults' => [
         'attributes' => [
+            // Close behavior.
             'closeOnEscape' => true,
-            'closeOnEscapeIsForceful' => false,
+            'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
-            'closeOnClickAway' => true,
+            'dismissible' => true,
+
+            // Visual presentation.
             'blur' => false,
+            'type' => 'modal',
+            'drawer' => false,
+            'sheet' => false,
+            'isolate' => false,
+            'placement' => 'center',
+            'origin' => 'center',
             'size' => 'default',
+            'height' => null,
+            'maxHeight' => null,
             'class' => '',
+
+            // Built-in shell content.
+            'shell' => true,
+            'heading' => null,
+            'description' => null,
+            'showClose' => null,
+
+            // Footer action defaults.
+            'footerActionsAlignment' => 'end',
+            'actions' => [],
         ],
     ],
 

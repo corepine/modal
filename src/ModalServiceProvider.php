@@ -15,6 +15,11 @@ class ModalServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/corepine-modal.php', 'corepine-modal');
 
         $this->app->singleton(ModalConfig::class, static fn (): ModalConfig => new ModalConfig);
+        $this->app->singleton(ModalService::class, static fn ($app): ModalService => new ModalService(
+            $app->make(ModalConfig::class)
+        ));
+        $this->app->alias(ModalService::class, 'corepine-modal.service');
+        $this->app->alias(ModalService::class, \Corepine\Modal\Facades\Modal::class);
     }
 
     public function boot(): void
@@ -22,14 +27,25 @@ class ModalServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'corepine-modal');
 
         if (class_exists(Livewire::class)) {
-            Livewire::component(app(ModalConfig::class)->hostComponent(), ModalHost::class);
+            Livewire::component('corepine-modal', ModalHost::class);
         }
 
-        Blade::component('corepine-modal::components.modal', 'corepine-modal');
-        Blade::component('corepine-modal::components.open-modal', 'corepine-open-modal');
-        Blade::component('corepine-modal::components.close-modal', 'corepine-close-modal');
+        Blade::component('corepine-modal::components.assets', 'corepine-modal');
+        Blade::component('corepine-modal::components.modal', 'corepine.modal');
+        Blade::component('corepine-modal::components.layout', 'corepine-modal-layout');
+        Blade::component('corepine-modal::components.layout', 'corepine-modal-template');
+        Blade::component('corepine-modal::components.footer', 'corepine-modal-footer');
+        Blade::component('corepine-modal::components.actions.open', 'corepine-modal-actions-open');
+        Blade::component('corepine-modal::components.actions.close', 'corepine-modal-actions-close');
+        
+        Blade::component('corepine-modal::components.assets', 'corepine.modal.assets');
+        Blade::component('corepine-modal::components.layout', 'corepine.modal.layout');
+        Blade::component('corepine-modal::components.layout', 'corepine.modal.template');
+        Blade::component('corepine-modal::components.footer', 'corepine.modal.footer');
+        Blade::component('corepine-modal::components.actions.open', 'corepine.modal.actions.open');
+        Blade::component('corepine-modal::components.actions.close', 'corepine.modal.actions.close');
 
-        Blade::directive('corepineModal', static fn () => "<?php echo app('view')->make('corepine-modal::components.modal')->render(); ?>");
+        Blade::directive('corepineModal', static fn () => "<?php echo app('view')->make('corepine-modal::components.assets')->render(); ?>");
 
         if ($this->app->runningInConsole()) {
             $this->publishes([

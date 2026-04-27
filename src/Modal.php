@@ -7,8 +7,6 @@ use Livewire\Component;
 
 abstract class Modal extends Component
 {
-    protected bool $shouldForceClose = false;
-
     protected int $closeLayers = 1;
 
     protected bool $destroySkipped = true;
@@ -20,25 +18,23 @@ abstract class Modal extends Component
         return $this;
     }
 
-    public function skipPreviousModals(int $count = 1, bool $destroy = true): self
+    public function skipPreviousModals(int $layers = 1, bool $destroy = true): self
     {
-        return $this->skipPreviousModal($count, $destroy);
+        return $this->skipPreviousModal($layers, $destroy);
     }
 
-    public function skipPreviousModal(int $count = 1, bool $destroy = true): self
+    public function skipPreviousModal(int $layers = 1, bool $destroy = true): self
     {
-        $this->closeLayers = max(1, $count + 1);
+        $this->closeLayers = max(1, $layers + 1);
         $this->destroySkipped = $destroy;
 
         return $this;
     }
 
-    public function forceClose(bool $destroy = true): self
+    public function closeAll(bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
-        $this->shouldForceClose = true;
-        $this->destroySkipped = $destroy;
-
-        return $this;
+        $this->closeAllModals($destroy, $dispatch, $dispatchTo);
+        $this->resetCloseState();
     }
 
     public function openModal(string $component, array $arguments = [], array $modalAttributes = []): void
@@ -51,36 +47,52 @@ abstract class Modal extends Component
         );
     }
 
-    public function closeTopModal(int $count = 1, bool $destroy = true): void
+    public function openBottomSheet(string $component, array $arguments = [], array $modalAttributes = []): void
     {
+        $this->dispatch(
+            $this->modalConfig()->listenEvent('open_sheet'),
+            component: $component,
+            arguments: $arguments,
+            modalAttributes: array_replace($modalAttributes, ['type' => 'sheet', 'sheet' => true])
+        );
+    }
+
+    public function closeTopModal(int $layers = 1, bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
+    {
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+
         $this->dispatch(
             $this->modalConfig()->listenEvent('close_top'),
-            count: max(1, $count),
-            destroy: $destroy
+            layers: max(1, $layers),
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
     }
 
-    public function closeAllModals(bool $destroy = true): void
+    public function closeAllModals(bool $destroy = true, array $dispatch = [], array $dispatchTo = []): void
     {
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+
         $this->dispatch(
             $this->modalConfig()->listenEvent('close_all'),
-            destroy: $destroy
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
     }
 
-    public function closeModal(): void
+    public function closeModal(?bool $destroy = null, array $dispatch = [], array $dispatchTo = []): void
     {
-        if ($this->shouldForceClose) {
-            $this->closeAllModals($this->destroySkipped);
-            $this->resetCloseState();
-
-            return;
-        }
+        [$dispatch, $dispatchTo] = $this->resolvedCloseDispatches($dispatch, $dispatchTo);
+        $destroy ??= $this->destroySkipped;
 
         $this->dispatch(
             $this->modalConfig()->listenEvent('close'),
-            count: max(1, $this->closeLayers),
-            destroy: $this->destroySkipped
+            layers: max(1, $this->closeLayers),
+            destroy: $destroy,
+            dispatch: $dispatch,
+            dispatchTo: $dispatchTo,
         );
         $this->resetCloseState();
     }
@@ -107,9 +119,18 @@ abstract class Modal extends Component
         return $attributes;
     }
 
+    protected function dispatchCloseEvents(): array
+    {
+        return [];
+    }
+
+    protected function dispatchCloseEventsTo(): array
+    {
+        return [];
+    }
+
     protected function resetCloseState(): void
     {
-        $this->shouldForceClose = false;
         $this->closeLayers = 1;
         $this->destroySkipped = true;
     }
@@ -136,5 +157,28 @@ abstract class Modal extends Component
 
             $this->dispatch($event, ...$params)->to($component);
         }
+    }
+
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, array<string, mixed>>}
+     */
+    private function resolvedCloseDispatches(array $dispatch, array $dispatchTo): array
+    {
+        $mergedDispatch = array_replace($this->dispatchCloseEvents(), $dispatch);
+        $mergedDispatchTo = $this->dispatchCloseEventsTo();
+
+        foreach ($dispatchTo as $component => $events) {
+            if (! is_string($component) || trim($component) === '' || ! is_array($events)) {
+                continue;
+            }
+
+            $component = trim($component);
+            $mergedDispatchTo[$component] = array_replace(
+                is_array($mergedDispatchTo[$component] ?? null) ? $mergedDispatchTo[$component] : [],
+                $events
+            );
+        }
+
+        return [$mergedDispatch, $mergedDispatchTo];
     }
 }

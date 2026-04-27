@@ -1,12 +1,21 @@
 # Corepine Modal
 
-Corepine Modal is a stack-based modal package for **Livewire v3/v4** with **Laravel 11/12/13** support.
+Corepine Modal is a stack-based modal system for Laravel with two runtime modes:
 
-It is built around:
-- `dispatch` events (no `$emit`)
-- reusable modal classes (`extends Modal`)
-- child modal stacking
-- safe model argument resolution from IDs
+- standalone Alpine + Blade modals
+- Livewire stack-based modals
+
+- `modal` (dialog)
+- `drawer` (left or right panel)
+- `sheet` (bottom sheet)
+
+It supports:
+
+- modal stacks (open child modals on top of parent modals)
+- declarative shell actions
+- strongly typed modal classes (`extends Corepine\Modal\Modal`)
+- configurable event names for package-safe integrations
+- standalone Blade-only modals (no Livewire modal class required)
 
 ## Requirements
 
@@ -14,207 +23,14 @@ It is built around:
 - Laravel `^11.0|^12.0|^13.0`
 - Livewire `^3.7|^4.0`
 
+Livewire is required by the package because stack mode uses a Livewire host.
+Standalone Alpine + Blade usage is still fully supported.
+
 ## Installation
 
 ```bash
 composer require corepine/modal
 ```
-
-## Add The Host
-
-Add once in your main layout:
-
-```blade
-<x-corepine-modal />
-```
-
-or:
-
-```blade
-@corepineModal
-```
-
-## Tailwind v4 Setup
-
-Import package CSS in your app `app.css`:
-
-```css
-@import "../../vendor/corepine/modal/resources/css/app.css";
-```
-
-No `tailwind.config.js` is required for this package setup.
-
-## Create A Modal
-
-Use `Corepine\Modal\Modal` as the base class:
-
-```php
-<?php
-
-namespace App\Livewire\Modals;
-
-use App\Models\User;
-use Corepine\Modal\Modal;
-
-class EditUser extends Modal
-{
-    public User $user;
-
-    public static function modalSize(): string
-    {
-        return 'xl'; // token from config('corepine-modal.sizes')
-    }
-
-    public static function modalAttributes(): array
-    {
-        return [
-            'closeOnEscape' => true,
-            'closeOnClickAway' => true,
-            'blur' => true,
-            'closeOnEscapeIsForceful' => false,
-            'destroyOnClose' => true,
-            'dispatchCloseEvent' => true,
-            'class' => 'p-6',
-        ];
-    }
-
-    public function save(): void
-    {
-        // ...
-        $this->closeModal();
-    }
-
-    public function render()
-    {
-        return view('livewire.modals.edit-user');
-    }
-}
-```
-
-If you prefer, you can set size directly in `modalAttributes()`:
-
-```php
-public static function modalAttributes(): array
-{
-    return [
-        'size' => '3xl',
-        // or raw classes:
-        // 'size' => 'max-w-[960px] sm:max-w-full',
-        'blur' => true,
-        'class' => 'p-6',
-    ];
-}
-```
-
-## Open Modals (dispatch-first)
-
-### Outside Livewire (JS)
-
-```html
-<button onclick="Livewire.dispatch('openModal', { component: 'modals.edit-user', arguments: { user: 5 } })">
-    Edit
-</button>
-```
-
-### Inside Livewire Blade
-
-```blade
-<button wire:click="$dispatch('openModal', { component: 'modals.edit-user', arguments: { user: {{ $user->id }} } })">
-    Edit
-</button>
-```
-
-### Open By Class Path
-
-```blade
-<button wire:click="$dispatch('openModal', { component: '{{ \App\Livewire\Modals\EditUser::class }}', arguments: { user: {{ $user->id }} } })">
-    Edit
-</button>
-```
-
-### Blade Helper Component
-
-```blade
-<x-corepine-open-modal
-    :component-class="\App\Livewire\Modals\EditUser::class"
-    :arguments="['user' => $user->id]"
-    class="p-8 bg-white border border-zinc-200 rounded-3xl"
-    size="2xl"
-    blur="true"
->
-    <button type="button">Edit</button>
-</x-corepine-open-modal>
-```
-
-You can also pass raw classes instead of a size token:
-
-```blade
-<x-corepine-open-modal
-    component="modals.edit-user"
-    :arguments="['user' => $user->id]"
-    size="max-w-[900px] sm:max-w-full"
-/>
-```
-
-`class` is the styling hook for modal surface styling (background, border, rounded, padding, etc.).
-When used on `<x-corepine-open-modal ...>`, `class` is forwarded to the modal component (not the trigger wrapper).
-
-## Closing Modals
-
-From Blade:
-
-```blade
-<button wire:click="$dispatch('closeModal')">Close</button>
-<button wire:click="$dispatch('closeTopModal', { count: 2 })">Close 2</button>
-<button wire:click="$dispatch('closeAllModals')">Close All</button>
-```
-
-From modal class:
-
-```php
-// Close current modal
-$this->closeModal();
-
-// Close current + previous modal
-$this->skipPreviousModal()->closeModal();
-
-// Close current + N previous
-$this->skipPreviousModals(2)->closeModal();
-
-// Force close everything
-$this->forceClose()->closeModal();
-
-// Close and dispatch to other components
-$this->closeModalWithEvents([
-    \App\Livewire\Users\Table::class => ['usersRefreshed', [$this->user->id]],
-]);
-```
-
-## Safe Model Argument Resolution
-
-If your modal has typed public properties (for example `public User $user`), passing `user: 5` will resolve the model via route binding before the component mounts.
-
-Enums are also resolved via `tryFrom` when type-hinted.
-
-## Prevent Close On Escape / Click Away
-
-The active modal receives these events:
-- `closingModalOnEscape`
-- `closingModalOnClickAway`
-
-Inside modal Blade you can cancel closing:
-
-```blade
-@script
-<script>
-    $wire.on('closingModalOnEscape', (payload) => {
-        if ($wire.isDirty) payload.closing = false;
-    });
-</script>
-@endscript
-```
-
-## Config
 
 Publish config:
 
@@ -222,70 +38,320 @@ Publish config:
 php artisan vendor:publish --tag=corepine-modal-config
 ```
 
-Config file: `config/corepine-modal.php`
+## Setup
 
-You can customize:
-- host component name
-- incoming/outgoing event names
-- modal defaults
-- size tokens
-- default blur
+### Livewire Stack Mode
 
-Example:
-
-```php
-'sizes' => [
-    'default' => 'max-w-lg sm:max-w-full',
-    'sheet' => 'max-w-[92vw]',
-    'dialog' => 'max-w-2xl',
-    'editor' => 'max-w-5xl',
-],
-```
-
-How this works:
-- left side (`default`, `sheet`, `dialog`, `editor`) is the size name/token
-- right side is the Tailwind width classes applied to the modal component
-
-So:
-- `size="dialog"` applies `max-w-2xl`
-- `size="editor"` applies `max-w-5xl`
-- if no size is provided, `default` is used
-
-Use token from Blade:
+Render the host once in your layout:
 
 ```blade
-<x-corepine-open-modal size="editor" ... />
+<x-corepine.modal.assets />
 ```
 
-Use token from modal class:
+### Standalone Alpine + Blade Mode
+
+You can use `<x-corepine.modal />` directly with browser events and no Livewire modal class.
+The host is not required for standalone-only usage.
+
+## Tailwind Setup
+
+Add the package stylesheet to your main CSS entry:
+
+```css
+@import "../../vendor/corepine/modal/resources/css/app.css";
+```
+
+The package CSS already includes Tailwind `@source` paths for its own views and PHP classes.
+
+## Quick Start (Livewire Stack Mode)
 
 ```php
-public static function modalSize(): string
+<?php
+
+namespace App\Livewire\Modals;
+
+use App\Models\User;
+use Corepine\Modal\Actions\Action;
+use Corepine\Modal\Enums\ModalType;
+use Corepine\Modal\Modal;
+use Corepine\Support\Enums\Placement;
+
+class EditUser extends Modal
 {
-    return 'editor';
+    public User $user;
+
+    public static function modalAttributes(): array
+    {
+        return [
+            'type' => ModalType::Modal,
+            'placement' => Placement::Center,
+            'origin' => Placement::Center,
+            'shell' => true,
+            'heading' => 'Edit User',
+            'description' => 'Update account details',
+            'showClose' => true,
+            'dismissible' => true,
+            'closeOnEscape' => true,
+            'actions' => [
+                Action::make('cancel')->label('Cancel')->close(),
+                Action::make('save')->label('Save')->primary()->action('save'),
+            ],
+        ];
+    }
 }
 ```
 
-You can also bypass the token map and pass raw classes directly:
+Open it from Blade:
 
 ```blade
-<x-corepine-open-modal size="max-w-[900px] sm:max-w-full" ... />
+<button
+    type="button"
+    onclick="Livewire.dispatch('modal.open', { component: 'modals.edit-user', arguments: { user: {{ $user->id }} } })"
+>
+    Edit User
+</button>
 ```
 
-## Config Service
+## Open / Close APIs
 
-Use `Corepine\Modal\Support\ModalConfig` if you need consistent package values in your own classes:
+From a modal class:
 
 ```php
-$modalConfig = app(\Corepine\Modal\Support\ModalConfig::class);
-$openEvent = $modalConfig->listenEvent('open'); // openModal
-$closedEvent = $modalConfig->dispatchEvent('closed'); // modalClosed
+$this->openModal('modals.edit-user', ['user' => 5]);
+$this->openBottomSheet('modals.user-sheet', ['user' => 5]);
+
+$this->closeModal();
+$this->closeModal(
+    destroy: false,
+    dispatch: ['users-refreshed' => ['user' => 5]],
+    dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
+);
+$this->closeTopModal(
+    layers: 2,
+    dispatch: ['users-refreshed' => ['user' => 5]],
+);
+$this->closeAll(
+    dispatchTo: ['orders.table' => ['sync-user' => ['user' => 5]]],
+);
 ```
 
-## Testing
+From Blade helpers:
 
-```bash
-composer test
+```blade
+<x-corepine.modal.actions.open component="modals.edit-user" :arguments="['user' => $user->id]">
+    <button type="button">Edit</button>
+</x-corepine.modal.actions.open>
+
+<x-corepine.modal.actions.open modal-id="user-sheet">
+    <button type="button">Open Sheet</button>
+</x-corepine.modal.actions.open>
+
+<x-corepine.modal.actions.close
+    layers="1"
+    :destroy="true"
+    :dispatch="['users-refreshed' => ['user' => $user->id]]"
+    :dispatch-to="['orders.table' => ['sync-user' => ['user' => $user->id]]]"
+>
+    Close
+</x-corepine.modal.actions.close>
 ```
 
-Package tests are written with Pest.
+`dispatch` fires regular Livewire/browser events after the close finishes.
+
+`dispatchTo` fires Livewire targeted events after the close finishes.
+
+Use `modal-id` on open/close helpers when you want to target a standalone `<x-corepine.modal id="..." />` by id.
+
+## Quick Start (Standalone Alpine + Blade Mode)
+
+Use this when you do not need a Livewire modal class:
+
+```blade
+<button
+    type="button"
+    onclick="window.dispatchEvent(new CustomEvent('modal.open', { detail: { id: 'user-sheet' } }))"
+>
+    Open Sheet
+</button>
+
+<x-corepine.modal id="user-sheet" type="sheet" heading="User Details">
+    <p class="text-sm text-zinc-600">Standalone modal body</p>
+
+    <x-slot:footer>
+        <button
+            type="button"
+            class="rounded-md border px-3 py-2 text-sm"
+            onclick="window.dispatchEvent(new CustomEvent('modal.close', { detail: { id: 'user-sheet' } }))"
+        >
+            Close
+        </button>
+    </x-slot:footer>
+</x-corepine.modal>
+```
+
+Standalone named slots:
+
+- `header`: custom header content. Slot attributes are merged onto the header wrapper classes.
+- When `header` slot is provided (even empty), it overrides built-in heading/description/close rendering.
+- `footer`: custom footer content.
+
+Example:
+
+```blade
+<x-corepine.modal id="custom-header-modal" show-close="false">
+    <x-slot:header class="font-bold text-lg" data-testid="custom-header">
+        Custom Header
+    </x-slot:header>
+
+    <p>Body</p>
+</x-corepine.modal>
+```
+
+Standalone browser events:
+
+- `modal.open`
+- `modal.close`
+- `modal.toggle`
+
+Each event accepts `{ id?: string }` in `detail`.
+
+## Modal Attributes
+
+The canonical shell/action API uses `actions` (not legacy keys).
+
+| Key | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `type` | `modal \| drawer \| sheet` | `modal` | Presentation type. |
+| `placement` | `Placement \| string` | by type | `modal`: `center/top/bottom/left/right`, `drawer`: `left/right`, `sheet`: forced `bottom`. |
+| `origin` | `Placement \| string` | follows type/placement | Transform origin; same value set as `placement` vocabulary. |
+| `size` | `string` | `default` | Width token from config sizes, or custom class string. |
+| `height` | `string \| number \| null` | `null` | Panel height (modal/drawer) and initial sheet height. |
+| `maxHeight` | `string \| number \| null` | `null` | Shared max-height cap for all types. |
+| `dismissible` | `bool` | `true` | Scrim click closes when true. |
+| `draggable` | `bool` | type-aware | Sheet drag/resize behavior. |
+| `showDragHandle` | `bool` | type-aware | Sheet handle visibility. |
+| `dragCloseThreshold` | `float` | `0.3` | Sheet drag-close ratio. |
+| `closeOnEscape` | `bool` | `true` | Escape closes top layer. |
+| `closeAllOnEscape` | `bool` | `false` | Escape closes full stack. |
+| `destroyOnClose` | `bool` | `true` | Remove closed layers from host state. |
+| `dispatch` | `array` | `[]` | Default events to dispatch after close. |
+| `dispatchTo` | `array` | `[]` | Default targeted Livewire events to dispatch after close. |
+| `dispatchCloseEvent` | `bool` | `false` | Emits the built-in `modal.component-closed` notification for that layer. |
+| `blur` | `bool` | `false` | Scrim blur effect. |
+| `shell` | `bool` | `true` | Enables built-in shell header/body/footer structure. |
+| `heading` | `string \| null` | `null` | Shell heading text. |
+| `description` | `string \| null` | `null` | Shell description text. |
+| `showClose` | `bool \| null` | `auto` | Built-in shell close icon. Defaults to visible only when built-in `heading` or `description` is present. |
+| `footerActionsAlignment` | `Alignment \| string` | `end` | `start`, `center`, `end`. |
+| `actions` | `array` | `[]` | Declarative shell actions (`close` / `method`). |
+| `class` | `string` | `''` | Extra panel classes. |
+
+### Type Behavior Rules
+
+- `sheet`: always renders from bottom and always uses `placement=bottom`, `origin=bottom`.
+- `drawer`: only `left` and `right` are valid.
+- `modal`: supports all five placement values and now fully respects both `placement` and `origin`.
+
+## Declarative Actions
+
+Action payloads can be raw arrays or fluent `Action::make(...)` objects.
+
+```php
+use Corepine\Modal\Actions\Action;
+
+'actions' => [
+    Action::make('cancel')
+        ->label('Cancel')
+        ->close(),
+
+    Action::make('save')
+        ->label('Save')
+        ->primary()
+        ->action('save'),
+]
+```
+
+Supported fluent helpers include:
+
+- `method()` / `action()`
+- `close(layers, destroy, closeAll)`
+- `dispatch()` / `dispatchTo()` on close actions
+- `disabled()`
+- `visible()`
+- `color()` and shortcuts (`primary`, `danger`, `success`, `warning`, `info`, `gray`, `dark`)
+- `accent()`
+- `outline()`
+- `attributes()`
+
+## Event System
+
+Default incoming events:
+
+- `modal.open`
+- `modal.open-sheet`
+- `modal.close`
+- `modal.close-top`
+- `modal.close-all`
+- `modal.destroy`
+- `modal.reset`
+- `modal.toggle`
+
+Default outgoing events:
+
+- `modal.opened`
+- `modal.closed`
+- `modal.changed`
+- `modal.all-closed`
+- `modal.component-closed`
+
+### Event Customization
+
+You can rename both incoming and outgoing events in `config/corepine-modal.php`:
+
+```php
+'events' => [
+    'listen' => [
+        'open' => 'acme.modal.open',
+        'close' => 'acme.modal.close',
+    ],
+    'dispatch' => [
+        'opened' => 'acme.modal.opened',
+    ],
+],
+```
+
+For package integrations, do not hardcode event strings. Resolve them from the service:
+
+```php
+use Corepine\Modal\Facades\Modal;
+
+$openEvent = Modal::event()->openModal();
+$closeEvent = Modal::event()->closeModal();
+```
+
+## Configuration
+
+Main sections in `config/corepine-modal.php`:
+
+- `events.listen`: incoming event names
+- `events.dispatch`: outgoing event names
+- `defaults.attributes`: global modal attribute defaults
+- `sizes`: modal width tokens
+
+### Example Size Override
+
+```php
+'sizes' => [
+    'default' => 'max-w-xl sm:max-w-full',
+    'editor' => 'max-w-[960px]',
+],
+```
+
+## Blade Components (Canonical)
+
+- `<x-corepine.modal.assets />`
+- `<x-corepine.modal />`
+- `<x-corepine.modal.layout />`
+- `<x-corepine.modal.footer />`
+- `<x-corepine.modal.actions.open />`
+- `<x-corepine.modal.actions.close />`

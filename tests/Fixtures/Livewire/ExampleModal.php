@@ -17,10 +17,10 @@ class ExampleModal extends Modal
     {
         return [
             'closeOnEscape' => true,
-            'closeOnEscapeIsForceful' => false,
+            'closeAllOnEscape' => false,
             'dispatchCloseEvent' => false,
             'destroyOnClose' => true,
-            'closeOnClickAway' => true,
+            'dismissible' => true,
             'class' => 'p-4',
         ];
     }

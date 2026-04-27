@@ -12,23 +12,51 @@ beforeEach(function (): void {
 it('dispatches open event from modal component helper', function (): void {
     Livewire::test('test.control-modal')
         ->call('openChild')
-        ->assertDispatched('openModal');
+        ->assertDispatched('modal.open');
 });
 
-it('dispatches close event with stacked count when skipping previous modal', function (): void {
+it('dispatches open-bottom-sheet event from modal component helper', function (): void {
+    Livewire::test('test.control-modal')
+        ->call('openSheetChild')
+        ->assertDispatched('modal.open-sheet');
+});
+
+it('dispatches close event with stacked layers when skipping previous modal', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeCurrentAndPrevious')
-        ->assertDispatched('closeModal');
+        ->assertDispatched('modal.close');
+});
+
+it('merges explicit and component-defined post-close dispatch payloads', function (): void {
+    Livewire::test('test.control-modal')
+        ->call('closeCurrentWithDispatches')
+        ->assertDispatched('modal.close', function (string $name, array $params): bool {
+            return ($params['dispatch'] ?? []) === [
+                'users-refreshed' => ['user' => 5],
+                'users-saved' => ['user' => 9],
+            ] && ($params['dispatchTo'] ?? []) === [
+                'test.example-modal' => [
+                    'focus-user' => ['user' => 5],
+                    'sync-user' => ['user' => 9],
+                ],
+            ];
+        });
+});
+
+it('supports overriding destroy with named closeModal arguments', function (): void {
+    Livewire::test('test.control-modal')
+        ->call('closeCurrentWithoutDestroy')
+        ->assertDispatched('modal.close', destroy: false);
 });
 
 it('dispatches close-top event explicitly', function (): void {
     Livewire::test('test.control-modal')
         ->call('closeTopTwo')
-        ->assertDispatched('closeTopModal');
+        ->assertDispatched('modal.close-top');
 });
 
-it('dispatches close-all when forcing close', function (): void {
+it('dispatches close-all from the closeAll helper', function (): void {
     Livewire::test('test.control-modal')
-        ->call('forceCloseEverything')
-        ->assertDispatched('closeAllModals');
+        ->call('closeAllModalLayers')
+        ->assertDispatched('modal.close-all');
 });

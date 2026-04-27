@@ -3,6 +3,7 @@
 namespace Corepine\Modal\Tests;
 
 use Corepine\Modal\ModalServiceProvider;
+use Corepine\Support\SupportServiceProvider;
 use Illuminate\Config\Repository;
 use Illuminate\Support\Facades\View;
 use Livewire\LivewireServiceProvider;
@@ -16,6 +17,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     {
         return [
             LivewireServiceProvider::class,
+            SupportServiceProvider::class,
             ModalServiceProvider::class,
         ];
     }
