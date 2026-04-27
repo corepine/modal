@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9f902dd4e2c71c6f4dece06360d40d9c",
+    "content-hash": "53285a98d537a9e2882ca7c0d8130726",
     "packages": [
         {
             "name": "brick/math",
@@ -137,7 +137,7 @@
         },
         {
             "name": "corepine/support",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/corepine/support.git",
@@ -158,7 +158,6 @@
                 "pestphp/pest": "^2.34|^3.0",
                 "pestphp/pest-plugin-laravel": "^2.4|^3.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -197,7 +196,7 @@
             ],
             "support": {
                 "issues": "https://github.com/corepine/support/issues",
-                "source": "https://github.com/corepine/support/tree/main"
+                "source": "https://github.com/corepine/support/tree/v0.1.2"
             },
             "time": "2026-04-11T11:43:27+00:00"
         },
