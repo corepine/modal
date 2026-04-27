@@ -1,6 +1,5 @@
 <?php
 
-use Corepine\Modal\Facades\Modal as ModalFacade;
 use Corepine\Modal\ModalService;
 use Corepine\Modal\Support\ModalConfig;
 
