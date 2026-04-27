@@ -85,7 +85,7 @@ return [
     |
     */
     'sizes' => [
-        'default' => 'max-w-lg sm:max-w-full',
+        'default' => 'sm:max-w-xl',
         'sm' => 'max-w-sm',
         'md' => 'max-w-md',
         'lg' => 'max-w-lg',
