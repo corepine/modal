@@ -375,7 +375,7 @@ class Action extends SupportAction
             return [
                 'type' => 'dispatchTo',
                 'label' => $this->resolveLabel(ucwords(str_replace(['-', '_'], ' ', $this->name))),
-                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled, $usesVariableStyling),
+                'class' => $this->resolveClass($this->class, $paletteName, $outline, $accent, $disabled),
                 'disabled' => $disabled,
                 'visible' => $visible,
                 'style' => $style,
