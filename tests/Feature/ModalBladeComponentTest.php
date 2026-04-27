@@ -4,16 +4,9 @@ use Illuminate\Support\Facades\Blade;
 
 it('renders modal host using corepine-modal component', function (): void {
     $html = Blade::render('<x-corepine-modal />');
-    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($html)->toContain('fixed inset-0 z-[999] overflow-y-auto');
     expect($html)->not->toContain('vendor/corepine-modal/app.css');
-    expect($flat)->toContain('this.registerWindowListener(events.open');
-    expect($flat)->toContain('this.$wire.openModal(payload);');
-    expect($flat)->toContain('this.registerWindowListener(events.openSheet');
-    expect($flat)->toContain('this.$wire.openBottomSheet(payload);');
-    expect($flat)->toContain('this.registerWindowListener(events.close');
-    expect($flat)->toContain('this.registerWindowListener(events.closeAll');
 });
 
 it('renders modal host using dotted assets alias', function (): void {

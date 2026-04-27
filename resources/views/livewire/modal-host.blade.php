@@ -32,25 +32,6 @@
                     this.requestCloseHandler = (payload = {}) => this.requestClose(payload);
                     window.corepineModalRequestClose = this.requestCloseHandler;
 
-                    this.registerWindowListener(events.open, (payload = {}) => {
-                        this.$wire.openModal(payload);
-                    });
-
-                    this.registerWindowListener(events.openSheet, (payload = {}) => {
-                        this.$wire.openBottomSheet(payload);
-                    });
-
-                    this.registerWindowListener(events.close, (payload = {}) => {
-                        this.requestClose(payload);
-                    });
-
-                    this.registerWindowListener(events.closeAll, (payload = {}) => {
-                        this.requestClose({
-                            ...payload,
-                            closeAll: true,
-                        });
-                    });
-
                     this.listeners.push(
                         Livewire.on(events.changed, ({ id }) => {
                             this.activeModalId = id ?? null;
@@ -107,17 +88,6 @@
 
                 stack() {
                     return this.$wire.get('stack') ?? [];
-                },
-
-                registerWindowListener(eventName, callback) {
-                    if (typeof eventName !== 'string' || eventName.trim() === '') {
-                        return;
-                    }
-
-                    const listener = (event) => callback(event?.detail ?? {});
-
-                    window.addEventListener(eventName, listener);
-                    this.listeners.push(() => window.removeEventListener(eventName, listener));
                 },
 
                 modalById(id) {
