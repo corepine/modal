@@ -129,6 +129,25 @@ BLADE);
     expect($flat)->toContain('\u0022showDragHandle\u0022:true');
 });
 
+it('renders standalone focus fallback and default sheet threshold', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine.modal id="default-sheet" type="sheet">
+    <div>Standalone sheet</div>
+</x-corepine.modal>
+BLADE);
+
+    $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
+
+    expect($flat)->toContain('focusPanel()');
+    expect($flat)->toContain('panel.contains(current)');
+    expect($flat)->toContain('querySelector(\'[autofocus]\')');
+    expect($flat)->toContain('panel.focus({ preventScroll: true })');
+    expect($flat)->toContain('tabindex="-1"');
+    expect($flat)->toContain('\u0022dragCloseThreshold\u0022:0.5');
+    expect($flat)->toContain('dragCloseThresholdValue: options.dragCloseThreshold ?? 0.5');
+    expect($flat)->toContain('return 0.5');
+});
+
 it('hides standalone close action by default when heading and description are empty', function (): void {
     $html = Blade::render(<<<'BLADE'
 <x-corepine.modal id="standalone-no-header-copy">
@@ -237,6 +256,28 @@ BLADE);
 
     expect($html)->toContain('Body only');
     expect($html)->toContain('sr-only');
+});
+
+it('renders layout child chrome as a back affordance', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout heading="Child Modal" :child="true">
+    <div>Body only</div>
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('Child Modal');
+    expect($html)->toContain('Back');
+    expect($html)->toContain('M12.5 5L7.5 10L12.5 15');
+    expect($html)->not->toContain('M5 5L15 15M15 5L5 15');
+});
+
+it('documents Tailwind config sources for modal size classes', function (): void {
+    $css = file_get_contents(__DIR__.'/../../resources/css/app.css');
+    $readme = file_get_contents(__DIR__.'/../../README.md');
+
+    expect($css)->toContain('@source "../../config/**/*.php";');
+    expect($readme)->toContain('@source "../../config/corepine-modal.php";');
+    expect($readme)->toContain('| `dragCloseThreshold` | `float` | `0.5` |');
 });
 
 it('merges custom wrapper attributes on modal shell', function (): void {

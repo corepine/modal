@@ -61,6 +61,7 @@ return [
             'size' => 'default',
             'height' => null,
             'maxHeight' => null,
+            'dragCloseThreshold' => 0.5,
             'class' => '',
 
             // Built-in shell content.

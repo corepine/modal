@@ -3,6 +3,7 @@
     'description' => null,
     'showClose' => null,
     'modalType' => null,
+    'child' => false,
 ])
 
 @php
@@ -41,6 +42,7 @@
     $resolvedShowClose = ! is_null($showClose)
         ? $normalizeBoolean($showClose, true)
         : ($resolvedHeading !== null || $resolvedDescription !== null);
+    $resolvedChild = $normalizeBoolean($child, false) ?? false;
     $resolvedModalType = $modalType instanceof \Corepine\Modal\Enums\ModalType
         ? $modalType->value
         : (is_string($modalType) ? strtolower(trim($modalType)) : null);
@@ -132,12 +134,20 @@
 
             @if ($resolvedShowClose && $namedHeader === null)
                 <x-corepine.modal.actions.close
+                    aria-label="{{ $resolvedChild ? 'Back' : 'Close' }}"
                     class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
-                    <span class="sr-only">Close</span>
-                    <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
-                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-                    </svg>
+                    @if ($resolvedChild)
+                        <span class="sr-only">Back</span>
+                        <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+                            <path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    @else
+                        <span class="sr-only">Close</span>
+                        <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+                            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                        </svg>
+                    @endif
                 </x-corepine.modal.actions.close>
             @endif
         </header>

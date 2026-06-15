@@ -28,6 +28,33 @@ it('opens and stacks modals', function (): void {
     expect($modals[$stack[1]]['arguments']['title'])->toBe('Second');
 });
 
+it('renders focus fallback markers for the active modal panel', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal')
+        ->assertSee('focusActiveModal()', false)
+        ->assertSee('const activePanel = this.$refs[`panel-${this.activeModalId}`];', false)
+        ->assertSee('activeContainer.contains(current)', false)
+        ->assertSee('querySelector(\'[autofocus]\')', false)
+        ->assertSee('activePanel.focus({ preventScroll: true })', false)
+        ->assertSee('tabindex="-1"', false);
+});
+
+it('renders root close chrome and child back chrome for stacked shell modals', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Parent modal',
+        ])
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Child modal',
+        ])
+        ->assertSee('Parent modal')
+        ->assertSee('Child modal')
+        ->assertSee('Close')
+        ->assertSee('Back')
+        ->assertSee('M5 5L15 15M15 5L5 15', false)
+        ->assertSee('M12.5 5L7.5 10L12.5 15', false);
+});
+
 it('closes top modal layers', function (): void {
     $test = Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal', arguments: ['title' => 'One'])

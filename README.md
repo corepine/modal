@@ -61,7 +61,13 @@ Add the package stylesheet to your main CSS entry:
 @import "../../vendor/corepine/modal/resources/css/app.css";
 ```
 
-The package CSS already includes Tailwind `@source` paths for its own views and PHP classes.
+The package CSS already includes Tailwind `@source` paths for its own views, PHP classes, and config.
+
+If you publish `corepine-modal.php` and add custom modal size classes there, include the published config in your app CSS source list so Tailwind can keep those classes:
+
+```css
+@source "../../config/corepine-modal.php";
+```
 
 ## Quick Start (Livewire Stack Mode)
 
@@ -230,7 +236,7 @@ The canonical shell/action API uses `actions` (not legacy keys).
 | `dismissible` | `bool` | `true` | Scrim click closes when true. |
 | `draggable` | `bool` | type-aware | Sheet drag/resize behavior. |
 | `showDragHandle` | `bool` | type-aware | Sheet handle visibility. |
-| `dragCloseThreshold` | `float` | `0.3` | Sheet drag-close ratio. |
+| `dragCloseThreshold` | `float` | `0.5` | Sheet drag-close ratio. |
 | `closeOnEscape` | `bool` | `true` | Escape closes top layer. |
 | `closeAllOnEscape` | `bool` | `false` | Escape closes full stack. |
 | `destroyOnClose` | `bool` | `true` | Remove closed layers from host state. |

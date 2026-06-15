@@ -138,6 +138,7 @@
 @php($panelElementAttributes = $isFormPanel ? $panelAttributes->except('method')->merge([
     'method' => in_array($formMethod, ['put', 'patch', 'delete'], true) ? 'post' : $formMethod,
 ]) : $panelAttributes)
+@php($panelElementAttributes = $panelElementAttributes->merge(['tabindex' => '-1']))
 @php($normalizedCloseAllOnEscape = $normalizeBoolean($closeAllOnEscape, null))
 @if (! is_null($normalizedCloseAllOnEscape))
     @php($payloadModalAttributes['closeAllOnEscape'] = $normalizedCloseAllOnEscape)
@@ -187,7 +188,7 @@
     'dismissible' => (bool) ($resolvedModalAttributes['dismissible'] ?? true),
     'draggable' => (bool) ($resolvedModalAttributes['draggable'] ?? $isSheet),
     'showDragHandle' => (bool) ($resolvedModalAttributes['showDragHandle'] ?? ($resolvedModalAttributes['draggable'] ?? $isSheet)),
-    'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? 0.3,
+    'dragCloseThreshold' => $resolvedModalAttributes['dragCloseThreshold'] ?? 0.5,
     'height' => $resolvedModalAttributes['height'] ?? null,
     'maxHeight' => $resolvedModalAttributes['maxHeight'] ?? null,
     'panelClass' => is_string($resolvedModalAttributes['class'] ?? null) ? $resolvedModalAttributes['class'] : '',
@@ -216,7 +217,7 @@
             dismissible: options.dismissible !== false,
             draggable: options.draggable !== false,
             showDragHandle: options.showDragHandle !== false,
-            dragCloseThresholdValue: options.dragCloseThreshold ?? 0.3,
+            dragCloseThresholdValue: options.dragCloseThreshold ?? 0.5,
             heightValue: options.height ?? null,
             maxHeightValue: options.maxHeight ?? null,
             panelClassValue: options.panelClass ?? '',
@@ -245,10 +246,18 @@
                     this.ensureSheetHeight();
                 }
 
+                if (this.open) {
+                    this.focusPanel();
+                }
+
                 this.$watch('open', (value) => {
-                    if (value && this.isSheet()) {
-                        this.ensureSheetHeight();
-                        this.resetSheetCloseState();
+                    if (value) {
+                        if (this.isSheet()) {
+                            this.ensureSheetHeight();
+                            this.resetSheetCloseState();
+                        }
+
+                        this.focusPanel();
                     }
 
                     if (!value && !this.closingFromDrag) {
@@ -375,6 +384,33 @@
                 }
 
                 this.openFromEvent(payload);
+            },
+
+            focusPanel() {
+                this.$nextTick(() => {
+                    const panel = this.$refs.panel;
+                    const current = document.activeElement;
+
+                    if (!panel) {
+                        return;
+                    }
+
+                    if (current && panel.contains(current)) {
+                        return;
+                    }
+
+                    const focusTarget = panel.querySelector('[autofocus]');
+
+                    if (focusTarget && typeof focusTarget.focus === 'function') {
+                        focusTarget.focus({ preventScroll: true });
+
+                        return;
+                    }
+
+                    if (typeof panel.focus === 'function') {
+                        panel.focus({ preventScroll: true });
+                    }
+                });
             },
 
             close(payload = {}) {
@@ -789,10 +825,10 @@
             },
 
             resolvedDragThreshold() {
-                const raw = Number.parseFloat(this.dragCloseThresholdValue ?? 0.3);
+                const raw = Number.parseFloat(this.dragCloseThresholdValue ?? 0.5);
 
                 if (Number.isNaN(raw)) {
-                    return 0.3;
+                    return 0.5;
                 }
 
                 return Math.min(0.95, Math.max(0.05, raw));

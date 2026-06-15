@@ -16,7 +16,7 @@
                 sheetDragStartY: 0,
                 sheetDragOffsetY: 0,
                 sheetDragPointerId: null,
-                defaultSheetDragThreshold: 0.3,
+                defaultSheetDragThreshold: 0.5,
                 sheetHeights: {},
                 resizingSheetId: null,
                 sheetResizeStartY: 0,
@@ -981,10 +981,27 @@
 
                     this.$nextTick(() => {
                         const activeContainer = this.$refs[this.activeModalId];
+                        const activePanel = this.$refs[`panel-${this.activeModalId}`];
+                        const current = document.activeElement;
+
+                        if (!activeContainer || !activePanel) {
+                            return;
+                        }
+
+                        if (current && activeContainer.contains(current)) {
+                            return;
+                        }
+
                         const focusTarget = activeContainer?.querySelector('[autofocus]');
 
-                        if (focusTarget) {
-                            focusTarget.focus();
+                        if (focusTarget && typeof focusTarget.focus === 'function') {
+                            focusTarget.focus({ preventScroll: true });
+
+                            return;
+                        }
+
+                        if (typeof activePanel.focus === 'function') {
+                            activePanel.focus({ preventScroll: true });
                         }
                     });
                 },
@@ -1088,6 +1105,7 @@
                         'rounded-b-none' => $isSheet,
                     ])
                         x-ref="panel-{{ $id }}"
+                        tabindex="-1"
                         x-bind:style="panelStyle(@js($id))"
                         x-on:pointerdown.capture="startSheetDrag(@js($id), $event)"
                         x-on:touchstart.capture="startSheetDrag(@js($id), $event)"
@@ -1108,7 +1126,7 @@
                         @endif
                         <div class="min-h-0 flex flex-1 dark:text-white [&>*]:min-h-0 [&>*]:flex-1" data-corepine-modal-livewire>
                             @if ($usesLayout)
-                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :modal-type="$modal['modalAttributes']['type'] ?? null" class="h-full">
+                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :modal-type="$modal['modalAttributes']['type'] ?? null" :child="$loop->index > 0" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])

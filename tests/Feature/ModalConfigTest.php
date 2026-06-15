@@ -140,6 +140,12 @@ it('supports shell attributes', function (): void {
     expect($config->layoutFooterActionsAlignmentClass(['footerActionsAlignment' => 'start']))->toBe('justify-start');
 });
 
+it('uses 0.5 as the default sheet drag close threshold', function (): void {
+    $config = app(ModalConfig::class);
+
+    expect($config->mergedModalAttributes([], ['type' => 'sheet'])['dragCloseThreshold'])->toBe(0.5);
+});
+
 it('normalizes declarative footer actions for auto layout', function (): void {
     $config = app(ModalConfig::class);
 
