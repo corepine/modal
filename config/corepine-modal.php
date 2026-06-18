@@ -69,6 +69,7 @@ return [
             'heading' => null,
             'description' => null,
             'showClose' => null,
+            // Child stack layers inherit this value unless they set their own.
             'stackedBackButton' => true,
 
             // Footer action defaults.

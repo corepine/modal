@@ -142,6 +142,7 @@ BLADE);
     expect($flat)->toContain('panel.contains(current)');
     expect($flat)->toContain('querySelector(\'[autofocus]\')');
     expect($flat)->toContain('panel.focus({ preventScroll: true })');
+    expect($flat)->toContain('focus:outline-none');
     expect($flat)->toContain('tabindex="-1"');
     expect($flat)->toContain('\u0022dragCloseThreshold\u0022:0.5');
     expect($flat)->toContain('dragCloseThresholdValue: options.dragCloseThreshold ?? 0.5');

@@ -1198,7 +1198,7 @@
                             x-on:mousedown.capture="startSheetDrag($event)"
                             x-on:click.stop
                             @class([
-                                'flex w-full flex-col overflow-hidden bg-white text-zinc-900 shadow-xl dark:bg-zinc-800 dark:text-zinc-100',
+                                'flex w-full flex-col overflow-hidden bg-white text-zinc-900 shadow-xl focus:outline-none dark:bg-zinc-800 dark:text-zinc-100',
                                 'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                                 'h-[100dvh] max-h-[100dvh]' => $isDrawer,
                                 'rounded-lg' => ! $isDrawer && ! $isSheet,

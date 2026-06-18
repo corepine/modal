@@ -75,6 +75,7 @@ class ModalHost extends Component
         $componentOverrides = method_exists($componentClass, 'modalAttributes')
             ? (array) $componentClass::modalAttributes()
             : [];
+        $stackInheritedAttributes = $this->stackInheritedModalAttributes($componentOverrides, $modalAttributes);
 
         if (
             method_exists($componentClass, 'modalSize')
@@ -86,6 +87,8 @@ class ModalHost extends Component
                 $componentOverrides['size'] = $size;
             }
         }
+
+        $componentOverrides = array_replace($stackInheritedAttributes, $componentOverrides);
 
         $this->modals[$id] = [
             'id' => $id,
@@ -251,6 +254,32 @@ class ModalHost extends Component
         }
 
         return [$component, $arguments, $modalAttributes];
+    }
+
+    /**
+     * @param  array<string, mixed>  $componentAttributes
+     * @param  array<string, mixed>  $runtimeAttributes
+     * @return array<string, mixed>
+     */
+    protected function stackInheritedModalAttributes(array $componentAttributes, array $runtimeAttributes): array
+    {
+        if (
+            array_key_exists('stackedBackButton', $componentAttributes)
+            || array_key_exists('stackedBackButton', $runtimeAttributes)
+            || $this->activeModalId === null
+        ) {
+            return [];
+        }
+
+        $parentAttributes = $this->modals[$this->activeModalId]['modalAttributes'] ?? [];
+
+        if (! is_array($parentAttributes) || ! array_key_exists('stackedBackButton', $parentAttributes)) {
+            return [];
+        }
+
+        return [
+            'stackedBackButton' => $parentAttributes['stackedBackButton'],
+        ];
     }
 
     public function getPublicPropertyTypes(Component $component): Collection

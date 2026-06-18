@@ -1126,7 +1126,7 @@
                     wire:key="corepine-modal-{{ $id }}"
                 >
                     <div @class([
-                        'flex min-h-0 w-full flex-col overflow-hidden bg-white dark:bg-zinc-800',
+                        'flex min-h-0 w-full flex-col overflow-hidden bg-white focus:outline-none dark:bg-zinc-800',
                         'h-[50dvh] max-h-[calc(100dvh-1rem)]' => ! $isDrawer && ! $isSheet,
                         'h-[100dvh] max-h-[100dvh]' => $isDrawer,
                         'mx-auto' => ! $isDrawer && ! in_array($placement, ['left', 'right'], true),

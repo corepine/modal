@@ -36,6 +36,7 @@ it('renders focus fallback markers for the active modal panel', function (): voi
         ->assertSee('activeContainer.contains(current)', false)
         ->assertSee('querySelector(\'[autofocus]\')', false)
         ->assertSee('activePanel.focus({ preventScroll: true })', false)
+        ->assertSee('focus:outline-none', false)
         ->assertSee('tabindex="-1"', false);
 });
 
@@ -70,6 +71,51 @@ it('can disable child back chrome for stacked shell modals', function (): void {
         ->assertDontSee('Back')
         ->assertSee('M5 5L15 15M15 5L5 15', false)
         ->assertDontSee('M13 4L7 10L13 16', false);
+});
+
+it('inherits stacked back chrome from parent shell modals', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Parent modal',
+            'stackedBackButton' => false,
+        ])
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Child modal',
+        ])
+        ->assertSee('Parent modal')
+        ->assertSee('Child modal')
+        ->assertSee('Close')
+        ->assertDontSee('Back')
+        ->assertSee('M5 5L15 15M15 5L5 15', false)
+        ->assertDontSee('M13 4L7 10L13 16', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[1]]['modalAttributes']['stackedBackButton'])->toBeFalse();
+});
+
+it('lets child shell modals override inherited stacked back chrome', function (): void {
+    $test = Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Parent modal',
+            'stackedBackButton' => false,
+        ])
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Child modal',
+            'stackedBackButton' => true,
+        ])
+        ->assertSee('Parent modal')
+        ->assertSee('Child modal')
+        ->assertSee('Close')
+        ->assertSee('Back')
+        ->assertSee('M5 5L15 15M15 5L5 15', false)
+        ->assertSee('M13 4L7 10L13 16', false);
+
+    $stack = $test->get('stack');
+    $modals = $test->get('modals');
+
+    expect($modals[$stack[1]]['modalAttributes']['stackedBackButton'])->toBeTrue();
 });
 
 it('renders snap close state hooks for local modal closing', function (): void {
