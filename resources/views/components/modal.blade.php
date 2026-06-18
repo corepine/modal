@@ -235,6 +235,12 @@
             sheetResizeStartY: 0,
             sheetResizeStartHeight: 0,
             sheetResizePointerId: null,
+            preClosing: false,
+            snapClosing: false,
+            closeSnapDelay: 90,
+            closeDispatchDelay: 340,
+            closeSnapTimer: null,
+            closeDispatchTimer: null,
             closingFromDrag: false,
             closeResetTimer: null,
 
@@ -252,6 +258,8 @@
 
                 this.$watch('open', (value) => {
                     if (value) {
+                        this.resetSnapCloseState();
+
                         if (this.isSheet()) {
                             this.ensureSheetHeight();
                             this.resetSheetCloseState();
@@ -283,6 +291,7 @@
                 this.livewireListeners = [];
 
                 this.resetSheetCloseState();
+                this.resetSnapCloseState();
                 this.clearSheetDrag();
                 this.clearSheetResize();
                 this.syncBodyClass();
@@ -333,6 +342,10 @@
                 return this.isSheet() && this.draggable !== false;
             },
 
+            isPreClosing() {
+                return this.preClosing && !this.snapClosing && this.isDrawer();
+            },
+
             shouldShowSheetDragHandle() {
                 return this.isSheetDraggable() && this.showDragHandle !== false;
             },
@@ -357,6 +370,7 @@
                 }
 
                 this.resetSheetCloseState();
+                this.resetSnapCloseState();
                 this.open = true;
 
                 if (this.isSheet()) {
@@ -414,14 +428,48 @@
             },
 
             close(payload = {}) {
-                this.open = false;
+                if (!this.open || this.preClosing) {
+                    return;
+                }
+
+                this.resetSnapCloseState();
+
+                if (!this.isDrawer()) {
+                    this.open = false;
+
+                    if (!this.closingFromDrag) {
+                        this.clearSheetDrag();
+                        this.clearSheetResize();
+                    }
+
+                    this.dispatchCloseEvents(payload);
+
+                    return;
+                }
+
+                this.preClosing = true;
 
                 if (!this.closingFromDrag) {
                     this.clearSheetDrag();
                     this.clearSheetResize();
                 }
 
-                this.dispatchCloseEvents(payload);
+                this.closeSnapTimer = setTimeout(() => {
+                    this.closeSnapTimer = null;
+                    this.preClosing = false;
+                    this.snapClosing = true;
+                    this.open = false;
+                }, this.closeSnapDelay);
+
+                this.closeDispatchTimer = setTimeout(() => {
+                    this.closeDispatchTimer = null;
+                    this.snapClosing = false;
+                    this.resetSheetCloseState();
+                    this.clearSheetDrag();
+                    this.clearSheetResize();
+                    this.syncBodyClass();
+                    this.dispatchCloseEvents(payload);
+                }, this.closeDispatchDelay);
             },
 
             handleEscape() {
@@ -1057,6 +1105,21 @@
                 }, 260);
             },
 
+            resetSnapCloseState() {
+                if (this.closeSnapTimer) {
+                    clearTimeout(this.closeSnapTimer);
+                    this.closeSnapTimer = null;
+                }
+
+                if (this.closeDispatchTimer) {
+                    clearTimeout(this.closeDispatchTimer);
+                    this.closeDispatchTimer = null;
+                }
+
+                this.preClosing = false;
+                this.snapClosing = false;
+            },
+
             resetSheetCloseState() {
                 if (this.closeResetTimer) {
                     clearTimeout(this.closeResetTimer);
@@ -1129,6 +1192,7 @@
                         <{{ $panelElement }}
                             x-ref="panel"
                             x-bind:style="panelStyle()"
+                            x-bind:class="{ 'corepine-modal-panel-pre-close': isPreClosing() }"
                             x-on:pointerdown.capture="startSheetDrag($event)"
                             x-on:touchstart.capture="startSheetDrag($event)"
                             x-on:mousedown.capture="startSheetDrag($event)"

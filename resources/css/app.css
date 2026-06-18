@@ -3,3 +3,31 @@
 @source "../views/**/*.blade.php";
 @source "../../src/**/*.php";
 @source "../../config/**/*.php";
+
+@keyframes corepine-modal-panel-pre-close {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    72% {
+        opacity: 1;
+        transform: translate3d(0, -2px, 0) scale(1.012);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0, -2px, 0) scale(1.012);
+    }
+}
+
+.corepine-modal-panel-pre-close {
+    animation: corepine-modal-panel-pre-close 90ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+    will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .corepine-modal-panel-pre-close {
+        animation: none;
+    }
+}

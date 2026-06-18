@@ -146,6 +146,9 @@ BLADE);
     expect($flat)->toContain('\u0022dragCloseThreshold\u0022:0.5');
     expect($flat)->toContain('dragCloseThresholdValue: options.dragCloseThreshold ?? 0.5');
     expect($flat)->toContain('return 0.5');
+    expect($flat)->toContain('return this.preClosing && !this.snapClosing && this.isDrawer();');
+    expect($flat)->toContain('if (!this.isDrawer()) { this.open = false;');
+    expect($flat)->toContain('this.dispatchCloseEvents(payload); return;');
 });
 
 it('hides standalone close action by default when heading and description are empty', function (): void {
@@ -211,7 +214,7 @@ it('renders modal shell with header, body, and footer slots', function (): void 
 BLADE);
 
     expect($html)->toContain('overflow-hidden overscroll-contain');
-    expect($html)->toContain('flex shrink-0 items-start justify-between gap-3 border-b');
+    expect($html)->toContain('flex shrink-0 items-start gap-3 border-b');
     expect($html)->toContain('min-h-0 flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-4');
     expect($html)->toContain('flex shrink-0 items-center justify-end border-t');
     expect($html)->toContain('justify-end');
@@ -267,8 +270,11 @@ BLADE);
 
     expect($html)->toContain('Child Modal');
     expect($html)->toContain('Back');
-    expect($html)->toContain('M12.5 5L7.5 10L12.5 15');
+    expect($html)->toContain('h-10 w-10');
+    expect($html)->toContain('h-5 w-5');
+    expect($html)->toContain('M13 4L7 10L13 16');
     expect($html)->not->toContain('M5 5L15 15M15 5L5 15');
+    expect(strpos($html, 'Back'))->toBeLessThan(strpos($html, 'Child Modal'));
 });
 
 it('documents Tailwind config sources for modal size classes', function (): void {
@@ -276,6 +282,7 @@ it('documents Tailwind config sources for modal size classes', function (): void
     $readme = file_get_contents(__DIR__.'/../../README.md');
 
     expect($css)->toContain('@source "../../config/**/*.php";');
+    expect($css)->toContain('@keyframes corepine-modal-panel-pre-close');
     expect($readme)->toContain('@source "../../config/corepine-modal.php";');
     expect($readme)->toContain('| `dragCloseThreshold` | `float` | `0.5` |');
 });

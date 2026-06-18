@@ -10,7 +10,12 @@
                 activeModalId: null,
                 listeners: [],
                 localClosingIds: [],
+                snapClosingIds: [],
                 closeTimeout: null,
+                closeSnapTimeout: null,
+                closeSnapDelay: 90,
+                closeDispatchDelay: 340,
+                closeTransitionDelay: 260,
                 requestCloseHandler: null,
                 draggingSheetId: null,
                 sheetDragStartY: 0,
@@ -110,6 +115,18 @@
 
                 isLocallyClosing(id) {
                     return this.localClosingIds.includes(id);
+                },
+
+                isSnapClosing(id) {
+                    return this.snapClosingIds.includes(id);
+                },
+
+                isPreClosing(id) {
+                    return this.isLocallyClosing(id) && !this.isSnapClosing(id) && this.shouldSnapClose(id);
+                },
+
+                shouldSnapClose(id) {
+                    return this.modalType(id) === 'drawer';
                 },
 
                 activeAttributes() {
@@ -750,7 +767,7 @@
 
                 shouldShowModal(id) {
                     if (this.isLocallyClosing(id)) {
-                        return false;
+                        return !this.isSnapClosing(id);
                     }
 
                     if (!this.show) {
@@ -817,12 +834,18 @@
                 },
 
                 resetLocalClosing() {
+                    if (this.closeSnapTimeout) {
+                        clearTimeout(this.closeSnapTimeout);
+                        this.closeSnapTimeout = null;
+                    }
+
                     if (this.closeTimeout) {
                         clearTimeout(this.closeTimeout);
                         this.closeTimeout = null;
                     }
 
                     this.localClosingIds = [];
+                    this.snapClosingIds = [];
                     this.clearSheetDrag();
                     this.clearSheetResize();
                 },
@@ -862,7 +885,18 @@
                     }
 
                     this.localClosingIds = closingIds;
+                    const snapCloseIds = closingIds.filter((closingId) => this.shouldSnapClose(closingId));
+                    const immediateClosingIds = closingIds.filter((closingId) => !this.shouldSnapClose(closingId));
+
+                    this.snapClosingIds = immediateClosingIds;
                     this.setShow(true);
+
+                    if (snapCloseIds.length > 0) {
+                        this.closeSnapTimeout = setTimeout(() => {
+                            this.closeSnapTimeout = null;
+                            this.snapClosingIds = [...immediateClosingIds, ...snapCloseIds];
+                        }, this.closeSnapDelay);
+                    }
 
                     this.closeTimeout = setTimeout(() => {
                         this.closeTimeout = null;
@@ -882,7 +916,7 @@
                                 dispatchTo: payload.dispatchTo ?? {},
                             });
                         }
-                    }, 260);
+                    }, snapCloseIds.length > 0 ? this.closeDispatchDelay : this.closeTransitionDelay);
                 },
 
                 canClose(eventName) {
@@ -1106,6 +1140,7 @@
                     ])
                         x-ref="panel-{{ $id }}"
                         tabindex="-1"
+                        x-bind:class="{ 'corepine-modal-panel-pre-close': isPreClosing(@js($id)) }"
                         x-bind:style="panelStyle(@js($id))"
                         x-on:pointerdown.capture="startSheetDrag(@js($id), $event)"
                         x-on:touchstart.capture="startSheetDrag(@js($id), $event)"

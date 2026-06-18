@@ -52,7 +52,23 @@ it('renders root close chrome and child back chrome for stacked shell modals', f
         ->assertSee('Close')
         ->assertSee('Back')
         ->assertSee('M5 5L15 15M15 5L5 15', false)
-        ->assertSee('M12.5 5L7.5 10L12.5 15', false);
+        ->assertSee('M13 4L7 10L13 16', false);
+});
+
+it('renders snap close state hooks for local modal closing', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal')
+        ->assertSee('snapClosingIds', false)
+        ->assertSee('closeSnapTimeout', false)
+        ->assertSee('closeSnapDelay: 90', false)
+        ->assertSee('closeDispatchDelay: 340', false)
+        ->assertSee('closeTransitionDelay: 260', false)
+        ->assertSee('isPreClosing(id)', false)
+        ->assertSee('shouldSnapClose(id)', false)
+        ->assertSee('return this.modalType(id) === \'drawer\';', false)
+        ->assertSee('const immediateClosingIds = closingIds.filter((closingId) => !this.shouldSnapClose(closingId));', false)
+        ->assertSee('return !this.isSnapClosing(id);', false)
+        ->assertSee('corepine-modal-panel-pre-close', false);
 });
 
 it('closes top modal layers', function (): void {
