@@ -55,6 +55,23 @@ it('renders root close chrome and child back chrome for stacked shell modals', f
         ->assertSee('M13 4L7 10L13 16', false);
 });
 
+it('can disable child back chrome for stacked shell modals', function (): void {
+    Livewire::test(ModalHost::class)
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Parent modal',
+        ])
+        ->dispatch('modal.open', component: 'test.example-modal', modalAttributes: [
+            'heading' => 'Child modal',
+            'stackedBackButton' => false,
+        ])
+        ->assertSee('Parent modal')
+        ->assertSee('Child modal')
+        ->assertSee('Close')
+        ->assertDontSee('Back')
+        ->assertSee('M5 5L15 15M15 5L5 15', false)
+        ->assertDontSee('M13 4L7 10L13 16', false);
+});
+
 it('renders snap close state hooks for local modal closing', function (): void {
     Livewire::test(ModalHost::class)
         ->dispatch('modal.open', component: 'test.example-modal')

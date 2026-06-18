@@ -2,6 +2,7 @@
     'heading' => null,
     'description' => null,
     'showClose' => null,
+    'stackedBackButton' => true,
     'modalType' => null,
     'child' => false,
 ])
@@ -43,6 +44,7 @@
         ? $normalizeBoolean($showClose, true)
         : ($resolvedHeading !== null || $resolvedDescription !== null);
     $resolvedChild = $normalizeBoolean($child, false) ?? false;
+    $resolvedStackedBackButton = $normalizeBoolean($stackedBackButton, true) ?? true;
     $resolvedModalType = $modalType instanceof \Corepine\Modal\Enums\ModalType
         ? $modalType->value
         : (is_string($modalType) ? strtolower(trim($modalType)) : null);
@@ -120,7 +122,7 @@
                 {{ $namedHeader }}
             @else
                 <div class="flex min-h-7 items-center gap-3">
-                    @if ($resolvedShowClose && $resolvedChild)
+                    @if ($resolvedShowClose && $resolvedChild && $resolvedStackedBackButton)
                         <x-corepine.modal.actions.close
                             aria-label="Back"
                             class="inline-flex h-7 w-5 shrink-0 items-center justify-center rounded-md p-0 text-zinc-500 transition hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -138,7 +140,7 @@
                         </h2>
                     @endif
 
-                    @if ($resolvedShowClose && ! $resolvedChild)
+                    @if ($resolvedShowClose && (! $resolvedChild || ! $resolvedStackedBackButton))
                         <x-corepine.modal.actions.close
                             aria-label="Close"
                             class="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"

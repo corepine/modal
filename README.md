@@ -248,6 +248,7 @@ The canonical shell/action API uses `actions` (not legacy keys).
 | `heading` | `string \| null` | `null` | Shell heading text. |
 | `description` | `string \| null` | `null` | Shell description text. |
 | `showClose` | `bool \| null` | `auto` | Built-in shell close icon. Defaults to visible only when built-in `heading` or `description` is present. |
+| `stackedBackButton` | `bool` | `true` | In Livewire stacks, child shell headers show a Back chevron instead of the root close icon. Set `false` to keep the normal close icon on child layers. |
 | `footerActionsAlignment` | `Alignment \| string` | `end` | `start`, `center`, `end`. |
 | `actions` | `array` | `[]` | Declarative shell actions (`close` / `method`). |
 | `class` | `string` | `''` | Extra panel classes. |
@@ -343,6 +344,8 @@ Main sections in `config/corepine-modal.php`:
 - `events.dispatch`: outgoing event names
 - `defaults.attributes`: global modal attribute defaults
 - `sizes`: modal width tokens
+
+`defaults.attributes.stackedBackButton` controls the default child-layer header affordance for Livewire stack modals. It defaults to `true`.
 
 ### Example Size Override
 

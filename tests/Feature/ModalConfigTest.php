@@ -135,6 +135,10 @@ it('supports shell attributes', function (): void {
     expect($config->layoutShowClose([]))->toBeFalse();
     expect($config->layoutShowClose(['heading' => 'Users']))->toBeTrue();
     expect($config->layoutShowClose(['showClose' => 'false']))->toBeFalse();
+    expect($config->layoutStackedBackButton([]))->toBeTrue();
+    expect($config->layoutStackedBackButton(['stackedBackButton' => 'false']))->toBeFalse();
+    expect($config->mergedModalAttributes([], [])['stackedBackButton'])->toBeTrue();
+    expect($config->mergedModalAttributes([], ['stackedBackButton' => '0'])['stackedBackButton'])->toBeFalse();
     expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => 'center']))->toBe('center');
     expect($config->layoutFooterActionsAlignment(['footerActionsAlignment' => Alignment::Right]))->toBe('end');
     expect($config->layoutFooterActionsAlignmentClass(['footerActionsAlignment' => 'start']))->toBe('justify-start');

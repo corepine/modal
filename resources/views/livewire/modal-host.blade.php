@@ -1092,6 +1092,7 @@
                     $layoutHeading = $modalConfig->layoutHeading($modal['modalAttributes']);
                     $layoutDescription = $modalConfig->layoutDescription($modal['modalAttributes']);
                     $layoutShowClose = $modalConfig->layoutShowClose($modal['modalAttributes']);
+                    $layoutStackedBackButton = $modalConfig->layoutStackedBackButton($modal['modalAttributes']);
                     $layoutFooterActionsAlignmentClass = $modalConfig->layoutFooterActionsAlignmentClass($modal['modalAttributes']);
                     $layoutFooterActions = $modalConfig->layoutFooterActions($modal['modalAttributes']);
                 @endphp
@@ -1161,7 +1162,7 @@
                         @endif
                         <div class="min-h-0 flex flex-1 dark:text-white [&>*]:min-h-0 [&>*]:flex-1" data-corepine-modal-livewire>
                             @if ($usesLayout)
-                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :modal-type="$modal['modalAttributes']['type'] ?? null" :child="$loop->index > 0" class="h-full">
+                                <x-corepine.modal.layout :heading="$layoutHeading" :description="$layoutDescription" :show-close="$layoutShowClose" :stacked-back-button="$layoutStackedBackButton" :modal-type="$modal['modalAttributes']['type'] ?? null" :child="$loop->index > 0" class="h-full">
                                     @livewire($modal['name'] ?: $modal['class'], $modal['arguments'], key('corepine-modal-panel-'.$id))
 
                                     @if ($layoutFooterActions !== [])

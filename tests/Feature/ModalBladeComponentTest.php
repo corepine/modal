@@ -283,6 +283,20 @@ BLADE);
     expect(strpos($html, 'Child Modal'))->toBeLessThan(strpos($html, 'Nested details stay on their own line.'));
 });
 
+it('can disable layout child back chrome', function (): void {
+    $html = Blade::render(<<<'BLADE'
+<x-corepine-modal-layout heading="Child Modal" :child="true" :stacked-back-button="false">
+    <div>Body only</div>
+</x-corepine-modal-layout>
+BLADE);
+
+    expect($html)->toContain('Child Modal');
+    expect($html)->toContain('Close');
+    expect($html)->toContain('M5 5L15 15M15 5L5 15');
+    expect($html)->not->toContain('Back');
+    expect($html)->not->toContain('M13 4L7 10L13 16');
+});
+
 it('documents Tailwind config sources for modal size classes', function (): void {
     $css = file_get_contents(__DIR__.'/../../resources/css/app.css');
     $readme = file_get_contents(__DIR__.'/../../README.md');
@@ -291,6 +305,7 @@ it('documents Tailwind config sources for modal size classes', function (): void
     expect($css)->toContain('@keyframes corepine-modal-panel-pre-close');
     expect($readme)->toContain('@source "../../config/corepine-modal.php";');
     expect($readme)->toContain('| `dragCloseThreshold` | `float` | `0.5` |');
+    expect($readme)->toContain('| `stackedBackButton` | `bool` | `true` |');
 });
 
 it('merges custom wrapper attributes on modal shell', function (): void {
@@ -507,6 +522,7 @@ it('supports shell chrome props on open helper', function (): void {
     heading="Manage Users"
     description="Search and view users in your system."
     show-close="true"
+    stacked-back-button="false"
     footer-actions-alignment="center"
     :actions="[
         ['type' => 'close', 'label' => 'Cancel'],
@@ -523,6 +539,7 @@ BLADE);
     expect($flat)->toContain('\u0022heading\u0022:\u0022Manage Users\u0022');
     expect($flat)->toContain('\u0022description\u0022:\u0022Search and view users in your system.\u0022');
     expect($flat)->toContain('\u0022showClose\u0022:true');
+    expect($flat)->toContain('\u0022stackedBackButton\u0022:false');
     expect($flat)->toContain('\u0022footerActionsAlignment\u0022:\u0022center\u0022');
     expect($flat)->toContain('\u0022actions\u0022');
     expect($flat)->toContain('saveUsers');

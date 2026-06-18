@@ -69,6 +69,7 @@ return [
             'heading' => null,
             'description' => null,
             'showClose' => null,
+            'stackedBackButton' => true,
 
             // Footer action defaults.
             'footerActionsAlignment' => 'end',

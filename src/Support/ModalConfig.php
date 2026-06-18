@@ -555,6 +555,14 @@ class ModalConfig
 
     /**
      * @param  array<string, mixed>  $attributes
+     */
+    public function layoutStackedBackButton(array $attributes): bool
+    {
+        return $this->normalizeBoolean($attributes['stackedBackButton'] ?? true, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
      * @return array<int, array<string, mixed>>
      */
     public function layoutFooterActions(array $attributes): array
@@ -1082,6 +1090,7 @@ class ModalConfig
         $attributes['isolate'] = $this->isIsolated($attributes);
         $attributes['shell'] = $this->usesLayout($attributes);
         $attributes['showClose'] = $this->layoutShowClose($attributes);
+        $attributes['stackedBackButton'] = $this->layoutStackedBackButton($attributes);
         $attributes['footerActionsAlignment'] = $this->layoutFooterActionsAlignment($attributes);
         $attributes['actions'] = $this->layoutFooterActions($attributes);
         $attributes['dispatch'] = is_array($attributes['dispatch'] ?? null) ? $attributes['dispatch'] : [];

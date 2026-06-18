@@ -24,6 +24,7 @@
     'heading' => null,
     'description' => null,
     'showClose' => null,
+    'stackedBackButton' => null,
     'actions' => null,
     'footerActionsAlignment' => null,
     'dispatch' => null,
@@ -214,6 +215,19 @@
 @endif
 @if (! is_null($normalizedShowClose))
     @php($payloadModalAttributes['showClose'] = $normalizedShowClose)
+@endif
+@php($normalizedStackedBackButton = null)
+@if (is_bool($stackedBackButton))
+    @php($normalizedStackedBackButton = $stackedBackButton)
+@elseif (is_string($stackedBackButton))
+    @php($normalizedStackedBackButton = match (strtolower(trim($stackedBackButton))) {
+        '1', 'true', 'yes', 'on' => true,
+        '0', 'false', 'no', 'off' => false,
+        default => null,
+    })
+@endif
+@if (! is_null($normalizedStackedBackButton))
+    @php($payloadModalAttributes['stackedBackButton'] = $normalizedStackedBackButton)
 @endif
 @if ($footerActionsAlignment instanceof \Corepine\Support\Enums\Alignment)
     @php($payloadModalAttributes['footerActionsAlignment'] = $footerActionsAlignment->value)
