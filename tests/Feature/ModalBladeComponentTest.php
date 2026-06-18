@@ -214,7 +214,8 @@ it('renders modal shell with header, body, and footer slots', function (): void 
 BLADE);
 
     expect($html)->toContain('overflow-hidden overscroll-contain');
-    expect($html)->toContain('flex shrink-0 items-start gap-3 border-b');
+    expect($html)->toContain('flex shrink-0 flex-col gap-0.5 border-b');
+    expect($html)->toContain('flex min-h-7 items-center gap-3');
     expect($html)->toContain('min-h-0 flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-4');
     expect($html)->toContain('flex shrink-0 items-center justify-end border-t');
     expect($html)->toContain('justify-end');
@@ -259,23 +260,27 @@ BLADE);
 
     expect($html)->toContain('Body only');
     expect($html)->toContain('sr-only');
+    expect($html)->toContain('ml-auto inline-flex h-7 w-7');
 });
 
 it('renders layout child chrome as a back affordance', function (): void {
     $html = Blade::render(<<<'BLADE'
-<x-corepine-modal-layout heading="Child Modal" :child="true">
+<x-corepine-modal-layout heading="Child Modal" description="Nested details stay on their own line." :child="true">
     <div>Body only</div>
 </x-corepine-modal-layout>
 BLADE);
 
     expect($html)->toContain('Child Modal');
+    expect($html)->toContain('Nested details stay on their own line.');
     expect($html)->toContain('Back');
-    expect($html)->toContain('h-5 w-5 shrink-0');
+    expect($html)->toContain('flex min-h-7 items-center gap-3');
+    expect($html)->toContain('h-7 w-5 shrink-0');
     expect($html)->toContain('p-0');
-    expect($html)->toContain('h-5 w-5');
+    expect($html)->toContain('size-5.5');
     expect($html)->toContain('M13 4L7 10L13 16');
     expect($html)->not->toContain('M5 5L15 15M15 5L5 15');
     expect(strpos($html, 'Back'))->toBeLessThan(strpos($html, 'Child Modal'));
+    expect(strpos($html, 'Child Modal'))->toBeLessThan(strpos($html, 'Nested details stay on their own line.'));
 });
 
 it('documents Tailwind config sources for modal size classes', function (): void {

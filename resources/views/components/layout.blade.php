@@ -113,47 +113,47 @@
             @if ($namedHeader !== null)
                 {{ $namedHeader->attributes->class('flex shrink-0 items-start justify-between gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70') }}
             @else
-                class="flex shrink-0 items-start gap-3 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70"
+                class="flex shrink-0 flex-col gap-0.5 border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-700/70"
             @endif
         >
             @if ($namedHeader !== null)
                 {{ $namedHeader }}
             @else
-                @if ($resolvedShowClose && $resolvedChild)
-                    <x-corepine.modal.actions.close
-                        aria-label="Back"
-                        class="inline-flex  shrink-0 items-center mb-auto justify-center rounded-md p-0 text-zinc-500 transition  hover:text-zinc-900  dark:hover:text-zinc-100"
-                    >
-                        <span class="sr-only">Back</span>
-                        <svg viewBox="0 0 20 20" fill="none" class="size-5.5" aria-hidden="true">
-                            <path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </x-corepine.modal.actions.close>
-                @endif
+                <div class="flex min-h-7 items-center gap-3">
+                    @if ($resolvedShowClose && $resolvedChild)
+                        <x-corepine.modal.actions.close
+                            aria-label="Back"
+                            class="inline-flex h-7 w-5 shrink-0 items-center justify-center rounded-md p-0 text-zinc-500 transition hover:text-zinc-900 dark:hover:text-zinc-100"
+                        >
+                            <span class="sr-only">Back</span>
+                            <svg viewBox="0 0 20 20" fill="none" class="size-5.5" aria-hidden="true">
+                                <path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </x-corepine.modal.actions.close>
+                    @endif
 
-                <div class="min-w-0 flex flex-1 flex-col gap-2">
                     @if ($resolvedHeading !== null)
-                        <h2 class="text-md font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                        <h2 class="min-w-0 flex-1 text-md font-semibold leading-none text-zinc-900 dark:text-zinc-100">
                             {{ $resolvedHeading }}
                         </h2>
                     @endif
 
-                    @if ($resolvedDescription !== null)
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $resolvedDescription }}</p>
+                    @if ($resolvedShowClose && ! $resolvedChild)
+                        <x-corepine.modal.actions.close
+                            aria-label="Close"
+                            class="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        >
+                            <span class="sr-only">Close</span>
+                            <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+                                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                            </svg>
+                        </x-corepine.modal.actions.close>
                     @endif
                 </div>
-            @endif
 
-            @if ($resolvedShowClose && ! $resolvedChild && $namedHeader === null)
-                <x-corepine.modal.actions.close
-                    aria-label="Close"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                >
-                    <span class="sr-only">Close</span>
-                    <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
-                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-                    </svg>
-                </x-corepine.modal.actions.close>
+                @if ($resolvedDescription !== null)
+                    <p class="text-[0.97rem] max-w-[96%] w-full leading-tight text-zinc-500 dark:text-zinc-400">{{ $resolvedDescription }}</p>
+                @endif
             @endif
         </header>
     @endif
