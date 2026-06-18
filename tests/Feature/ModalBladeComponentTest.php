@@ -270,7 +270,8 @@ BLADE);
 
     expect($html)->toContain('Child Modal');
     expect($html)->toContain('Back');
-    expect($html)->toContain('h-10 w-10');
+    expect($html)->toContain('h-5 w-5 shrink-0');
+    expect($html)->toContain('p-0');
     expect($html)->toContain('h-5 w-5');
     expect($html)->toContain('M13 4L7 10L13 16');
     expect($html)->not->toContain('M5 5L15 15M15 5L5 15');

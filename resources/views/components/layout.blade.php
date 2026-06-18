@@ -122,10 +122,10 @@
                 @if ($resolvedShowClose && $resolvedChild)
                     <x-corepine.modal.actions.close
                         aria-label="Back"
-                        class="-ml-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        class="inline-flex  shrink-0 items-center mb-auto justify-center rounded-md p-0 text-zinc-500 transition  hover:text-zinc-900  dark:hover:text-zinc-100"
                     >
                         <span class="sr-only">Back</span>
-                        <svg viewBox="0 0 20 20" fill="none" class="h-5 w-5" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none" class="size-5.5" aria-hidden="true">
                             <path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </x-corepine.modal.actions.close>
@@ -133,7 +133,7 @@
 
                 <div class="min-w-0 flex flex-1 flex-col gap-2">
                     @if ($resolvedHeading !== null)
-                        <h2 class="text-base font-semibold leading-none text-zinc-900 dark:text-zinc-100">
+                        <h2 class="text-md font-semibold leading-none text-zinc-900 dark:text-zinc-100">
                             {{ $resolvedHeading }}
                         </h2>
                     @endif
