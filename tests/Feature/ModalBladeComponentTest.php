@@ -474,6 +474,7 @@ BLADE);
     $flat = preg_replace('/\s+/', ' ', html_entity_decode($html, ENT_QUOTES));
 
     expect($flat)->toContain('data-testid="open-trigger"');
+    expect($flat)->toContain('class="contents"');
     expect($flat)->toContain('Livewire.dispatch');
     expect($flat)->toContain('modal.open');
     expect($flat)->toContain('modals.edit-user');

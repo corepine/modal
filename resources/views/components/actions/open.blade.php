@@ -253,6 +253,7 @@
 <div
     x-data
     {{ $triggerAttributes }}
+    class="contents"
     x-on:click="const standalonePayload = { id: @js($resolvedModalId) };
     const stackPayload = {
         component: @js($component),
